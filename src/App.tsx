@@ -3,24 +3,48 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
+import ImagesPage from "./pages/ImagesPage";
+import PdfsPage from "./pages/PdfsPage";
+import FoldersPage from "./pages/FoldersPage";
+import TrashPage from "./pages/TrashPage";
+import SettingsPage from "./pages/SettingsPage";
+import PublicFile from "./pages/PublicFile";
+import EmbedFile from "./pages/EmbedFile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/file/:publicId" element={<PublicFile />} />
+              <Route path="/embed/:publicId" element={<EmbedFile />} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/images" element={<ProtectedRoute><ImagesPage /></ProtectedRoute>} />
+              <Route path="/pdfs" element={<ProtectedRoute><PdfsPage /></ProtectedRoute>} />
+              <Route path="/folders" element={<ProtectedRoute><FoldersPage /></ProtectedRoute>} />
+              <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
