@@ -1,6 +1,7 @@
 import { Files, Image, FileText, FolderOpen, Trash2, Settings, ChevronLeft } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import fylixLogo from "@/assets/fylix-logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -36,9 +37,10 @@ export function AppSidebar() {
     <Sidebar className="border-r border-sidebar-border bg-sidebar" collapsible="icon">
       <SidebarHeader className="p-4 pb-2 flex flex-row items-center justify-between">
         {open && (
-          <span className="text-base font-semibold tracking-tight text-foreground pl-1">
-            Fylix
-          </span>
+          <div className="flex items-center gap-2 pl-1">
+            <img src={fylixLogo} alt="Fylix" className="h-7 w-7 rounded-lg" />
+            <span className="text-base font-semibold tracking-tight text-foreground">Fylix</span>
+          </div>
         )}
         <Button
           variant="ghost"

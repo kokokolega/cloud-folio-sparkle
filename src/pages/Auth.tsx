@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, Mail, Lock } from "lucide-react";
+import fylixLogo from "@/assets/fylix-logo.png";
 
 export default function Auth() {
   const { session, loading } = useAuth();
@@ -47,7 +48,7 @@ export default function Auth() {
           options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        toast.success("Check your email to confirm your account");
+        toast.success("Account created! You're now signed in.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -70,8 +71,9 @@ export default function Auth() {
         <div className="glass-card p-8 md:p-10">
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Fylix</h1>
-            <p className="text-muted-foreground mt-2 text-sm">
+            <img src={fylixLogo} alt="Fylix" className="h-16 w-16 mx-auto rounded-2xl mb-4" />
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Fylix</h1>
+            <p className="text-muted-foreground mt-1.5 text-sm">
               {mode === "login" && "Welcome back"}
               {mode === "signup" && "Create your account"}
               {mode === "forgot" && "Reset your password"}
