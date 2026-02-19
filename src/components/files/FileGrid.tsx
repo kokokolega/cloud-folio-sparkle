@@ -49,8 +49,6 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
 
       if (folderId) {
         query = query.eq("folder_id", folderId);
-      } else if (!showDeleted && !typeFilter) {
-        // Show root files only when not filtering
       }
 
       const { data, error } = await query.order("created_at", { ascending: false });
@@ -76,7 +74,6 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       if (showDeleted) {
-        // Permanent delete
         const file = files.find((f) => f.id === id);
         if (file) {
           await supabase.storage.from("user-files").remove([file.storage_path]);
@@ -84,7 +81,6 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
           if (error) throw error;
         }
       } else {
-        // Soft delete
         const { error } = await supabase
           .from("files")
           .update({ deleted_at: new Date().toISOString() })
@@ -110,6 +106,20 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
     },
   });
 
+  const moveMutation = useMutation({
+    mutationFn: async ({ fileId, folderId }: { fileId: string; folderId: string | null }) => {
+      const { error } = await supabase
+        .from("files")
+        .update({ folder_id: folderId })
+        .eq("id", fileId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["files"] });
+      toast.success("File moved");
+    },
+  });
+
   const restoreMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -126,12 +136,12 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="glass-card animate-pulse">
-            <div className="aspect-[4/3] bg-muted/50 rounded-t-[1rem]" />
+            <div className="aspect-[4/3] bg-muted/40 rounded-t-xl" />
             <div className="p-3 space-y-2">
-              <div className="h-4 bg-muted rounded w-3/4" />
+              <div className="h-3.5 bg-muted rounded w-3/4" />
               <div className="h-3 bg-muted rounded w-1/2" />
             </div>
           </div>
@@ -142,17 +152,17 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
 
   if (filtered.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-        <Files className="h-16 w-16 mb-4 opacity-30" />
-        <p className="text-lg font-medium">{showDeleted ? "Trash is empty" : "No files yet"}</p>
-        <p className="text-sm mt-1">{showDeleted ? "Deleted files will appear here" : "Upload your first file to get started"}</p>
+      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+        <Files className="h-12 w-12 mb-4 opacity-20" />
+        <p className="text-base font-medium">{showDeleted ? "Trash is empty" : "No files yet"}</p>
+        <p className="text-sm mt-1 text-muted-foreground/70">{showDeleted ? "Deleted files will appear here" : "Upload your first file to get started"}</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         <AnimatePresence>
           {filtered.map((file) => (
             <FileCard
@@ -163,16 +173,16 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
                 setRenameDialog({ id, name });
                 setNewName(name);
               }}
+              onMove={(fileId, folderId) => moveMutation.mutate({ fileId, folderId })}
             />
           ))}
         </AnimatePresence>
       </div>
 
-      {/* Rename dialog */}
       <Dialog open={!!renameDialog} onOpenChange={() => setRenameDialog(null)}>
-        <DialogContent className="sm:max-w-sm rounded-2xl border-0 glass-card">
+        <DialogContent className="sm:max-w-sm rounded-xl">
           <DialogHeader>
-            <DialogTitle>Rename file</DialogTitle>
+            <DialogTitle className="text-base">Rename file</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -184,10 +194,10 @@ export function FileGrid({ searchQuery, typeFilter, showDeleted = false, folderI
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="h-11 rounded-xl"
+              className="h-10 rounded-lg"
               autoFocus
             />
-            <Button type="submit" className="w-full rounded-xl h-10">
+            <Button type="submit" className="w-full rounded-lg h-9 text-[13px]">
               Rename
             </Button>
           </form>
