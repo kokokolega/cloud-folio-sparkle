@@ -18,6 +18,7 @@ export default function FoldersPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   const { data: folders = [] } = useQuery({
     queryKey: ["folders", user?.id],
@@ -49,6 +50,35 @@ export default function FoldersPage() {
     },
   });
 
+  const moveToFolder = useMutation({
+    mutationFn: async ({ fileId, folderId }: { fileId: string; folderId: string }) => {
+      const { error } = await supabase
+        .from("files")
+        .update({ folder_id: folderId })
+        .eq("id", fileId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["files"] });
+      toast.success("File moved to folder");
+    },
+  });
+
+  const handleDrop = (e: React.DragEvent, folderId: string) => {
+    e.preventDefault();
+    setDragOverId(null);
+    const fileId = e.dataTransfer.getData("text/plain");
+    if (fileId) {
+      moveToFolder.mutate({ fileId, folderId });
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, folderId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverId(folderId);
+  };
+
   const activeFolder = folders.find((f) => f.id === activeFolderId);
 
   return (
@@ -56,17 +86,17 @@ export default function FoldersPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           {activeFolderId && (
-            <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setActiveFolderId(null)}>
+            <Button variant="ghost" size="icon" className="rounded-lg h-8 w-8" onClick={() => setActiveFolderId(null)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-foreground">
             {activeFolder ? activeFolder.name : "Folders"}
           </h2>
         </div>
         {!activeFolderId && (
-          <Button onClick={() => setCreateOpen(true)} className="rounded-xl h-9 px-4" variant="secondary">
-            <FolderPlus className="h-4 w-4 mr-2" />
+          <Button onClick={() => setCreateOpen(true)} className="rounded-lg h-9 px-4 text-[13px]" variant="secondary">
+            <FolderPlus className="h-3.5 w-3.5 mr-1.5" />
             New Folder
           </Button>
         )}
@@ -75,33 +105,38 @@ export default function FoldersPage() {
       {activeFolderId ? (
         <FileGrid searchQuery={searchQuery} folderId={activeFolderId} />
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {folders.map((folder) => (
             <motion.div
               key={folder.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="glass-card p-5 hover-scale cursor-pointer flex flex-col items-center gap-3"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`glass-card p-5 hover-scale cursor-pointer flex flex-col items-center gap-3 transition-all ${
+                dragOverId === folder.id ? "ring-2 ring-primary/40 bg-primary/5" : ""
+              }`}
               onClick={() => setActiveFolderId(folder.id)}
+              onDrop={(e) => handleDrop(e, folder.id)}
+              onDragOver={(e) => handleDragOver(e, folder.id)}
+              onDragLeave={() => setDragOverId(null)}
             >
-              <FolderOpen className="h-10 w-10 text-primary/70" />
-              <p className="text-sm font-medium text-foreground text-center truncate w-full">{folder.name}</p>
+              <FolderOpen className="h-9 w-9 text-primary/60" />
+              <p className="text-[13px] font-medium text-foreground text-center truncate w-full">{folder.name}</p>
             </motion.div>
           ))}
           {folders.length === 0 && (
-            <div className="col-span-full flex flex-col items-center py-20 text-muted-foreground">
-              <FolderOpen className="h-16 w-16 mb-4 opacity-30" />
-              <p className="text-lg font-medium">No folders yet</p>
-              <p className="text-sm mt-1">Create a folder to organize your files</p>
+            <div className="col-span-full flex flex-col items-center py-24 text-muted-foreground">
+              <FolderOpen className="h-12 w-12 mb-4 opacity-20" />
+              <p className="text-base font-medium">No folders yet</p>
+              <p className="text-sm mt-1 text-muted-foreground/70">Create a folder to organize your files</p>
             </div>
           )}
         </div>
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-sm rounded-2xl border-0 glass-card">
+        <DialogContent className="sm:max-w-sm rounded-xl">
           <DialogHeader>
-            <DialogTitle>Create Folder</DialogTitle>
+            <DialogTitle className="text-base">Create Folder</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -114,10 +149,10 @@ export default function FoldersPage() {
               placeholder="Folder name"
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              className="h-11 rounded-xl"
+              className="h-10 rounded-lg"
               autoFocus
             />
-            <Button type="submit" className="w-full rounded-xl h-10">
+            <Button type="submit" className="w-full rounded-lg h-9 text-[13px]">
               Create
             </Button>
           </form>
