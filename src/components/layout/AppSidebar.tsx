@@ -1,4 +1,4 @@
-import { Files, Image, FileText, FolderOpen, Trash2, Settings, ChevronLeft } from "lucide-react";
+import { Files, Image, FileText, FolderOpen, StickyNote, Trash2, Settings, ChevronLeft } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import fylixLogo from "@/assets/fylix-logo.png";
@@ -22,6 +22,7 @@ const mainNav = [
   { title: "Images", url: "/images", icon: Image },
   { title: "PDFs", url: "/pdfs", icon: FileText },
   { title: "Folders", url: "/folders", icon: FolderOpen },
+  { title: "Notes", url: "/notes", icon: StickyNote },
 ];
 
 const bottomNav = [
