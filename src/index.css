@@ -122,3 +122,138 @@
     @apply ring-2 ring-primary/40 bg-primary/5;
   }
 }
+
+/* TipTap rich text editor styles */
+.prose-editor {
+  color: hsl(var(--foreground));
+}
+
+.prose-editor p {
+  margin: 0.25em 0;
+}
+
+.prose-editor h2 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
+}
+
+.prose-editor h3 {
+  font-size: 1em;
+  font-weight: 600;
+  margin: 0.5em 0 0.2em;
+}
+
+.prose-editor ul,
+.prose-editor ol {
+  padding-left: 1.4em;
+  margin: 0.3em 0;
+}
+
+.prose-editor ul {
+  list-style: disc;
+}
+
+.prose-editor ol {
+  list-style: decimal;
+}
+
+.prose-editor li {
+  margin: 0.15em 0;
+}
+
+.prose-editor blockquote {
+  border-left: 3px solid hsl(var(--border));
+  padding-left: 0.8em;
+  margin: 0.4em 0;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.prose-editor pre {
+  background: hsl(var(--muted));
+  border-radius: 0.5rem;
+  padding: 0.6em 0.8em;
+  margin: 0.4em 0;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 0.88em;
+  overflow-x: auto;
+}
+
+.prose-editor code {
+  background: hsl(var(--muted));
+  border-radius: 0.25rem;
+  padding: 0.15em 0.35em;
+  font-size: 0.88em;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.prose-editor pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.prose-editor mark {
+  background-color: hsl(48 96% 76%);
+  border-radius: 0.15em;
+  padding: 0.05em 0.15em;
+}
+
+.dark .prose-editor mark {
+  background-color: hsl(48 60% 30%);
+}
+
+.prose-editor hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 0.8em 0;
+}
+
+.prose-editor p.is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Task list (checklist) */
+.prose-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.prose-editor ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4em;
+  margin: 0.2em 0;
+}
+
+.prose-editor ul[data-type="taskList"] li > label {
+  flex-shrink: 0;
+  margin-top: 0.15em;
+}
+
+.prose-editor ul[data-type="taskList"] li > label input[type="checkbox"] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 3px;
+  cursor: pointer;
+  background: hsl(var(--background));
+  transition: all 0.15s ease;
+}
+
+.prose-editor ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3E%3C/svg%3E");
+}
+
+.prose-editor ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.5;
+}

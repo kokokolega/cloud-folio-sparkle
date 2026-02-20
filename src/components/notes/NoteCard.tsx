@@ -34,6 +34,12 @@ export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps)
       minute: "2-digit",
     });
 
+  // Strip HTML for preview text
+  const plainText = note.content
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
   return (
     <motion.div
       layout
@@ -80,9 +86,9 @@ export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps)
         </div>
       </div>
 
-      {note.content && (
-        <p className="text-[12px] text-muted-foreground line-clamp-4 whitespace-pre-wrap leading-relaxed">
-          {note.content}
+      {plainText && (
+        <p className="text-[12px] text-muted-foreground line-clamp-4 leading-relaxed">
+          {plainText}
         </p>
       )}
 
