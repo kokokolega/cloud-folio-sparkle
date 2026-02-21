@@ -17,6 +17,7 @@ import SettingsPage from "./pages/SettingsPage";
 import PublicFile from "./pages/PublicFile";
 import EmbedFile from "./pages/EmbedFile";
 import NotesPage from "./pages/NotesPage";
+import AiPage from "./pages/AiPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/pdfs" element={<ProtectedRoute><PdfsPage /></ProtectedRoute>} />
               <Route path="/folders" element={<ProtectedRoute><FoldersPage /></ProtectedRoute>} />
               <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
+              <Route path="/ai" element={<ProtectedRoute><AiPage /></ProtectedRoute>} />
               <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />

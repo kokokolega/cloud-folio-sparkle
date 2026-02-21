@@ -2,3 +2,6 @@ project_id = "cptvplkhvscwrrhzhojh"
 
 [functions.ai-notes]
 verify_jwt = false
+
+[functions.ai-assistant]
+verify_jwt = false
