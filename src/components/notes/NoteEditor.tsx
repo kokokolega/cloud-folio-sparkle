@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { AiToolbar } from "@/components/notes/AiToolbar";
 
 interface NoteEditorProps {
   note?: { title: string; content: string; color: string } | null;
@@ -129,6 +130,8 @@ export function NoteEditor({ note, onSave, onCancel, isSaving }: NoteEditorProps
 
       {/* Toolbar */}
       <div className="flex items-center gap-0.5 px-4 py-1.5 flex-wrap">
+        <AiToolbar editor={editor} />
+        <Separator orientation="vertical" className="h-4 mx-1" />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}
