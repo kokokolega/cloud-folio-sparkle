@@ -257,3 +257,30 @@
   text-decoration: line-through;
   opacity: 0.5;
 }
+
+/* Animated background keyframes */
+@keyframes aurora-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+  50% { transform: translateY(-30px) scale(1.2); opacity: 0.8; }
+}
+
+@keyframes wave-shift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-20px); }
+}
+
+@keyframes mesh-move {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  33% { transform: scale(1.05) rotate(1deg); }
+  66% { transform: scale(0.97) rotate(-1deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.5); }
+}
