@@ -16,6 +16,7 @@ import {
   Bot,
   Trash2,
 } from "lucide-react";
+import { VoiceInput } from "@/components/ai/VoiceInput";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -372,6 +373,13 @@ export default function AiPage() {
 
         {/* Input */}
         <div className="mt-3 flex items-center gap-2">
+          <VoiceInput
+            onTranscript={(text) => {
+              setInput(text);
+              setTimeout(() => send(text), 100);
+            }}
+            disabled={isLoading}
+          />
           <Input
             ref={inputRef}
             placeholder="Ask AI to create notes, presentations, organize files…"
