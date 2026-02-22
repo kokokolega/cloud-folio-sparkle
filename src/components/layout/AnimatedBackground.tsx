@@ -171,6 +171,19 @@ function ReadingCoolBackground() {
   );
 }
 
+function CustomImageBackground() {
+  const { customImageUrl } = useBackgroundTheme();
+  if (!customImageUrl) return null;
+  return (
+    <div
+      className="fixed inset-0 -z-10 pointer-events-none bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${customImageUrl})` }}
+    >
+      <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
+    </div>
+  );
+}
+
 const backgrounds: Record<BgTheme, (() => JSX.Element) | null> = {
   none: null,
   aurora: AuroraBackground,
@@ -183,6 +196,7 @@ const backgrounds: Record<BgTheme, (() => JSX.Element) | null> = {
   fireflies: FirefliesBackground,
   "reading-warm": ReadingWarmBackground,
   "reading-cool": ReadingCoolBackground,
+  "custom-image": CustomImageBackground,
 };
 
 export function AnimatedBackground() {
