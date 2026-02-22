@@ -84,6 +84,93 @@ function StarfieldBackground() {
   );
 }
 
+function RainBackground() {
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      {Array.from({ length: 60 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent animate-[rain-fall_var(--dur)_linear_infinite_var(--delay)]"
+          style={{
+            height: `${Math.random() * 80 + 40}px`,
+            left: `${Math.random() * 100}%`,
+            "--dur": `${Math.random() * 0.8 + 0.4}s`,
+            "--delay": `${Math.random() * -2}s`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MatrixBackground() {
+  const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノ01";
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      {Array.from({ length: 25 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute top-0 animate-[matrix-fall_var(--dur)_linear_infinite_var(--delay)] text-primary/25 text-xs font-mono leading-tight whitespace-pre"
+          style={{
+            left: `${Math.random() * 100}%`,
+            "--dur": `${Math.random() * 6 + 4}s`,
+            "--delay": `${Math.random() * -10}s`,
+          } as React.CSSProperties}
+        >
+          {Array.from({ length: 20 }).map((_, j) => (
+            <div key={j}>{chars[Math.floor(Math.random() * chars.length)]}</div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FirefliesBackground() {
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      {Array.from({ length: 20 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full animate-[firefly_var(--dur)_ease-in-out_infinite_var(--delay)]"
+          style={{
+            width: `${Math.random() * 4 + 2}px`,
+            height: `${Math.random() * 4 + 2}px`,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            background: `radial-gradient(circle, hsl(48 90% 60% / 0.8), hsl(48 90% 60% / 0))`,
+            boxShadow: `0 0 6px 2px hsl(48 90% 60% / 0.3)`,
+            "--dur": `${Math.random() * 6 + 4}s`,
+            "--delay": `${Math.random() * -8}s`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ReadingWarmBackground() {
+  return (
+    <div className="fixed inset-0 -z-10 pointer-events-none"
+      style={{
+        background: `radial-gradient(ellipse at 50% 0%, hsl(35 60% 50% / 0.06) 0%, transparent 70%),
+                     radial-gradient(ellipse at 50% 100%, hsl(25 50% 40% / 0.04) 0%, transparent 60%)`
+      }}
+    />
+  );
+}
+
+function ReadingCoolBackground() {
+  return (
+    <div className="fixed inset-0 -z-10 pointer-events-none"
+      style={{
+        background: `radial-gradient(ellipse at 50% 0%, hsl(210 40% 50% / 0.06) 0%, transparent 70%),
+                     radial-gradient(ellipse at 50% 100%, hsl(220 30% 40% / 0.04) 0%, transparent 60%)`
+      }}
+    />
+  );
+}
+
 const backgrounds: Record<BgTheme, (() => JSX.Element) | null> = {
   none: null,
   aurora: AuroraBackground,
@@ -91,6 +178,11 @@ const backgrounds: Record<BgTheme, (() => JSX.Element) | null> = {
   waves: WavesBackground,
   "gradient-mesh": GradientMeshBackground,
   starfield: StarfieldBackground,
+  rain: RainBackground,
+  matrix: MatrixBackground,
+  fireflies: FirefliesBackground,
+  "reading-warm": ReadingWarmBackground,
+  "reading-cool": ReadingCoolBackground,
 };
 
 export function AnimatedBackground() {

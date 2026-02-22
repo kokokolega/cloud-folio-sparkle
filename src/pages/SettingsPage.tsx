@@ -15,6 +15,11 @@ const BG_THEMES: { id: BgTheme; name: string; description: string; preview: stri
   { id: "waves", name: "Waves", description: "Gentle wave motion", preview: "bg-gradient-to-t from-primary/15 to-transparent" },
   { id: "gradient-mesh", name: "Gradient Mesh", description: "Soft color blend", preview: "bg-gradient-to-br from-primary/10 via-transparent to-accent/10" },
   { id: "starfield", name: "Starfield", description: "Twinkling stars", preview: "bg-muted/80" },
+  { id: "rain", name: "Rain", description: "Falling rain streaks", preview: "bg-gradient-to-b from-primary/10 to-muted/60" },
+  { id: "matrix", name: "Matrix", description: "Cascading code rain", preview: "bg-gradient-to-b from-primary/15 to-muted/80" },
+  { id: "fireflies", name: "Fireflies", description: "Glowing warm lights", preview: "bg-muted/50" },
+  { id: "reading-warm", name: "Reading Warm", description: "Warm reading light", preview: "bg-gradient-to-b from-orange-100/30 to-amber-50/20 dark:from-orange-900/10 dark:to-amber-900/5" },
+  { id: "reading-cool", name: "Reading Cool", description: "Cool reading light", preview: "bg-gradient-to-b from-blue-100/30 to-slate-50/20 dark:from-blue-900/10 dark:to-slate-900/5" },
 ];
 
 export default function SettingsPage() {
