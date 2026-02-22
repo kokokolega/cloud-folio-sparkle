@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type BgTheme = "none" | "aurora" | "particles" | "waves" | "gradient-mesh" | "starfield";
+export type BgTheme = "none" | "aurora" | "particles" | "waves" | "gradient-mesh" | "starfield" | "rain" | "matrix" | "fireflies" | "reading-warm" | "reading-cool";
 
 interface BgThemeContextType {
   bgTheme: BgTheme;
