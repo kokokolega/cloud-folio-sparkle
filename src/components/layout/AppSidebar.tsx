@@ -1,4 +1,4 @@
-import { Files, Image, FileText, FolderOpen, StickyNote, Trash2, Settings, ChevronLeft, Sparkles } from "lucide-react";
+import { Files, Image, FileText, FolderOpen, StickyNote, Trash2, Settings, ChevronLeft, Sparkles, Pencil, Users } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import fylixLogo from "@/assets/fylix-logo.png";
@@ -23,6 +23,8 @@ const mainNav = [
   { title: "PDFs", url: "/pdfs", icon: FileText },
   { title: "Folders", url: "/folders", icon: FolderOpen },
   { title: "Notes", url: "/notes", icon: StickyNote },
+  { title: "Whiteboard", url: "/whiteboard", icon: Pencil },
+  { title: "Groups", url: "/groups", icon: Users },
   { title: "Fylix AI", url: "/ai", icon: Sparkles },
 ];
 

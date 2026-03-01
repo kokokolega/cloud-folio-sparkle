@@ -20,6 +20,9 @@ import PublicFile from "./pages/PublicFile";
 import EmbedFile from "./pages/EmbedFile";
 import NotesPage from "./pages/NotesPage";
 import AiPage from "./pages/AiPage";
+import WhiteboardPage from "./pages/WhiteboardPage";
+import GroupsPage from "./pages/GroupsPage";
+import JoinGroupPage from "./pages/JoinGroupPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +47,9 @@ const App = () => (
               <Route path="/pdfs" element={<ProtectedRoute><PdfsPage /></ProtectedRoute>} />
               <Route path="/folders" element={<ProtectedRoute><FoldersPage /></ProtectedRoute>} />
               <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
+              <Route path="/whiteboard" element={<ProtectedRoute><WhiteboardPage /></ProtectedRoute>} />
+              <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
+              <Route path="/join/:inviteCode" element={<ProtectedRoute><JoinGroupPage /></ProtectedRoute>} />
               <Route path="/ai" element={<ProtectedRoute><AiPage /></ProtectedRoute>} />
               <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
