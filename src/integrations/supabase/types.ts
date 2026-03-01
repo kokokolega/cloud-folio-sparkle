@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           folder_id: string | null
+          group_id: string | null
           id: string
           name: string
           public_id: string
@@ -31,6 +32,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           folder_id?: string | null
+          group_id?: string | null
           id?: string
           name: string
           public_id?: string
@@ -43,6 +45,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           folder_id?: string | null
+          group_id?: string | null
           id?: string
           name?: string
           public_id?: string
@@ -59,11 +62,19 @@ export type Database = {
             referencedRelation: "folders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "files_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
         ]
       }
       folders: {
         Row: {
           created_at: string
+          group_id: string | null
           id: string
           name: string
           parent_id: string | null
@@ -71,6 +82,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          group_id?: string | null
           id?: string
           name: string
           parent_id?: string | null
@@ -78,12 +90,20 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          group_id?: string | null
           id?: string
           name?: string
           parent_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "folders_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "folders_parent_id_fkey"
             columns: ["parent_id"]
@@ -93,11 +113,106 @@ export type Database = {
           },
         ]
       }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          invite_code: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           color: string
           content: string
           created_at: string
+          group_id: string | null
           id: string
           pinned: boolean
           title: string
@@ -108,6 +223,7 @@ export type Database = {
           color?: string
           content?: string
           created_at?: string
+          group_id?: string | null
           id?: string
           pinned?: boolean
           title?: string
@@ -118,13 +234,22 @@ export type Database = {
           color?: string
           content?: string
           created_at?: string
+          group_id?: string | null
           id?: string
           pinned?: boolean
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notes_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -147,12 +272,53 @@ export type Database = {
         }
         Relationships: []
       }
+      whiteboards: {
+        Row: {
+          created_at: string
+          data: Json
+          group_id: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          group_id?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          group_id?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whiteboards_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
