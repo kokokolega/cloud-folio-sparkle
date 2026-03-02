@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { TopBar } from "./TopBar";
 import { UploadDialog } from "@/components/upload/UploadDialog";
+import { IdleWarningDialog } from "@/components/IdleWarningDialog";
+import { useIdleTimeout } from "@/hooks/useIdleTimeout";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,6 +15,18 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, searchQuery, onSearchChange }: DashboardLayoutProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
+  const { session, signOut } = useAuth();
+
+  const handleTimeout = useCallback(() => {
+    if (session) signOut();
+  }, [session, signOut]);
+
+  const { showWarning, secondsLeft, dismissWarning } = useIdleTimeout({
+    timeout: 60_000,
+    warningBefore: 10_000,
+    onTimeout: handleTimeout,
+    enabled: !!session,
+  });
 
   return (
     <SidebarProvider>
@@ -29,6 +44,7 @@ export function DashboardLayout({ children, searchQuery, onSearchChange }: Dashb
         </div>
       </div>
       <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
+      <IdleWarningDialog open={showWarning} secondsLeft={secondsLeft} onDismiss={dismissWarning} />
     </SidebarProvider>
   );
 }
