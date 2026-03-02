@@ -45,10 +45,7 @@ export default function NotesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (note: { title: string; content: string; color: string }) => {
-      const { error } = await supabase.from("notes").insert({
-        ...note,
-        user_id: user!.id,
-      });
+      const { error } = await supabase.from("notes").insert({ ...note, user_id: user!.id });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -81,12 +78,19 @@ export default function NotesPage() {
     },
   });
 
-  const filtered = notes.filter(
-    (n) =>
-      n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Silent auto-save (no toast, no close editor)
+  const handleAutoSave = (data: { title: string; content: string; color: string }) => {
+    if (!editingNote?.id) return;
+    supabase.from("notes").update(data).eq("id", editingNote.id).then(({ error }) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["notes"] });
+      }
+    });
+  };
 
+  const filtered = notes.filter(
+    (n) => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   const pinned = filtered.filter((n) => n.pinned);
   const unpinned = filtered.filter((n) => !n.pinned);
 
@@ -96,29 +100,16 @@ export default function NotesPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-xl font-semibold text-foreground">Notes</h1>
-            <p className="text-[13px] text-muted-foreground mt-0.5">
-              {notes.length} {notes.length === 1 ? "note" : "notes"}
-            </p>
+            <p className="text-[13px] text-muted-foreground mt-0.5">{notes.length} {notes.length === 1 ? "note" : "notes"}</p>
           </div>
-          <Button
-            onClick={() => setIsCreating(true)}
-            size="sm"
-            className="h-8 rounded-lg text-[13px] gap-1.5"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            New Note
+          <Button onClick={() => setIsCreating(true)} size="sm" className="h-8 rounded-lg text-[13px] gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> New Note
           </Button>
         </div>
 
-        {/* Create / Edit dialog */}
         <AnimatePresence>
           {(isCreating || editingNote) && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="mb-6"
-            >
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mb-6">
               <NoteEditor
                 note={editingNote}
                 onSave={(data) => {
@@ -128,11 +119,9 @@ export default function NotesPage() {
                     createMutation.mutate(data);
                   }
                 }}
-                onCancel={() => {
-                  setIsCreating(false);
-                  setEditingNote(null);
-                }}
+                onCancel={() => { setIsCreating(false); setEditingNote(null); }}
                 isSaving={createMutation.isPending || updateMutation.isPending}
+                onAutoSave={editingNote ? handleAutoSave : undefined}
               />
             </motion.div>
           )}
@@ -162,34 +151,19 @@ export default function NotesPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
                     {pinned.map((note) => (
-                      <NoteCard
-                        key={note.id}
-                        note={note}
-                        onEdit={() => setEditingNote(note)}
-                        onDelete={() => deleteMutation.mutate(note.id)}
-                        onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })}
-                      />
+                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
                     ))}
                   </AnimatePresence>
                 </div>
               </div>
             )}
-
             {unpinned.length > 0 && (
               <div>
-                {pinned.length > 0 && (
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 mb-2 px-1">Others</p>
-                )}
+                {pinned.length > 0 && <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 mb-2 px-1">Others</p>}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
                     {unpinned.map((note) => (
-                      <NoteCard
-                        key={note.id}
-                        note={note}
-                        onEdit={() => setEditingNote(note)}
-                        onDelete={() => deleteMutation.mutate(note.id)}
-                        onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })}
-                      />
+                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
                     ))}
                   </AnimatePresence>
                 </div>

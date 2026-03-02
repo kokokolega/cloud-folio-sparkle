@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -10,75 +10,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
-  X,
-  Bold,
-  Italic,
-  Underline as UnderlineIcon,
-  Strikethrough,
-  Highlighter,
-  List,
-  ListOrdered,
-  ListChecks,
-  Heading2,
-  Quote,
-  Code,
-  Minus,
-  Undo,
-  Redo,
+  X, Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
+  List, ListOrdered, ListChecks, Heading2, Quote, Code, Minus, Undo, Redo, Check, Loader2,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AiToolbar } from "@/components/notes/AiToolbar";
 
 interface NoteEditorProps {
-  note?: { title: string; content: string; color: string } | null;
+  note?: { id?: string; title: string; content: string; color: string } | null;
   onSave: (data: { title: string; content: string; color: string }) => void;
   onCancel: () => void;
   isSaving: boolean;
+  onAutoSave?: (data: { title: string; content: string; color: string }) => void;
 }
 
-function ToolbarButton({
-  onClick,
-  active,
-  icon: Icon,
-  label,
-}: {
-  onClick: () => void;
-  active?: boolean;
-  icon: React.ElementType;
-  label: string;
-}) {
+function ToolbarButton({ onClick, active, icon: Icon, label }: { onClick: () => void; active?: boolean; icon: React.ElementType; label: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={onClick}
-          className={`h-7 w-7 rounded-md flex items-center justify-center transition-colors ${
-            active
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
-        >
+        <button type="button" onClick={onClick} className={`h-7 w-7 rounded-md flex items-center justify-center transition-colors ${active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}>
           <Icon className="h-3.5 w-3.5" />
         </button>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="text-[11px]">
-        {label}
-      </TooltipContent>
+      <TooltipContent side="bottom" className="text-[11px]">{label}</TooltipContent>
     </Tooltip>
   );
 }
 
-export function NoteEditor({ note, onSave, onCancel, isSaving }: NoteEditorProps) {
+export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: NoteEditorProps) {
   const [title, setTitle] = useState(note?.title || "");
   const [color, setColor] = useState(note?.color || "default");
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const isExistingNote = !!note?.id;
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: { levels: [2, 3] },
-      }),
+      StarterKit.configure({ heading: { levels: [2, 3] } }),
       Placeholder.configure({ placeholder: "Write your note…" }),
       TaskList,
       TaskItem.configure({ nested: true }),
@@ -91,7 +60,36 @@ export function NoteEditor({ note, onSave, onCancel, isSaving }: NoteEditorProps
         class: "prose-editor min-h-[160px] outline-none text-[13px] leading-relaxed",
       },
     },
+    onUpdate: () => {
+      if (isExistingNote && onAutoSave) {
+        triggerAutoSave();
+      }
+    },
   });
+
+  const triggerAutoSave = useCallback(() => {
+    clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      if (!editor) return;
+      const html = editor.getHTML();
+      setAutoSaveStatus("saving");
+      onAutoSave?.({ title, content: html, color });
+      setTimeout(() => setAutoSaveStatus("saved"), 500);
+      setTimeout(() => setAutoSaveStatus("idle"), 2500);
+    }, 2000);
+  }, [editor, title, color, onAutoSave]);
+
+  // Also auto-save on title/color change for existing notes
+  useEffect(() => {
+    if (isExistingNote && onAutoSave) {
+      triggerAutoSave();
+    }
+  }, [title, color]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => clearTimeout(autoSaveTimerRef.current);
+  }, []);
 
   const colorConfig = NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
 
@@ -107,17 +105,24 @@ export function NoteEditor({ note, onSave, onCancel, isSaving }: NoteEditorProps
 
   return (
     <div className={`rounded-xl border ${colorConfig.border} ${colorConfig.bg} shadow-sm overflow-hidden`}>
-      {/* Header */}
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
         <p className="text-[13px] font-medium text-foreground">
           {note ? "Edit note" : "New note"}
         </p>
-        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={onCancel}>
-          <X className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Auto-save indicator */}
+          {isExistingNote && autoSaveStatus !== "idle" && (
+            <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+              {autoSaveStatus === "saving" && <><Loader2 className="h-3 w-3 animate-spin" /> Saving…</>}
+              {autoSaveStatus === "saved" && <><Check className="h-3 w-3 text-primary" /> Saved ✓</>}
+            </span>
+          )}
+          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={onCancel}>
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
-      {/* Title */}
       <div className="px-4">
         <Input
           placeholder="Title"
@@ -128,108 +133,32 @@ export function NoteEditor({ note, onSave, onCancel, isSaving }: NoteEditorProps
         />
       </div>
 
-      {/* Toolbar */}
       <div className="flex items-center gap-0.5 px-4 py-1.5 flex-wrap">
         <AiToolbar editor={editor} />
         <Separator orientation="vertical" className="h-4 mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          active={editor.isActive("bold")}
-          icon={Bold}
-          label="Bold"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          active={editor.isActive("italic")}
-          icon={Italic}
-          label="Italic"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          active={editor.isActive("underline")}
-          icon={UnderlineIcon}
-          label="Underline"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          active={editor.isActive("strike")}
-          icon={Strikethrough}
-          label="Strikethrough"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHighlight().run()}
-          active={editor.isActive("highlight")}
-          icon={Highlighter}
-          label="Highlight"
-        />
-
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} icon={Bold} label="Bold" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} icon={Italic} label="Italic" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} icon={UnderlineIcon} label="Underline" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} icon={Strikethrough} label="Strikethrough" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive("highlight")} icon={Highlighter} label="Highlight" />
         <Separator orientation="vertical" className="h-4 mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          active={editor.isActive("heading", { level: 2 })}
-          icon={Heading2}
-          label="Heading"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          active={editor.isActive("bulletList")}
-          icon={List}
-          label="Bullet list"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          active={editor.isActive("orderedList")}
-          icon={ListOrdered}
-          label="Numbered list"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleTaskList().run()}
-          active={editor.isActive("taskList")}
-          icon={ListChecks}
-          label="Checklist"
-        />
-
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} icon={Heading2} label="Heading" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} icon={List} label="Bullet list" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} icon={ListOrdered} label="Numbered list" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive("taskList")} icon={ListChecks} label="Checklist" />
         <Separator orientation="vertical" className="h-4 mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          active={editor.isActive("blockquote")}
-          icon={Quote}
-          label="Quote"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          active={editor.isActive("codeBlock")}
-          icon={Code}
-          label="Code block"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          icon={Minus}
-          label="Divider"
-        />
-
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} icon={Quote} label="Quote" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} icon={Code} label="Code block" />
+        <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} icon={Minus} label="Divider" />
         <Separator orientation="vertical" className="h-4 mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          icon={Undo}
-          label="Undo"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          icon={Redo}
-          label="Redo"
-        />
+        <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} label="Undo" />
+        <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} label="Redo" />
       </div>
 
-      {/* Editor content */}
       <div className="px-4 pb-2">
         <EditorContent editor={editor} />
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
         <div className="flex items-center gap-1.5">
           {NOTE_COLORS.map((c) => (
@@ -238,32 +167,19 @@ export function NoteEditor({ note, onSave, onCancel, isSaving }: NoteEditorProps
               onClick={() => setColor(c.id)}
               title={c.label}
               className={`h-5 w-5 rounded-full border-2 transition-all ${
-                c.id === "default"
-                  ? "bg-card border-border"
-                  : c.id === "yellow"
-                  ? "bg-yellow-300 dark:bg-yellow-700 border-yellow-400"
-                  : c.id === "green"
-                  ? "bg-emerald-300 dark:bg-emerald-700 border-emerald-400"
-                  : c.id === "blue"
-                  ? "bg-blue-300 dark:bg-blue-700 border-blue-400"
-                  : c.id === "pink"
-                  ? "bg-pink-300 dark:bg-pink-700 border-pink-400"
-                  : "bg-violet-300 dark:bg-violet-700 border-violet-400"
+                c.id === "default" ? "bg-card border-border"
+                : c.id === "yellow" ? "bg-yellow-300 dark:bg-yellow-700 border-yellow-400"
+                : c.id === "green" ? "bg-emerald-300 dark:bg-emerald-700 border-emerald-400"
+                : c.id === "blue" ? "bg-blue-300 dark:bg-blue-700 border-blue-400"
+                : c.id === "pink" ? "bg-pink-300 dark:bg-pink-700 border-pink-400"
+                : "bg-violet-300 dark:bg-violet-700 border-violet-400"
               } ${color === c.id ? "ring-2 ring-primary ring-offset-1 scale-110" : ""}`}
             />
           ))}
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground">
-            {editor.storage.characterCount?.characters?.() ?? ""} 
-          </span>
-          <Button
-            size="sm"
-            className="h-7 rounded-lg text-[12px] px-4"
-            onClick={handleSave}
-            disabled={isSaving || (editor.isEmpty && !title.trim())}
-          >
+          <Button size="sm" className="h-7 rounded-lg text-[12px] px-4" onClick={handleSave} disabled={isSaving || (editor.isEmpty && !title.trim())}>
             {isSaving ? "Saving…" : "Save"}
           </Button>
         </div>

@@ -18,14 +18,14 @@ import {
 import { Button } from "@/components/ui/button";
 
 const mainNav = [
-  { title: "All Files", url: "/", icon: Files },
+  { title: "Fylix AI", url: "/", icon: Sparkles },
+  { title: "All Files", url: "/files", icon: Files },
   { title: "Images", url: "/images", icon: Image },
   { title: "PDFs", url: "/pdfs", icon: FileText },
   { title: "Folders", url: "/folders", icon: FolderOpen },
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "Whiteboard", url: "/whiteboard", icon: Pencil },
   { title: "Groups", url: "/groups", icon: Users },
-  { title: "Fylix AI", url: "/ai", icon: Sparkles },
 ];
 
 const bottomNav = [
@@ -62,7 +62,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNav.map((item) => {
-                const isActive = location.pathname === item.url;
+                const isActive = location.pathname === item.url || (item.url === "/" && location.pathname === "/ai");
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
