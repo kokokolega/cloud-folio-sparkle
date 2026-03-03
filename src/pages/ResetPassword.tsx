@@ -56,6 +56,7 @@ export default function ResetPassword() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                autoComplete="new-password"
                 className="pl-10 h-12 rounded-xl bg-secondary/50 border-0"
               />
             </div>
