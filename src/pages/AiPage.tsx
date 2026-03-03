@@ -33,31 +33,45 @@ type Msg = { role: "user" | "assistant"; content: string };
 const QUICK_PROMPTS = [
   "Create a note about project planning tips",
   "Make a presentation on time management",
-  "Suggest a folder structure for a web project",
   "Write a study note about React hooks",
   "Create a meeting agenda template",
   "Make a presentation about startup ideas",
+  "Summarize my latest notes",
 ];
 
 function parseNoteMarker(content: string) {
-  const match = content.match(/<!--FYLIX_NOTE:(.*?)-->/);
-  if (!match) return null;
+  const match = content.match(/<!--OLTRID_NOTE:(.*?)-->/);
+  if (!match) {
+    // Fallback for old format
+    const oldMatch = content.match(/<!--FYLIX_NOTE:(.*?)-->/);
+    if (!oldMatch) return null;
+    try { return JSON.parse(oldMatch[1]) as { title: string }; } catch { return null; }
+  }
   try { return JSON.parse(match[1]) as { title: string }; } catch { return null; }
 }
 
 function parsePresentationMarker(content: string) {
-  const match = content.match(/<!--FYLIX_PRESENTATION:(.*?)-->/);
-  if (!match) return null;
+  const match = content.match(/<!--OLTRID_PRESENTATION:(.*?)-->/);
+  if (!match) {
+    const oldMatch = content.match(/<!--FYLIX_PRESENTATION:(.*?)-->/);
+    if (!oldMatch) return null;
+    try { return JSON.parse(oldMatch[1]) as { title: string }; } catch { return null; }
+  }
   try { return JSON.parse(match[1]) as { title: string }; } catch { return null; }
 }
 
 function stripMarkers(content: string) {
-  return content.replace(/<!--FYLIX_NOTE:.*?-->/g, "").replace(/<!--FYLIX_PRESENTATION:.*?-->/g, "").trim();
+  return content
+    .replace(/<!--OLTRID_NOTE:.*?-->/g, "")
+    .replace(/<!--OLTRID_PRESENTATION:.*?-->/g, "")
+    .replace(/<!--FYLIX_NOTE:.*?-->/g, "")
+    .replace(/<!--FYLIX_PRESENTATION:.*?-->/g, "")
+    .trim();
 }
 
 export default function AiPage() {
   const { user } = useAuth();
-  const { isGuest, guestExpired, guestMinutesLeft, startGuestSession } = useGuestMode();
+  const { isGuest, guestExpired, guestMinutesLeft } = useGuestMode();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -78,7 +92,6 @@ export default function AiPage() {
     }
   }, [messages]);
 
-  // Handle @mention detection
   const handleInputChange = (value: string) => {
     setInput(value);
     const atIndex = value.lastIndexOf("@");
@@ -102,7 +115,6 @@ export default function AiPage() {
     inputRef.current?.focus();
   };
 
-  // Save conversation to DB
   const saveConversation = useCallback(async (msgs: Msg[], convId: string | null) => {
     if (!user || msgs.length < 2) return convId;
     try {
@@ -115,7 +127,6 @@ export default function AiPage() {
         }
       }
       if (convId) {
-        // Save the last 2 messages (user + assistant)
         const last2 = msgs.slice(-2);
         for (const msg of last2) {
           await supabase.from("ai_messages").insert({
@@ -211,7 +222,6 @@ export default function AiPage() {
 
     try {
       await streamChat(newMessages);
-      // Save to DB after response completes
       if (isAuthenticated) {
         setMessages((current) => {
           saveConversation(current, activeConversationId);
@@ -260,14 +270,13 @@ export default function AiPage() {
     setActiveConversationId(null);
   };
 
-  // Guest expired state
   if (guestExpired && !user) {
     return (
       <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
         <div className="max-w-md mx-auto mt-20 text-center space-y-4">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto" />
           <h2 className="text-xl font-semibold text-foreground">Guest Session Expired</h2>
-          <p className="text-sm text-muted-foreground">Your 1-hour guest session has ended. Sign up to continue using Fylix AI with all features.</p>
+          <p className="text-sm text-muted-foreground">Your 1-hour guest session has ended. Sign up to continue using Oltrid AI with all features.</p>
           <div className="flex gap-3 justify-center">
             <Button onClick={() => navigate("/auth")} className="rounded-xl">Sign up / Login</Button>
           </div>
@@ -279,13 +288,13 @@ export default function AiPage() {
   return (
     <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
       <div className="max-w-5xl mx-auto h-[calc(100vh-120px)] flex">
-        {/* Chat history sidebar */}
         {isAuthenticated && (
           <ChatHistorySidebar
             activeId={activeConversationId}
             onSelect={loadConversation}
             onNewChat={handleNewChat}
             open={historySidebarOpen}
+            onClose={() => setHistorySidebarOpen(false)}
           />
         )}
 
@@ -307,7 +316,7 @@ export default function AiPage() {
                 <Sparkles className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground">Fylix AI</h1>
+                <h1 className="text-xl font-semibold text-foreground">Oltrid AI</h1>
                 <p className="text-[12px] text-muted-foreground">
                   {isGuest && !user
                     ? `Guest mode · ${guestMinutesLeft} min left`

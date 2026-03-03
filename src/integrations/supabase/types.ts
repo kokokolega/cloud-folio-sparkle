@@ -268,6 +268,7 @@ export type Database = {
           color: string
           content: string
           created_at: string
+          deleted_at: string | null
           group_id: string | null
           id: string
           pinned: boolean
@@ -279,6 +280,7 @@ export type Database = {
           color?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
           group_id?: string | null
           id?: string
           pinned?: boolean
@@ -290,6 +292,7 @@ export type Database = {
           color?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
           group_id?: string | null
           id?: string
           pinned?: boolean

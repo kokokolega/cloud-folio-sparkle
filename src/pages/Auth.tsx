@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, Mail, Lock, Sparkles } from "lucide-react";
-import fylixLogo from "@/assets/fylix-logo.png";
+import { OltridLogo } from "@/components/OltridLogo";
 
 export default function Auth() {
   const { session, loading } = useAuth();
@@ -76,8 +76,10 @@ export default function Auth() {
       >
         <div className="glass-card p-8 md:p-10">
           <div className="text-center mb-8">
-            <img src={fylixLogo} alt="Fylix" className="h-16 w-16 mx-auto rounded-2xl mb-4" />
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Fylix</h1>
+            <div className="mx-auto mb-4 w-fit">
+              <OltridLogo className="h-16 w-16" />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Oltrid</h1>
             <p className="text-muted-foreground mt-1.5 text-sm">
               {mode === "login" && "Welcome back"}
               {mode === "signup" && "Create your account"}
@@ -126,7 +128,7 @@ export default function Auth() {
             </div>
             <Button variant="outline" onClick={handleGuestAccess} className="w-full h-11 rounded-xl text-sm gap-2">
               <Sparkles className="h-4 w-4" />
-              Try Fylix AI as Guest (1 hour)
+              Try Oltrid AI as Guest (1 hour)
             </Button>
           </div>
 
