@@ -1,7 +1,7 @@
-import { Files, Image, FileText, FolderOpen, StickyNote, Trash2, Settings, ChevronLeft, Sparkles, Pencil, Users } from "lucide-react";
+import { Files, Image, FileText, StickyNote, Trash2, Settings, ChevronLeft, Sparkles, Pencil, Users } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import fylixLogo from "@/assets/fylix-logo.png";
+import { OltridLogo } from "@/components/OltridLogo";
 import {
   Sidebar,
   SidebarContent,
@@ -18,11 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 
 const mainNav = [
-  { title: "Fylix AI", url: "/", icon: Sparkles },
+  { title: "Oltrid AI", url: "/", icon: Sparkles },
   { title: "All Files", url: "/files", icon: Files },
   { title: "Images", url: "/images", icon: Image },
   { title: "PDFs", url: "/pdfs", icon: FileText },
-  { title: "Folders", url: "/folders", icon: FolderOpen },
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "Whiteboard", url: "/whiteboard", icon: Pencil },
   { title: "Groups", url: "/groups", icon: Users },
@@ -42,8 +41,8 @@ export function AppSidebar() {
       <SidebarHeader className="p-4 pb-2 flex flex-row items-center justify-between">
         {open && (
           <div className="flex items-center gap-2 pl-1">
-            <img src={fylixLogo} alt="Fylix" className="h-7 w-7 rounded-lg" />
-            <span className="text-base font-semibold tracking-tight text-foreground">Fylix</span>
+            <OltridLogo className="h-7 w-7" />
+            <span className="text-base font-semibold tracking-tight text-foreground">Oltrid</span>
           </div>
         )}
         <Button

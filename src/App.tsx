@@ -15,7 +15,6 @@ import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import ImagesPage from "./pages/ImagesPage";
 import PdfsPage from "./pages/PdfsPage";
-import FoldersPage from "./pages/FoldersPage";
 import TrashPage from "./pages/TrashPage";
 import SettingsPage from "./pages/SettingsPage";
 import PublicFile from "./pages/PublicFile";
@@ -49,7 +48,6 @@ const App = () => (
               <Route path="/files" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/images" element={<ProtectedRoute><ImagesPage /></ProtectedRoute>} />
               <Route path="/pdfs" element={<ProtectedRoute><PdfsPage /></ProtectedRoute>} />
-              <Route path="/folders" element={<ProtectedRoute><FoldersPage /></ProtectedRoute>} />
               <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
               <Route path="/whiteboard" element={<ProtectedRoute><WhiteboardPage /></ProtectedRoute>} />
               <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />

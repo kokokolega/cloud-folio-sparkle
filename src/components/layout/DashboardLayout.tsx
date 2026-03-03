@@ -17,6 +17,9 @@ export function DashboardLayout({ children, searchQuery, onSearchChange }: Dashb
   const [uploadOpen, setUploadOpen] = useState(false);
   const { session, signOut } = useAuth();
 
+  // Read auto-logout preference from localStorage
+  const autoLogoutEnabled = typeof window !== "undefined" ? localStorage.getItem("oltrid-auto-logout") !== "false" : true;
+
   const handleTimeout = useCallback(() => {
     if (session) signOut();
   }, [session, signOut]);
@@ -25,7 +28,7 @@ export function DashboardLayout({ children, searchQuery, onSearchChange }: Dashb
     timeout: 60_000,
     warningBefore: 10_000,
     onTimeout: handleTimeout,
-    enabled: !!session,
+    enabled: !!session && autoLogoutEnabled,
   });
 
   return (

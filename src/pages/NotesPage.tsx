@@ -35,6 +35,7 @@ export default function NotesPage() {
         .from("notes")
         .select("*")
         .eq("user_id", user!.id)
+        .is("deleted_at", null)
         .order("pinned", { ascending: false })
         .order("updated_at", { ascending: false });
       if (error) throw error;
@@ -69,16 +70,19 @@ export default function NotesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("notes").delete().eq("id", id);
+      // Soft-delete: move to trash
+      const { error } = await supabase
+        .from("notes")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Note deleted");
+      toast.success("Note moved to trash");
     },
   });
 
-  // Silent auto-save (no toast, no close editor)
   const handleAutoSave = (data: { title: string; content: string; color: string }) => {
     if (!editingNote?.id) return;
     supabase.from("notes").update(data).eq("id", editingNote.id).then(({ error }) => {
@@ -89,10 +93,10 @@ export default function NotesPage() {
   };
 
   const filtered = notes.filter(
-    (n) => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())
+    (n: any) => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const pinned = filtered.filter((n) => n.pinned);
-  const unpinned = filtered.filter((n) => !n.pinned);
+  const pinned = filtered.filter((n: any) => n.pinned);
+  const unpinned = filtered.filter((n: any) => !n.pinned);
 
   return (
     <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
@@ -150,7 +154,7 @@ export default function NotesPage() {
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 mb-2 px-1">Pinned</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
-                    {pinned.map((note) => (
+                    {pinned.map((note: any) => (
                       <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
                     ))}
                   </AnimatePresence>
@@ -162,7 +166,7 @@ export default function NotesPage() {
                 {pinned.length > 0 && <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 mb-2 px-1">Others</p>}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
-                    {unpinned.map((note) => (
+                    {unpinned.map((note: any) => (
                       <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
                     ))}
                   </AnimatePresence>

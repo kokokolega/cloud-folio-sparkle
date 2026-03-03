@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
 const BG_THEMES: { id: BgTheme; name: string; description: string; preview: string }[] = [
@@ -31,6 +31,16 @@ export default function SettingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-logout toggle
+  const [autoLogoutEnabled, setAutoLogoutEnabled] = useState(() => {
+    const stored = localStorage.getItem("oltrid-auto-logout");
+    return stored !== "false"; // Default ON
+  });
+
+  useEffect(() => {
+    localStorage.setItem("oltrid-auto-logout", autoLogoutEnabled ? "true" : "false");
+  }, [autoLogoutEnabled]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -94,6 +104,20 @@ export default function SettingsPage() {
               <Label className="text-sm font-medium">Dark Mode</Label>
             </div>
             <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+          </div>
+        </div>
+
+        {/* Auto-Logout Toggle */}
+        <div className="glass-card p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ShieldAlert className="h-4 w-4" />
+              <div>
+                <Label className="text-sm font-medium">Auto Logout (1 min inactivity)</Label>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Automatically sign out after 1 minute of no activity</p>
+              </div>
+            </div>
+            <Switch checked={autoLogoutEnabled} onCheckedChange={setAutoLogoutEnabled} />
           </div>
         </div>
 
@@ -161,7 +185,6 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          {/* Change / Remove custom image actions */}
           {customImageUrl && (
             <div className="flex gap-2 pt-1">
               <Button
