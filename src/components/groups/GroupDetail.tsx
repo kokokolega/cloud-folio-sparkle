@@ -6,7 +6,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, QrCode, Copy, StickyNote, FolderOpen, Pencil, MessageSquare, Image } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { GroupNotes } from "./GroupNotes";
@@ -121,6 +121,7 @@ export function GroupDetail({ groupId, onBack }: GroupDetailProps) {
         <DialogContent className="sm:max-w-sm text-center">
           <DialogHeader>
             <DialogTitle>Invite to {group?.name}</DialogTitle>
+            <DialogDescription>Scan QR code or use invite code to join</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
             <div className="bg-white p-4 rounded-xl">
