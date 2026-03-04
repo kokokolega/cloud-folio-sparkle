@@ -7,7 +7,8 @@ import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { NoteEditor } from "@/components/notes/NoteEditor";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface GroupNotesProps {
   groupId: string;
@@ -110,6 +111,10 @@ export function GroupNotes({ groupId, searchQuery }: GroupNotesProps) {
 
       <Dialog open={editorOpen} onOpenChange={(o) => { if (!o) { setIsCreating(false); setEditingNote(null); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+          <VisuallyHidden>
+            <DialogTitle>{editingNote ? "Edit Note" : "New Note"}</DialogTitle>
+            <DialogDescription>Note editor</DialogDescription>
+          </VisuallyHidden>
           <NoteEditor
             note={editingNote}
             onSave={(data) => {
