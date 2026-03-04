@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { TopBar } from "./TopBar";
-import { UploadDialog } from "@/components/upload/UploadDialog";
 import { IdleWarningDialog } from "@/components/IdleWarningDialog";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,13 +10,12 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  hideUpload?: boolean;
 }
 
-export function DashboardLayout({ children, searchQuery, onSearchChange }: DashboardLayoutProps) {
-  const [uploadOpen, setUploadOpen] = useState(false);
+export function DashboardLayout({ children, searchQuery, onSearchChange, hideUpload }: DashboardLayoutProps) {
   const { session, signOut } = useAuth();
 
-  // Read auto-logout preference from localStorage
   const autoLogoutEnabled = typeof window !== "undefined" ? localStorage.getItem("oltrid-auto-logout") !== "false" : true;
 
   const handleTimeout = useCallback(() => {
@@ -39,14 +37,13 @@ export function DashboardLayout({ children, searchQuery, onSearchChange }: Dashb
           <TopBar
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}
-            onUploadClick={() => setUploadOpen(true)}
+            hideUpload={hideUpload}
           />
           <main className="flex-1 p-5 md:p-8 animate-fade-in">
             {children}
           </main>
         </div>
       </div>
-      <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
       <IdleWarningDialog open={showWarning} secondsLeft={secondsLeft} onDismiss={dismissWarning} />
     </SidebarProvider>
   );

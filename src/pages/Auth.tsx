@@ -67,38 +67,100 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 overflow-hidden relative">
+      {/* Animated background blobs */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md"
+        className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl"
+        animate={{
+          x: [0, 80, -40, 0],
+          y: [0, -60, 40, 0],
+          scale: [1, 1.2, 0.9, 1],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-accent/5 blur-3xl"
+        animate={{
+          x: [0, -60, 40, 0],
+          y: [0, 80, -60, 0],
+          scale: [1, 0.9, 1.15, 1],
+        }}
+        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute top-[30%] right-[20%] w-[300px] h-[300px] rounded-full bg-secondary/10 blur-3xl"
+        animate={{
+          x: [0, 40, -30, 0],
+          y: [0, -40, 30, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md relative z-10"
       >
-        <div className="glass-card p-8 md:p-10">
+        <div className="glass-card p-8 md:p-10 backdrop-blur-xl">
+          {/* Logo animation */}
           <div className="text-center mb-8">
-            <div className="mx-auto mb-4 w-fit">
+            <motion.div
+              className="mx-auto mb-4 w-fit"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+            >
               <OltridLogo className="h-16 w-16" />
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Oltrid</h1>
-            <p className="text-muted-foreground mt-1.5 text-sm">
-              {mode === "login" && "Welcome back"}
-              {mode === "signup" && "Create your account"}
-              {mode === "forgot" && "Reset your password"}
-            </p>
+            </motion.div>
+            <motion.h1
+              className="text-2xl font-semibold tracking-tight text-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              Oltrid
+            </motion.h1>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={mode}
+                className="text-muted-foreground mt-1.5 text-sm"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.2 }}
+              >
+                {mode === "login" && "Welcome back"}
+                {mode === "signup" && "Create your account"}
+                {mode === "forgot" && "Reset your password"}
+              </motion.p>
+            </AnimatePresence>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
+            <motion.div
+              className="space-y-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
               <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className="pl-10 h-12 rounded-xl bg-secondary/50 border-0 focus-visible:ring-2 focus-visible:ring-primary" />
               </div>
-            </div>
+            </motion.div>
 
             <AnimatePresence mode="wait">
               {mode !== "forgot" && (
-                <motion.div key="password" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-2">
+                <motion.div
+                  key="password"
+                  initial={{ opacity: 0, height: 0, x: -20 }}
+                  animate={{ opacity: 1, height: "auto", x: 0 }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-2"
+                >
                   <Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -108,44 +170,66 @@ export default function Auth() {
               )}
             </AnimatePresence>
 
-            <Button type="submit" disabled={submitting} className="w-full h-12 rounded-xl text-sm font-medium bg-primary hover:bg-primary/90 glow-primary transition-all duration-300">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                <span className="flex items-center gap-2">
-                  {mode === "login" && "Sign in"}
-                  {mode === "signup" && "Create account"}
-                  {mode === "forgot" && "Send reset link"}
-                  <ArrowRight className="h-4 w-4" />
-                </span>
-              )}
-            </Button>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Button type="submit" disabled={submitting} className="w-full h-12 rounded-xl text-sm font-medium bg-primary hover:bg-primary/90 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                  <span className="flex items-center gap-2">
+                    {mode === "login" && "Sign in"}
+                    {mode === "signup" && "Create account"}
+                    {mode === "forgot" && "Send reset link"}
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
+                )}
+              </Button>
+            </motion.div>
           </form>
 
           {/* Guest Access */}
-          <div className="mt-4">
+          <motion.div
+            className="mt-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+          >
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
               <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">or</span></div>
             </div>
-            <Button variant="outline" onClick={handleGuestAccess} className="w-full h-11 rounded-xl text-sm gap-2">
+            <Button variant="outline" onClick={handleGuestAccess} className="w-full h-11 rounded-xl text-sm gap-2 hover:shadow-md transition-all duration-300">
               <Sparkles className="h-4 w-4" />
               Try Oltrid AI as Guest (1 hour)
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="mt-6 space-y-2 text-center text-sm">
-            {mode === "login" && (
-              <>
-                <button onClick={() => setMode("forgot")} className="text-muted-foreground hover:text-foreground transition-colors block w-full">Forgot password?</button>
-                <p className="text-muted-foreground">Don't have an account?{" "}<button onClick={() => setMode("signup")} className="text-primary font-medium hover:underline">Sign up</button></p>
-              </>
-            )}
-            {mode === "signup" && (
-              <p className="text-muted-foreground">Already have an account?{" "}<button onClick={() => setMode("login")} className="text-primary font-medium hover:underline">Sign in</button></p>
-            )}
-            {mode === "forgot" && (
-              <button onClick={() => setMode("login")} className="text-primary font-medium hover:underline">Back to sign in</button>
-            )}
-          </div>
+          <motion.div
+            className="mt-6 space-y-2 text-center text-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            <AnimatePresence mode="wait">
+              {mode === "login" && (
+                <motion.div key="login-links" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <button onClick={() => setMode("forgot")} className="text-muted-foreground hover:text-foreground transition-colors block w-full">Forgot password?</button>
+                  <p className="text-muted-foreground mt-2">Don't have an account?{" "}<button onClick={() => setMode("signup")} className="text-primary font-medium hover:underline">Sign up</button></p>
+                </motion.div>
+              )}
+              {mode === "signup" && (
+                <motion.div key="signup-links" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <p className="text-muted-foreground">Already have an account?{" "}<button onClick={() => setMode("login")} className="text-primary font-medium hover:underline">Sign in</button></p>
+                </motion.div>
+              )}
+              {mode === "forgot" && (
+                <motion.div key="forgot-links" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <button onClick={() => setMode("login")} className="text-primary font-medium hover:underline">Back to sign in</button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       </motion.div>
     </div>

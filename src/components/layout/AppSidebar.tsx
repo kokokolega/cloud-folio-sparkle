@@ -1,4 +1,4 @@
-import { Files, Image, FileText, StickyNote, Trash2, Settings, ChevronLeft, Sparkles, Pencil, Users } from "lucide-react";
+import { Files, StickyNote, Trash2, Settings, ChevronLeft, Sparkles, Users } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
@@ -20,10 +20,7 @@ import { Button } from "@/components/ui/button";
 const mainNav = [
   { title: "Oltrid AI", url: "/", icon: Sparkles },
   { title: "All Files", url: "/files", icon: Files },
-  { title: "Images", url: "/images", icon: Image },
-  { title: "PDFs", url: "/pdfs", icon: FileText },
   { title: "Notes", url: "/notes", icon: StickyNote },
-  { title: "Whiteboard", url: "/whiteboard", icon: Pencil },
   { title: "Groups", url: "/groups", icon: Users },
 ];
 

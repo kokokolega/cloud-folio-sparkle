@@ -13,14 +13,11 @@ import AiPage from "./pages/AiPage";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
-import ImagesPage from "./pages/ImagesPage";
-import PdfsPage from "./pages/PdfsPage";
 import TrashPage from "./pages/TrashPage";
 import SettingsPage from "./pages/SettingsPage";
 import PublicFile from "./pages/PublicFile";
 import EmbedFile from "./pages/EmbedFile";
 import NotesPage from "./pages/NotesPage";
-import WhiteboardPage from "./pages/WhiteboardPage";
 import GroupsPage from "./pages/GroupsPage";
 import JoinGroupPage from "./pages/JoinGroupPage";
 import NotFound from "./pages/NotFound";
@@ -46,10 +43,7 @@ const App = () => (
               {/* AI-first landing */}
               <Route path="/" element={<ProtectedRoute allowGuest><AiPage /></ProtectedRoute>} />
               <Route path="/files" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/images" element={<ProtectedRoute><ImagesPage /></ProtectedRoute>} />
-              <Route path="/pdfs" element={<ProtectedRoute><PdfsPage /></ProtectedRoute>} />
               <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
-              <Route path="/whiteboard" element={<ProtectedRoute><WhiteboardPage /></ProtectedRoute>} />
               <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
               <Route path="/join/:inviteCode" element={<ProtectedRoute><JoinGroupPage /></ProtectedRoute>} />
               <Route path="/ai" element={<ProtectedRoute allowGuest><AiPage /></ProtectedRoute>} />

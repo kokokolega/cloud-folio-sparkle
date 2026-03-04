@@ -1,4 +1,4 @@
-import { Search, Upload, LogOut, Moon, Sun } from "lucide-react";
+import { Search, LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -17,10 +17,11 @@ import { useTheme } from "@/hooks/useTheme";
 interface TopBarProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
-  onUploadClick: () => void;
+  onUploadClick?: () => void;
+  hideUpload?: boolean;
 }
 
-export function TopBar({ searchQuery, onSearchChange, onUploadClick }: TopBarProps) {
+export function TopBar({ searchQuery, onSearchChange, onUploadClick, hideUpload }: TopBarProps) {
   const { user, signOut } = useAuth();
   const { isGuest } = useGuestMode();
   const { theme, toggleTheme } = useTheme();
@@ -46,17 +47,6 @@ export function TopBar({ searchQuery, onSearchChange, onUploadClick }: TopBarPro
         <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-lg h-9 w-9 text-muted-foreground hover:text-foreground">
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
-
-        {!isGuest && (
-          <Button
-            onClick={onUploadClick}
-            size="sm"
-            className="rounded-lg h-9 px-4 text-[13px] font-medium"
-          >
-            <Upload className="h-3.5 w-3.5 mr-1.5" />
-            Upload
-          </Button>
-        )}
 
         {isGuest ? (
           <Button

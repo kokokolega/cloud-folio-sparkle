@@ -5,13 +5,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, QrCode, Copy, StickyNote, FolderOpen, Pencil, MessageSquare, Image } from "lucide-react";
+import { ArrowLeft, QrCode, Copy, StickyNote, FolderOpen, MessageSquare, Image } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { GroupNotes } from "./GroupNotes";
 import { GroupFiles } from "./GroupFiles";
-import { GroupWhiteboards } from "./GroupWhiteboards";
 import { GroupChat } from "./GroupChat";
 
 interface GroupDetailProps {
@@ -94,9 +93,6 @@ export function GroupDetail({ groupId, onBack }: GroupDetailProps) {
           <TabsTrigger value="files" className="gap-1.5">
             <Image className="h-3.5 w-3.5" /> Files
           </TabsTrigger>
-          <TabsTrigger value="whiteboards" className="gap-1.5">
-            <Pencil className="h-3.5 w-3.5" /> Whiteboards
-          </TabsTrigger>
           <TabsTrigger value="chat" className="gap-1.5">
             <MessageSquare className="h-3.5 w-3.5" /> Chat
           </TabsTrigger>
@@ -107,9 +103,6 @@ export function GroupDetail({ groupId, onBack }: GroupDetailProps) {
         </TabsContent>
         <TabsContent value="files">
           <GroupFiles groupId={groupId} searchQuery={searchQuery} />
-        </TabsContent>
-        <TabsContent value="whiteboards">
-          <GroupWhiteboards groupId={groupId} />
         </TabsContent>
         <TabsContent value="chat">
           <GroupChat groupId={groupId} />
