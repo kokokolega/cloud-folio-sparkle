@@ -6,16 +6,24 @@ import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Highlight from "@tiptap/extension-highlight";
 import Underline from "@tiptap/extension-underline";
+import TiptapImage from "@tiptap/extension-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
   X, Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
   List, ListOrdered, ListChecks, Heading2, Quote, Code, Minus, Undo, Redo, Check, Loader2,
+  ImagePlus, Maximize2, Minimize2, History,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AiToolbar } from "@/components/notes/AiToolbar";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface NoteEditorProps {
   note?: { id?: string; title: string; content: string; color: string } | null;
@@ -38,12 +46,25 @@ function ToolbarButton({ onClick, active, icon: Icon, label }: { onClick: () => 
   );
 }
 
+interface VersionEntry {
+  title: string;
+  content: string;
+  color: string;
+  timestamp: string;
+}
+
 export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: NoteEditorProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState(note?.title || "");
   const [color, setColor] = useState(note?.color || "default");
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const isExistingNote = !!note?.id;
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [versions, setVersions] = useState<VersionEntry[]>([]);
+  const [showVersions, setShowVersions] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -53,6 +74,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
       TaskItem.configure({ nested: true }),
       Highlight,
       Underline,
+      TiptapImage.configure({ inline: false, allowBase64: true }),
     ],
     content: note?.content || "",
     editorProps: {
@@ -67,29 +89,78 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
     },
   });
 
+  // Track versions on auto-save
+  const addVersion = useCallback(() => {
+    if (!editor || !isExistingNote) return;
+    const html = editor.getHTML();
+    setVersions(prev => {
+      const entry: VersionEntry = { title, content: html, color, timestamp: new Date().toISOString() };
+      const updated = [entry, ...prev].slice(0, 20); // keep last 20 versions
+      return updated;
+    });
+  }, [editor, title, color, isExistingNote]);
+
   const triggerAutoSave = useCallback(() => {
     clearTimeout(autoSaveTimerRef.current);
     autoSaveTimerRef.current = setTimeout(() => {
       if (!editor) return;
+      addVersion();
       const html = editor.getHTML();
       setAutoSaveStatus("saving");
       onAutoSave?.({ title, content: html, color });
       setTimeout(() => setAutoSaveStatus("saved"), 500);
       setTimeout(() => setAutoSaveStatus("idle"), 2500);
     }, 2000);
-  }, [editor, title, color, onAutoSave]);
+  }, [editor, title, color, onAutoSave, addVersion]);
 
-  // Also auto-save on title/color change for existing notes
   useEffect(() => {
     if (isExistingNote && onAutoSave) {
       triggerAutoSave();
     }
   }, [title, color]);
 
-  // Cleanup
   useEffect(() => {
     return () => clearTimeout(autoSaveTimerRef.current);
   }, []);
+
+  const restoreVersion = (v: VersionEntry) => {
+    if (!editor) return;
+    setTitle(v.title);
+    setColor(v.color);
+    editor.commands.setContent(v.content);
+    setShowVersions(false);
+    toast.success("Version restored");
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/note-img-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("user-files").upload(path, file);
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("user-files").getPublicUrl(path);
+      editor.chain().focus().setImage({ src: urlData.publicUrl }).run();
+      toast.success("Image added");
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  };
 
   const colorConfig = NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
 
@@ -103,20 +174,23 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
 
   if (!editor) return null;
 
-  return (
-    <div className={`rounded-xl border ${colorConfig.border} ${colorConfig.bg} shadow-sm overflow-hidden`}>
+  const editorUI = (
+    <div className={`rounded-xl border ${colorConfig.border} ${colorConfig.bg} shadow-sm overflow-hidden ${isFullscreen ? "h-full flex flex-col" : ""}`}>
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
         <p className="text-[13px] font-medium text-foreground">
           {note ? "Edit note" : "New note"}
         </p>
         <div className="flex items-center gap-2">
-          {/* Auto-save indicator */}
           {isExistingNote && autoSaveStatus !== "idle" && (
             <span className="text-[11px] text-muted-foreground flex items-center gap-1">
               {autoSaveStatus === "saving" && <><Loader2 className="h-3 w-3 animate-spin" /> Saving…</>}
               {autoSaveStatus === "saved" && <><Check className="h-3 w-3 text-primary" /> Saved ✓</>}
             </span>
           )}
+          {isExistingNote && versions.length > 0 && (
+            <ToolbarButton onClick={() => setShowVersions(true)} icon={History} label="Version History" />
+          )}
+          <ToolbarButton onClick={() => setIsFullscreen(!isFullscreen)} icon={isFullscreen ? Minimize2 : Maximize2} label={isFullscreen ? "Exit fullscreen" : "Fullscreen"} />
           <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={onCancel}>
             <X className="h-3.5 w-3.5" />
           </Button>
@@ -151,11 +225,26 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         <ToolbarButton onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} icon={Code} label="Code block" />
         <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} icon={Minus} label="Divider" />
         <Separator orientation="vertical" className="h-4 mx-1" />
+        <ToolbarButton
+          onClick={() => imageInputRef.current?.click()}
+          icon={uploadingImage ? Loader2 : ImagePlus}
+          label="Add image"
+          active={uploadingImage}
+        />
+        <Separator orientation="vertical" className="h-4 mx-1" />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} label="Undo" />
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} label="Redo" />
       </div>
 
-      <div className="px-4 pb-2">
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
+
+      <div className={`px-4 pb-2 ${isFullscreen ? "flex-1 overflow-y-auto" : ""}`}>
         <EditorContent editor={editor} />
       </div>
 
@@ -184,6 +273,51 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
           </Button>
         </div>
       </div>
+
+      {/* Version History Dialog */}
+      <Dialog open={showVersions} onOpenChange={setShowVersions}>
+        <DialogContent className="sm:max-w-md max-h-[70vh]">
+          <VisuallyHidden>
+            <DialogTitle>Version History</DialogTitle>
+            <DialogDescription>Previous versions of this note</DialogDescription>
+          </VisuallyHidden>
+          <div className="space-y-1 mb-3">
+            <h3 className="text-sm font-semibold text-foreground">Version History</h3>
+            <p className="text-[11px] text-muted-foreground">Click a version to restore it</p>
+          </div>
+          <ScrollArea className="max-h-[50vh]">
+            <div className="space-y-2 pr-2">
+              {versions.map((v, i) => (
+                <button
+                  key={i}
+                  onClick={() => restoreVersion(v)}
+                  className="w-full text-left p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] font-medium text-foreground truncate">{v.title || "Untitled"}</span>
+                    <span className="text-[10px] text-muted-foreground ml-2 shrink-0">
+                      {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
+                    {v.content.replace(/<[^>]*>/g, "").slice(0, 100)}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background p-4 md:p-8">
+        {editorUI}
+      </div>
+    );
+  }
+
+  return editorUI;
 }
