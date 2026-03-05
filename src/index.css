@@ -6,83 +6,83 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 220 12% 18%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 12% 18%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 12% 18%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 215 60% 50%;
+    --primary: 211 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 12% 30%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 220 14% 95%;
-    --muted-foreground: 220 8% 52%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 220 12% 18%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 0 0% 10%;
 
-    --destructive: 0 65% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 10% 92%;
-    --input: 220 10% 92%;
-    --ring: 215 60% 50%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 211 100% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 97%;
-    --sidebar-foreground: 220 8% 40%;
-    --sidebar-primary: 215 60% 50%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 4% 46%;
+    --sidebar-primary: 211 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 220 12% 18%;
-    --sidebar-border: 220 10% 93%;
-    --sidebar-ring: 215 60% 50%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 211 100% 50%;
   }
 
   .dark {
-    --background: 225 10% 8%;
-    --foreground: 220 10% 90%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
 
-    --card: 225 10% 11%;
-    --card-foreground: 220 10% 90%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 225 10% 11%;
-    --popover-foreground: 220 10% 90%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 215 70% 58%;
+    --primary: 211 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 225 8% 15%;
-    --secondary-foreground: 220 10% 85%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 225 8% 14%;
-    --muted-foreground: 220 8% 55%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 225 8% 15%;
-    --accent-foreground: 220 10% 90%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 225 8% 16%;
-    --input: 225 8% 16%;
-    --ring: 215 70% 58%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 211 100% 50%;
 
-    --sidebar-background: 225 10% 9%;
-    --sidebar-foreground: 220 8% 60%;
-    --sidebar-primary: 215 70% 58%;
+    --sidebar-background: 0 0% 2%;
+    --sidebar-foreground: 240 5% 65%;
+    --sidebar-primary: 211 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 8% 13%;
-    --sidebar-accent-foreground: 220 10% 90%;
-    --sidebar-border: 225 8% 14%;
-    --sidebar-ring: 215 70% 58%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 211 100% 50%;
   }
 }
 
@@ -128,6 +128,7 @@
   color: hsl(var(--foreground));
 }
 
+/* ... keep existing code (all prose-editor styles from p through taskList) ... */
 .prose-editor p {
   margin: 0.25em 0;
 }
@@ -256,6 +257,20 @@
 .prose-editor ul[data-type="taskList"] li[data-checked="true"] > div {
   text-decoration: line-through;
   opacity: 0.5;
+}
+
+/* Image resize handle in notes */
+.prose-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: outline 0.15s ease;
+}
+
+.prose-editor img.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
 }
 
 /* Animated background keyframes */

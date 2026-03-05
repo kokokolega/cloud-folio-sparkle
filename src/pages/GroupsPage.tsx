@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Users, Loader2, LogIn, Trash2 } from "lucide-react";
+import { Plus, Users, Loader2, LogIn, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { GroupDetail } from "@/components/groups/GroupDetail";
@@ -51,7 +51,6 @@ export default function GroupsPage() {
         .select()
         .single();
       if (error) throw error;
-      // Add creator as member with 'admin' role
       await supabase.from("group_members").insert({
         group_id: data.id,
         user_id: user!.id,
@@ -118,15 +117,26 @@ export default function GroupsPage() {
   }
 
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-foreground">Groups</h2>
-        <div className="flex gap-2">
+    <DashboardLayout>
+      <div className="flex items-center justify-between mb-6 gap-3">
+        <h2 className="text-xl font-semibold text-foreground shrink-0">Groups</h2>
+        <div className="flex items-center gap-2 flex-1 max-w-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search groups…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 rounded-lg bg-muted/60 border-0 text-sm placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 shrink-0">
           <Button variant="outline" onClick={() => setJoinOpen(true)} className="rounded-xl gap-2">
-            <LogIn className="h-4 w-4" /> Join Group
+            <LogIn className="h-4 w-4" /> Join
           </Button>
           <Button onClick={() => setCreateOpen(true)} className="rounded-xl gap-2">
-            <Plus className="h-4 w-4" /> New Group
+            <Plus className="h-4 w-4" /> New
           </Button>
         </div>
       </div>
@@ -141,12 +151,8 @@ export default function GroupsPage() {
           <p className="text-muted-foreground text-sm">No groups yet</p>
           <p className="text-muted-foreground/70 text-xs mt-1">Create a group or join with an invite code</p>
           <div className="flex gap-2 justify-center mt-4">
-            <Button variant="outline" className="rounded-xl" onClick={() => setJoinOpen(true)}>
-              Join Group
-            </Button>
-            <Button className="rounded-xl" onClick={() => setCreateOpen(true)}>
-              Create Group
-            </Button>
+            <Button variant="outline" className="rounded-xl" onClick={() => setJoinOpen(true)}>Join Group</Button>
+            <Button className="rounded-xl" onClick={() => setCreateOpen(true)}>Create Group</Button>
           </div>
         </div>
       ) : (
@@ -173,10 +179,7 @@ export default function GroupsPage() {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteMutation.mutate(group.id);
-                      }}
+                      onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(group.id); }}
                     >
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>
@@ -196,7 +199,6 @@ export default function GroupsPage() {
         </div>
       )}
 
-      {/* Create Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -208,11 +210,7 @@ export default function GroupsPage() {
             <Input placeholder="Description (optional)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
           </div>
           <DialogFooter>
-            <Button
-              onClick={() => createMutation.mutate({ name: newName.trim(), description: newDesc.trim() })}
-              disabled={!newName.trim() || createMutation.isPending}
-              className="rounded-xl"
-            >
+            <Button onClick={() => createMutation.mutate({ name: newName.trim(), description: newDesc.trim() })} disabled={!newName.trim() || createMutation.isPending} className="rounded-xl">
               {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Create
             </Button>
@@ -220,25 +218,15 @@ export default function GroupsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Join Dialog */}
       <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Join Group</DialogTitle>
             <DialogDescription>Enter the invite code or scan a QR code</DialogDescription>
           </DialogHeader>
-          <Input
-            placeholder="Paste invite code here"
-            value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && inviteCode.trim() && joinMutation.mutate(inviteCode)}
-          />
+          <Input placeholder="Paste invite code here" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && inviteCode.trim() && joinMutation.mutate(inviteCode)} />
           <DialogFooter>
-            <Button
-              onClick={() => joinMutation.mutate(inviteCode)}
-              disabled={!inviteCode.trim() || joinMutation.isPending}
-              className="rounded-xl"
-            >
+            <Button onClick={() => joinMutation.mutate(inviteCode)} disabled={!inviteCode.trim() || joinMutation.isPending} className="rounded-xl">
               {joinMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Join
             </Button>

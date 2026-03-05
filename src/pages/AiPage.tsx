@@ -7,17 +7,8 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Send,
-  Loader2,
-  Sparkles,
-  StickyNote,
-  FileDown,
-  User,
-  Bot,
-  Trash2,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Clock,
+  Send, Loader2, Sparkles, StickyNote, FileDown, User, Bot, Trash2,
+  PanelLeftClose, PanelLeftOpen, Clock,
 } from "lucide-react";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
@@ -42,7 +33,6 @@ const QUICK_PROMPTS = [
 function parseNoteMarker(content: string) {
   const match = content.match(/<!--OLTRID_NOTE:(.*?)-->/);
   if (!match) {
-    // Fallback for old format
     const oldMatch = content.match(/<!--FYLIX_NOTE:(.*?)-->/);
     if (!oldMatch) return null;
     try { return JSON.parse(oldMatch[1]) as { title: string }; } catch { return null; }
@@ -76,7 +66,6 @@ export default function AiPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -272,7 +261,7 @@ export default function AiPage() {
 
   if (guestExpired && !user) {
     return (
-      <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+      <DashboardLayout>
         <div className="max-w-md mx-auto mt-20 text-center space-y-4">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto" />
           <h2 className="text-xl font-semibold text-foreground">Guest Session Expired</h2>
@@ -286,8 +275,8 @@ export default function AiPage() {
   }
 
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
-      <div className="max-w-5xl mx-auto h-[calc(100vh-120px)] flex">
+    <DashboardLayout>
+      <div className="h-[calc(100vh-120px)] flex">
         {isAuthenticated && (
           <ChatHistorySidebar
             activeId={activeConversationId}
@@ -317,11 +306,11 @@ export default function AiPage() {
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-foreground">Oltrid AI</h1>
-                <p className="text-[12px] text-muted-foreground">
-                  {isGuest && !user
-                    ? `Guest mode · ${guestMinutesLeft} min left`
-                    : "Create notes, presentations, organize files — just ask"}
-                </p>
+                {isGuest && !user && (
+                  <p className="text-[12px] text-muted-foreground">
+                    Guest mode · {guestMinutesLeft} min left
+                  </p>
+                )}
               </div>
             </div>
             {messages.length > 0 && (
@@ -341,7 +330,7 @@ export default function AiPage() {
                 </div>
                 <h2 className="text-lg font-semibold text-foreground mb-1">What can I help you with?</h2>
                 <p className="text-[13px] text-muted-foreground mb-6 text-center max-w-md">
-                  I can create notes, generate presentations, organize your files, and much more. Type @ to reference a note.
+                  I can create notes, generate presentations, and much more. Type @ to reference a note.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
                   {QUICK_PROMPTS.map((p) => (

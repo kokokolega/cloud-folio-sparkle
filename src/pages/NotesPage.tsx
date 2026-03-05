@@ -6,7 +6,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { Button } from "@/components/ui/button";
-import { Plus, StickyNote } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, StickyNote, Search } from "lucide-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -70,7 +71,6 @@ export default function NotesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Soft-delete: move to trash
       const { error } = await supabase
         .from("notes")
         .update({ deleted_at: new Date().toISOString() })
@@ -99,14 +99,22 @@ export default function NotesPage() {
   const unpinned = filtered.filter((n: any) => !n.pinned);
 
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+    <DashboardLayout>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">Notes</h1>
-            <p className="text-[13px] text-muted-foreground mt-0.5">{notes.length} {notes.length === 1 ? "note" : "notes"}</p>
+        <div className="flex items-center justify-between mb-6 gap-3">
+          <h1 className="text-xl font-semibold text-foreground shrink-0">Notes</h1>
+          <div className="flex items-center gap-2 flex-1 max-w-sm">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search notes…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 rounded-lg bg-muted/60 border-0 text-sm placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
           </div>
-          <Button onClick={() => setIsCreating(true)} size="sm" className="h-8 rounded-lg text-[13px] gap-1.5">
+          <Button onClick={() => setIsCreating(true)} size="sm" className="h-8 rounded-lg text-[13px] gap-1.5 shrink-0">
             <Plus className="h-3.5 w-3.5" /> New Note
           </Button>
         </div>
