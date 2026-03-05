@@ -6,7 +6,7 @@ import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Highlight from "@tiptap/extension-highlight";
 import Underline from "@tiptap/extension-underline";
-import TiptapImage from "@tiptap/extension-image";
+import ImageResize from 'tiptap-extension-resize-image';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NOTE_COLORS } from "@/pages/NotesPage";
@@ -74,7 +74,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
       TaskItem.configure({ nested: true }),
       Highlight,
       Underline,
-      TiptapImage.configure({ inline: false, allowBase64: true }),
+      ImageResize,
     ],
     content: note?.content || "",
     editorProps: {
@@ -95,7 +95,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
     const html = editor.getHTML();
     setVersions(prev => {
       const entry: VersionEntry = { title, content: html, color, timestamp: new Date().toISOString() };
-      const updated = [entry, ...prev].slice(0, 20); // keep last 20 versions
+      const updated = [entry, ...prev].slice(0, 50); // keep last 50 versions (up to ~10 days)
       return updated;
     });
   }, [editor, title, color, isExistingNote]);
@@ -152,7 +152,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
       const { error } = await supabase.storage.from("user-files").upload(path, file);
       if (error) throw error;
       const { data: urlData } = supabase.storage.from("user-files").getPublicUrl(path);
-      editor.chain().focus().setImage({ src: urlData.publicUrl }).run();
+      editor.chain().focus().insertContent(`<img src="${urlData.publicUrl}" />`).run();
       toast.success("Image added");
     } catch (err: any) {
       toast.error(err.message || "Upload failed");

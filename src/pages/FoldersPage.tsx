@@ -82,7 +82,7 @@ export default function FoldersPage() {
   const activeFolder = folders.find((f) => f.id === activeFolderId);
 
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+    <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           {activeFolderId && (

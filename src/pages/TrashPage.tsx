@@ -7,14 +7,13 @@ import { FileGrid } from "@/components/files/FileGrid";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StickyNote, Files, RotateCcw, Trash2 } from "lucide-react";
+import { StickyNote, Files, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
 
 export default function TrashPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: trashedNotes = [], isLoading: notesLoading } = useQuery({
     queryKey: ["trashed-notes", user?.id],
@@ -33,10 +32,7 @@ export default function TrashPage() {
 
   const restoreNoteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("notes")
-        .update({ deleted_at: null })
-        .eq("id", id);
+      const { error } = await supabase.from("notes").update({ deleted_at: null }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -57,12 +53,8 @@ export default function TrashPage() {
     },
   });
 
-  const filteredNotes = trashedNotes.filter(
-    (n: any) => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+    <DashboardLayout>
       <h2 className="text-xl font-semibold text-foreground mb-6">Trash</h2>
 
       <Tabs defaultValue="files" className="w-full">
@@ -76,7 +68,7 @@ export default function TrashPage() {
         </TabsList>
 
         <TabsContent value="files">
-          <FileGrid searchQuery={searchQuery} showDeleted />
+          <FileGrid searchQuery="" showDeleted />
         </TabsContent>
 
         <TabsContent value="notes">
@@ -89,7 +81,7 @@ export default function TrashPage() {
                 </div>
               ))}
             </div>
-          ) : filteredNotes.length === 0 ? (
+          ) : trashedNotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
               <StickyNote className="h-12 w-12 mb-4 opacity-20" />
               <p className="text-base font-medium">No deleted notes</p>
@@ -98,21 +90,11 @@ export default function TrashPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <AnimatePresence>
-                {filteredNotes.map((note: any) => (
+                {trashedNotes.map((note: any) => (
                   <div key={note.id} className="relative group">
-                    <NoteCard
-                      note={note}
-                      onEdit={() => {}}
-                      onDelete={() => permanentDeleteNoteMutation.mutate(note.id)}
-                      onTogglePin={() => {}}
-                    />
+                    <NoteCard note={note} onEdit={() => {}} onDelete={() => permanentDeleteNoteMutation.mutate(note.id)} onTogglePin={() => {}} />
                     <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-7 text-[11px] gap-1 rounded-lg"
-                        onClick={() => restoreNoteMutation.mutate(note.id)}
-                      >
+                      <Button size="sm" variant="secondary" className="h-7 text-[11px] gap-1 rounded-lg" onClick={() => restoreNoteMutation.mutate(note.id)}>
                         <RotateCcw className="h-3 w-3" /> Restore
                       </Button>
                     </div>

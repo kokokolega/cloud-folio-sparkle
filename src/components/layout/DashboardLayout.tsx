@@ -8,12 +8,9 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  searchQuery: string;
-  onSearchChange: (q: string) => void;
-  hideUpload?: boolean;
 }
 
-export function DashboardLayout({ children, searchQuery, onSearchChange, hideUpload }: DashboardLayoutProps) {
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { session, signOut } = useAuth();
 
   const autoLogoutEnabled = typeof window !== "undefined" ? localStorage.getItem("oltrid-auto-logout") !== "false" : true;
@@ -34,11 +31,7 @@ export function DashboardLayout({ children, searchQuery, onSearchChange, hideUpl
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <TopBar
-            searchQuery={searchQuery}
-            onSearchChange={onSearchChange}
-            hideUpload={hideUpload}
-          />
+          <TopBar />
           <main className="flex-1 p-5 md:p-8 animate-fade-in">
             {children}
           </main>

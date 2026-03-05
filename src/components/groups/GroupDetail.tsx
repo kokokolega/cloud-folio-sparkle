@@ -58,7 +58,7 @@ export function GroupDetail({ groupId, onBack }: GroupDetailProps) {
   };
 
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+    <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8 rounded-lg">

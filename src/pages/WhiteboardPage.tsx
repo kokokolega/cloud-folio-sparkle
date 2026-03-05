@@ -85,7 +85,7 @@ export default function WhiteboardPage() {
   }
 
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+    <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-foreground">Whiteboards</h2>
         <Button onClick={() => setCreateOpen(true)} className="rounded-xl gap-2">

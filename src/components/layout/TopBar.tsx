@@ -1,6 +1,5 @@
-import { Search, LogOut, Moon, Sun } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -14,14 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTheme } from "@/hooks/useTheme";
 
-interface TopBarProps {
-  searchQuery: string;
-  onSearchChange: (q: string) => void;
-  onUploadClick?: () => void;
-  hideUpload?: boolean;
-}
-
-export function TopBar({ searchQuery, onSearchChange, onUploadClick, hideUpload }: TopBarProps) {
+export function TopBar() {
   const { user, signOut } = useAuth();
   const { isGuest } = useGuestMode();
   const { theme, toggleTheme } = useTheme();
@@ -33,15 +25,7 @@ export function TopBar({ searchQuery, onSearchChange, onUploadClick, hideUpload 
     <header className="flex items-center gap-3 px-5 md:px-6 h-14 border-b border-border/40 bg-background/90 backdrop-blur-md sticky top-0 z-20">
       <SidebarTrigger className="md:hidden" />
 
-      <div className="flex-1 max-w-sm relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          placeholder="Search…"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 h-9 rounded-lg bg-muted/60 border-0 text-sm placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-ring"
-        />
-      </div>
+      <div className="flex-1" />
 
       <div className="flex items-center gap-1.5 ml-auto">
         <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-lg h-9 w-9 text-muted-foreground hover:text-foreground">

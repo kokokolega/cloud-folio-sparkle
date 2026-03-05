@@ -28,14 +28,12 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { bgTheme, setBgTheme, customImageUrl, setCustomImageUrl } = useBackgroundTheme();
-  const [searchQuery, setSearchQuery] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-logout toggle
   const [autoLogoutEnabled, setAutoLogoutEnabled] = useState(() => {
     const stored = localStorage.getItem("oltrid-auto-logout");
-    return stored !== "false"; // Default ON
+    return stored !== "false";
   });
 
   useEffect(() => {
@@ -45,31 +43,15 @@ export default function SettingsPage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
-
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
       const path = `${user.id}/bg-${Date.now()}.${ext}`;
-
-      const { error } = await supabase.storage
-        .from("background-images")
-        .upload(path, file, { upsert: true });
-
+      const { error } = await supabase.storage.from("background-images").upload(path, file, { upsert: true });
       if (error) throw error;
-
-      const { data: urlData } = supabase.storage
-        .from("background-images")
-        .getPublicUrl(path);
-
+      const { data: urlData } = supabase.storage.from("background-images").getPublicUrl(path);
       setCustomImageUrl(urlData.publicUrl);
       setBgTheme("custom-image");
       toast.success("Background image set!");
@@ -88,7 +70,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <DashboardLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+    <DashboardLayout>
       <h2 className="text-xl font-semibold text-foreground mb-6">Settings</h2>
 
       <div className="max-w-lg space-y-6">
@@ -107,7 +89,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Auto-Logout Toggle */}
         <div className="glass-card p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -133,9 +114,7 @@ export default function SettingsPage() {
                 key={t.id}
                 onClick={() => setBgTheme(t.id)}
                 className={`relative rounded-xl border-2 p-3 text-left transition-all hover:scale-[1.02] ${
-                  bgTheme === t.id
-                    ? "border-primary shadow-md shadow-primary/10"
-                    : "border-border hover:border-muted-foreground/30"
+                  bgTheme === t.id ? "border-primary shadow-md shadow-primary/10" : "border-border hover:border-muted-foreground/30"
                 }`}
               >
                 <div className={`h-12 rounded-lg mb-2 ${t.preview}`} />
@@ -149,34 +128,17 @@ export default function SettingsPage() {
               </button>
             ))}
 
-            {/* Custom Image Theme Card */}
             <button
-              onClick={() => {
-                if (customImageUrl) {
-                  setBgTheme("custom-image");
-                } else {
-                  fileInputRef.current?.click();
-                }
-              }}
+              onClick={() => { if (customImageUrl) setBgTheme("custom-image"); else fileInputRef.current?.click(); }}
               className={`relative rounded-xl border-2 p-3 text-left transition-all hover:scale-[1.02] ${
-                bgTheme === "custom-image"
-                  ? "border-primary shadow-md shadow-primary/10"
-                  : "border-border hover:border-muted-foreground/30"
+                bgTheme === "custom-image" ? "border-primary shadow-md shadow-primary/10" : "border-border hover:border-muted-foreground/30"
               }`}
             >
               <div className="h-12 rounded-lg mb-2 overflow-hidden flex items-center justify-center bg-muted/30">
-                {uploading ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                ) : customImageUrl ? (
-                  <img src={customImageUrl} alt="Custom bg" className="w-full h-full object-cover rounded-lg" />
-                ) : (
-                  <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                )}
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : customImageUrl ? <img src={customImageUrl} alt="Custom bg" className="w-full h-full object-cover rounded-lg" /> : <ImagePlus className="h-5 w-5 text-muted-foreground" />}
               </div>
               <p className="text-xs font-medium text-foreground">Your Image</p>
-              <p className="text-[10px] text-muted-foreground">
-                {customImageUrl ? "Custom photo" : "Upload image"}
-              </p>
+              <p className="text-[10px] text-muted-foreground">{customImageUrl ? "Custom photo" : "Upload image"}</p>
               {bgTheme === "custom-image" && (
                 <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
                   <Check className="h-3 w-3 text-primary-foreground" />
@@ -187,44 +149,21 @@ export default function SettingsPage() {
 
           {customImageUrl && (
             <div className="flex gap-2 pt-1">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs rounded-lg"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
+              <Button size="sm" variant="outline" className="text-xs rounded-lg" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
                 {uploading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ImagePlus className="h-3 w-3 mr-1" />}
                 Change Image
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-xs rounded-lg text-destructive hover:text-destructive"
-                onClick={removeCustomImage}
-              >
-                <Trash2 className="h-3 w-3 mr-1" />
-                Remove
+              <Button size="sm" variant="ghost" className="text-xs rounded-lg text-destructive hover:text-destructive" onClick={removeCustomImage}>
+                <Trash2 className="h-3 w-3 mr-1" /> Remove
               </Button>
             </div>
           )}
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
         </div>
 
-        <Button
-          variant="destructive"
-          onClick={() => signOut()}
-          className="rounded-xl"
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign out
+        <Button variant="destructive" onClick={() => signOut()} className="rounded-xl">
+          <LogOut className="h-4 w-4 mr-2" /> Sign out
         </Button>
       </div>
     </DashboardLayout>
