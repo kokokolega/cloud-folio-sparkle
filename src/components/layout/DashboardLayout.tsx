@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { TopBar } from "./TopBar";
 import { IdleWarningDialog } from "@/components/IdleWarningDialog";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,7 +30,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <TopBar />
           <main className="flex-1 p-5 md:p-8 animate-fade-in">
             {children}
           </main>

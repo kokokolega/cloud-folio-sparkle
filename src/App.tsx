@@ -20,6 +20,7 @@ import EmbedFile from "./pages/EmbedFile";
 import NotesPage from "./pages/NotesPage";
 import GroupsPage from "./pages/GroupsPage";
 import JoinGroupPage from "./pages/JoinGroupPage";
+import CodrixPage from "./pages/CodrixPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
               <Route path="/join/:inviteCode" element={<ProtectedRoute><JoinGroupPage /></ProtectedRoute>} />
               <Route path="/ai" element={<ProtectedRoute allowGuest><AiPage /></ProtectedRoute>} />
+              <Route path="/codrix" element={<ProtectedRoute allowGuest><CodrixPage /></ProtectedRoute>} />
               <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />

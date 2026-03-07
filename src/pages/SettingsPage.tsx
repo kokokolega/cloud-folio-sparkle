@@ -79,6 +79,7 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground">{user?.email}</p>
         </div>
 
+        {/* Dark Mode Toggle - moved from header */}
         <div className="glass-card p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
