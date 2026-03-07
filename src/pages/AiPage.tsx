@@ -8,26 +8,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Send, Loader2, Sparkles, StickyNote, FileDown, User, Bot, Trash2,
-  PanelLeftClose, PanelLeftOpen, Clock,
+  PanelLeftClose, PanelLeftOpen, Clock, Globe, Paperclip, Download,
+  GitBranch, LayoutDashboard, X,
 } from "lucide-react";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
 import { NoteMentionDropdown } from "@/components/ai/NoteMentionDropdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; attachments?: FileAttachment[] };
+
+interface FileAttachment {
+  name: string;
+  type: string;
+  content: string; // base64 or text content
+}
 
 const QUICK_PROMPTS = [
   "Create a note about project planning tips",
   "Make a presentation on time management",
-  "Write a study note about React hooks",
-  "Create a meeting agenda template",
-  "Make a presentation about startup ideas",
-  "Summarize my latest notes",
+  "Draw a flowchart for user onboarding",
+  "Create a mind map about web development",
+  "Search the web for latest AI trends",
+  "Generate a diagram of a REST API architecture",
 ];
 
 function parseNoteMarker(content: string) {
@@ -59,6 +67,23 @@ function stripMarkers(content: string) {
     .trim();
 }
 
+function extractMermaidBlocks(content: string): { before: string; mermaid: string; after: string }[] {
+  const regex = /```mermaid\s*\n([\s\S]*?)```/g;
+  const parts: { before: string; mermaid: string; after: string }[] = [];
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = regex.exec(content)) !== null) {
+    const before = content.slice(lastIndex, match.index);
+    parts.push({ before, mermaid: match[1].trim(), after: "" });
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (parts.length === 0) return [];
+  parts[parts.length - 1].after = content.slice(lastIndex);
+  return parts;
+}
+
 export default function AiPage() {
   const { user } = useAuth();
   const { isGuest, guestExpired, guestMinutesLeft } = useGuestMode();
@@ -70,8 +95,11 @@ export default function AiPage() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [mentionQuery, setMentionQuery] = useState("");
   const [showMentions, setShowMentions] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isAuthenticated = !!user;
 
@@ -102,6 +130,46 @@ export default function AiPage() {
     setInput(before + noteContext);
     setShowMentions(false);
     inputRef.current?.focus();
+  };
+
+  const handleFileAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    const newAttachments: FileAttachment[] = [];
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 10MB)`);
+        continue;
+      }
+      
+      try {
+        const content = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          if (file.type.startsWith("text/") || file.name.match(/\.(txt|md|json|csv|xml|html|css|js|ts|jsx|tsx|py|java|c|cpp|h|yml|yaml)$/i)) {
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsText(file);
+          } else {
+            reader.onload = () => {
+              const base64 = (reader.result as string).split(",")[1];
+              resolve(base64);
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+        
+        newAttachments.push({ name: file.name, type: file.type, content });
+      } catch {
+        toast.error(`Failed to read ${file.name}`);
+      }
+    }
+    
+    setAttachedFiles(prev => [...prev, ...newAttachments]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const saveConversation = useCallback(async (msgs: Msg[], convId: string | null) => {
@@ -150,7 +218,10 @@ export default function AiPage() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${SUPABASE_KEY}`,
       },
-      body: JSON.stringify({ messages: allMessages }),
+      body: JSON.stringify({ 
+        messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+        webSearch: webSearchEnabled,
+      }),
     });
 
     if (!resp.ok) {
@@ -196,16 +267,33 @@ export default function AiPage() {
       }
     }
     return full;
-  }, []);
+  }, [webSearchEnabled]);
 
   const send = async (text?: string) => {
     const msg = text || input.trim();
     if (!msg || isLoading) return;
 
-    const userMsg: Msg = { role: "user", content: msg };
+    // Build content with file attachments context
+    let fullContent = msg;
+    if (attachedFiles.length > 0) {
+      const fileContext = attachedFiles.map(f => {
+        if (f.type.startsWith("text/") || f.name.match(/\.(txt|md|json|csv|xml|html|css|js|ts)$/i)) {
+          return `[Attached file: ${f.name}]\n${f.content.slice(0, 5000)}`;
+        }
+        return `[Attached file: ${f.name} (${f.type})]`;
+      }).join("\n\n");
+      fullContent = `${fileContext}\n\n${msg}`;
+    }
+
+    if (webSearchEnabled) {
+      fullContent = `[Web Search Mode] ${fullContent}`;
+    }
+
+    const userMsg: Msg = { role: "user", content: fullContent, attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput("");
+    setAttachedFiles([]);
     setShowMentions(false);
     setIsLoading(true);
 
@@ -249,6 +337,38 @@ export default function AiPage() {
     setTimeout(() => printWindow.print(), 500);
   };
 
+  const saveResponseAsFile = async (content: string) => {
+    if (!user) { toast.error("Sign up to save files"); return; }
+    const cleanContent = stripMarkers(content);
+    const blob = new Blob([cleanContent], { type: "text/html" });
+    const path = `${user.id}/ai-output-${Date.now()}.html`;
+    try {
+      const { error } = await supabase.storage.from("user-files").upload(path, blob);
+      if (error) throw error;
+      await supabase.from("files").insert({
+        name: `AI Output ${new Date().toLocaleDateString()}.html`,
+        type: "text/html",
+        size: blob.size,
+        storage_path: path,
+        user_id: user.id,
+      });
+      toast.success("Saved to All Files!");
+    } catch (e: any) {
+      toast.error("Failed to save: " + e.message);
+    }
+  };
+
+  const downloadContent = (content: string) => {
+    const cleanContent = stripMarkers(content);
+    const blob = new Blob([cleanContent], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `oltrid-output-${Date.now()}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const clearChat = () => {
     setMessages([]);
     setActiveConversationId(null);
@@ -276,7 +396,7 @@ export default function AiPage() {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-120px)] flex">
+      <div className="h-[calc(100vh-80px)] flex">
         {isAuthenticated && (
           <ChatHistorySidebar
             activeId={activeConversationId}
@@ -289,7 +409,7 @@ export default function AiPage() {
 
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               {isAuthenticated && (
                 <Button
@@ -301,40 +421,40 @@ export default function AiPage() {
                   {historySidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
                 </Button>
               )}
-              <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-primary" />
+              <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground">Oltrid AI</h1>
+                <h1 className="text-lg font-semibold text-foreground leading-tight">Oltrid AI</h1>
                 {isGuest && !user && (
-                  <p className="text-[12px] text-muted-foreground">
-                    Guest mode · {guestMinutesLeft} min left
+                  <p className="text-[11px] text-muted-foreground">
+                    Guest · {guestMinutesLeft} min left
                   </p>
                 )}
               </div>
             </div>
             {messages.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-[12px] text-muted-foreground">
-                <Trash2 className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="sm" onClick={clearChat} className="h-7 gap-1.5 text-[11px] text-muted-foreground">
+                <Trash2 className="h-3 w-3" />
                 Clear
               </Button>
             )}
           </div>
 
           {/* Chat area */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-xl border border-border bg-card p-4 space-y-4">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-xl border border-border bg-card/50 p-4 space-y-4">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center">
-                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <Sparkles className="h-8 w-8 text-primary" />
+                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                  <Sparkles className="h-7 w-7 text-primary" />
                 </div>
                 <h2 className="text-lg font-semibold text-foreground mb-1">What can I help you with?</h2>
-                <p className="text-[13px] text-muted-foreground mb-6 text-center max-w-md">
-                  I can create notes, generate presentations, and much more. Type @ to reference a note.
+                <p className="text-[12px] text-muted-foreground mb-6 text-center max-w-md">
+                  Notes, presentations, diagrams, flowcharts, mind maps, web search & more. Type @ to reference a note.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full max-w-2xl">
                   {QUICK_PROMPTS.map((p) => (
-                    <button key={p} onClick={() => send(p)} className="text-left text-[12px] px-3 py-2.5 rounded-lg border border-border bg-background hover:bg-accent transition-colors text-foreground">
+                    <button key={p} onClick={() => send(p)} className="text-left text-[11px] px-3 py-2.5 rounded-lg border border-border bg-background hover:bg-accent transition-colors text-foreground">
                       {p}
                     </button>
                   ))}
@@ -347,6 +467,7 @@ export default function AiPage() {
                   const noteMarker = !isUser ? parseNoteMarker(msg.content) : null;
                   const presentationMarker = !isUser ? parsePresentationMarker(msg.content) : null;
                   const displayContent = stripMarkers(msg.content);
+                  const mermaidBlocks = !isUser ? extractMermaidBlocks(displayContent) : [];
 
                   return (
                     <motion.div
@@ -360,26 +481,59 @@ export default function AiPage() {
                           <Bot className="h-4 w-4 text-primary" />
                         </div>
                       )}
-                      <div className={`max-w-[80%] ${isUser ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2.5" : "bg-muted/50 rounded-2xl rounded-bl-md px-4 py-2.5"}`}>
+                      <div className={`max-w-[85%] ${isUser ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2.5" : "bg-muted/50 rounded-2xl rounded-bl-md px-4 py-2.5"}`}>
                         {isUser ? (
-                          <p className="text-[13px] leading-relaxed">{msg.content}</p>
-                        ) : (
-                          <>
-                            <div className="text-[13px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
-                            {(noteMarker || presentationMarker) && (
-                              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
-                                {noteMarker && (
-                                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1.5 rounded-lg" onClick={() => saveAsNote(msg.content)}>
-                                    <StickyNote className="h-3 w-3" /> Save as Note
-                                  </Button>
-                                )}
-                                {presentationMarker && (
-                                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1.5 rounded-lg" onClick={() => saveAsPdf(msg.content)}>
-                                    <FileDown className="h-3 w-3" /> Save as PDF
-                                  </Button>
-                                )}
+                          <div>
+                            {msg.attachments && msg.attachments.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {msg.attachments.map((a, idx) => (
+                                  <span key={idx} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary-foreground/20">
+                                    <Paperclip className="h-2.5 w-2.5" /> {a.name}
+                                  </span>
+                                ))}
                               </div>
                             )}
+                            <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.content.replace(/\[Attached file:.*?\]\n?/g, "").replace("[Web Search Mode] ", "")}</p>
+                          </div>
+                        ) : (
+                          <>
+                            {mermaidBlocks.length > 0 ? (
+                              <div className="space-y-3">
+                                {mermaidBlocks.map((block, bi) => (
+                                  <div key={bi}>
+                                    {block.before && (
+                                      <div className="text-[13px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />
+                                    )}
+                                    <MermaidDiagram chart={block.mermaid} />
+                                    {block.after && (
+                                      <div className="text-[13px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-[13px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
+                            )}
+                            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/30 flex-wrap">
+                              {noteMarker && (
+                                <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 rounded-lg" onClick={() => saveAsNote(msg.content)}>
+                                  <StickyNote className="h-3 w-3" /> Save Note
+                                </Button>
+                              )}
+                              {presentationMarker && (
+                                <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 rounded-lg" onClick={() => saveAsPdf(msg.content)}>
+                                  <FileDown className="h-3 w-3" /> Save PDF
+                                </Button>
+                              )}
+                              {isAuthenticated && (
+                                <Button size="sm" variant="ghost" className="h-6 text-[10px] gap-1 rounded-lg text-muted-foreground" onClick={() => saveResponseAsFile(msg.content)}>
+                                  <FileDown className="h-3 w-3" /> Save to Files
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" className="h-6 text-[10px] gap-1 rounded-lg text-muted-foreground" onClick={() => downloadContent(msg.content)}>
+                                <Download className="h-3 w-3" /> Download
+                              </Button>
+                            </div>
                           </>
                         )}
                       </div>
@@ -405,8 +559,23 @@ export default function AiPage() {
             )}
           </div>
 
+          {/* Attached files preview */}
+          {attachedFiles.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {attachedFiles.map((f, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg bg-muted border border-border">
+                  <Paperclip className="h-3 w-3 text-muted-foreground" />
+                  <span className="truncate max-w-[120px]">{f.name}</span>
+                  <button onClick={() => removeAttachment(i)} className="hover:text-destructive">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* Input */}
-          <div className="mt-3 relative">
+          <div className="mt-2 relative">
             <NoteMentionDropdown
               query={mentionQuery}
               onSelect={handleMentionSelect}
@@ -420,9 +589,39 @@ export default function AiPage() {
                 }}
                 disabled={isLoading}
               />
+              
+              {/* Web search toggle */}
+              <Button
+                variant={webSearchEnabled ? "default" : "ghost"}
+                size="icon"
+                className={`h-9 w-9 rounded-xl shrink-0 ${webSearchEnabled ? "" : "text-muted-foreground"}`}
+                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                title="Toggle web search"
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+
+              {/* File attach */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-xl shrink-0 text-muted-foreground"
+                onClick={() => fileInputRef.current?.click()}
+                title="Attach file"
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleFileAttach}
+              />
+
               <Input
                 ref={inputRef}
-                placeholder={isAuthenticated ? "Ask AI… Type @ to reference a note" : "Ask AI anything…"}
+                placeholder={webSearchEnabled ? "Search the web…" : (isAuthenticated ? "Ask anything… Type @ to reference a note" : "Ask AI anything…")}
                 value={input}
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
