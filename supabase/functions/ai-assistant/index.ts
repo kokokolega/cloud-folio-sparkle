@@ -20,33 +20,69 @@ const SYSTEM_PROMPT = `You are Oltrid AI — a powerful assistant built into the
    - At the end, add: <!--OLTRID_PRESENTATION:{"title":"Presentation Title"}-->
    This tells the app to show a "Save as PDF" button.
 
-3. **General Q&A**: Answer questions, brainstorm ideas, explain concepts clearly.
+3. **Diagrams, Flowcharts, Mind Maps & Illustrations**: When the user asks for a diagram, flowchart, mind map, org chart, sequence diagram, architecture diagram, or any visual representation, generate it using Mermaid syntax wrapped in a code block like:
+   \`\`\`mermaid
+   graph TD
+       A[Start] --> B[Process]
+       B --> C{Decision}
+       C -->|Yes| D[Result A]
+       C -->|No| E[Result B]
+   \`\`\`
+   
+   Use appropriate Mermaid diagram types:
+   - graph TD/LR for flowcharts
+   - mindmap for mind maps
+   - sequenceDiagram for sequence diagrams
+   - classDiagram for class diagrams
+   - erDiagram for ER diagrams
+   - gantt for Gantt charts
+   - pie for pie charts
+   - stateDiagram-v2 for state diagrams
+   
+   Make diagrams detailed, well-labeled, and visually clear. Use descriptive labels and proper node shapes.
 
-4. **File & Folder Advice**: Help organize files, suggest folder structures, naming conventions.
+4. **Web Search Mode**: When the message starts with [Web Search Mode], the user wants information about current events or web-based topics. Provide the most up-to-date information you have, clearly state your knowledge cutoff, and give comprehensive answers. Cite sources where possible.
 
-5. **Image Descriptions**: If a user asks about images, describe best practices for image management.
+5. **File Analysis**: When the user attaches files (shown as [Attached file: filename]), analyze the content thoroughly. For code files, review and suggest improvements. For documents, summarize and answer questions. For data files, analyze patterns and provide insights.
 
-6. **Summaries & Analysis**: Summarize long content, analyze text, extract key points.
+6. **General Q&A**: Answer questions, brainstorm ideas, explain concepts clearly.
+
+7. **File & Folder Advice**: Help organize files, suggest folder structures, naming conventions.
+
+8. **Summaries & Analysis**: Summarize long content, analyze text, extract key points.
 
 Rules:
 - Always produce clean, well-formatted HTML for note/presentation content (NOT markdown)
 - For regular chat responses, use simple HTML with <p>, <strong>, <em>, <ul>, <li>, <code> tags
+- For diagrams, use Mermaid syntax in code blocks
 - Be concise but thorough
 - Always include the special markers when creating notes or presentations
-- Do NOT wrap content in code blocks
+- Do NOT wrap content in code blocks except for Mermaid diagrams
 - When the user says "make a note about X", generate the full note content, don't just describe it
-- Be conversational, friendly, and natural in tone — like a helpful colleague, not a robot`;
+- Be conversational, friendly, and natural in tone — like a helpful colleague, not a robot
+- Do NOT use emojis in Mermaid diagram labels (they cause rendering errors)`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, webSearch } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY)
       throw new Error("LOVABLE_API_KEY is not configured");
+
+    const systemMessages = [
+      { role: "system", content: SYSTEM_PROMPT },
+    ];
+
+    if (webSearch) {
+      systemMessages.push({
+        role: "system",
+        content: "The user has enabled web search mode. Provide the most comprehensive and up-to-date information possible. If you're unsure about recent events, clearly state your knowledge cutoff date.",
+      });
+    }
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -59,7 +95,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            ...systemMessages,
             ...messages,
           ],
           stream: true,
