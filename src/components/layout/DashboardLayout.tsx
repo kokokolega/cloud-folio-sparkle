@@ -52,10 +52,8 @@ export function DashboardLayout({ children, noPadding }: DashboardLayoutProps) {
           <ResizablePanelGroup direction="horizontal" className="min-h-screen">
             <ResizablePanel
               defaultSize={15}
-              minSize={4}
-              maxSize={25}
-              collapsible
-              collapsedSize={4}
+              minSize={12}
+              maxSize={22}
               className="hidden md:block"
             >
               <AppSidebar />
