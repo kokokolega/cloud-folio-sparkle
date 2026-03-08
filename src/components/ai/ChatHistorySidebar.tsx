@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { format, isToday, isYesterday } from "date-fns";
-import { MessageSquare, Plus, Trash2, Search, X, History, Pencil, Check } from "lucide-react";
+import { format, isToday, isYesterday, isSameDay } from "date-fns";
+import { MessageSquare, Plus, Trash2, Search, X, History, Pencil, Check, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -37,6 +39,7 @@ export function ChatHistorySidebar({ activeId, onSelect, onNewChat, open, onClos
   const [searchQuery, setSearchQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     if (!user || !open) return;
@@ -73,11 +76,18 @@ export function ChatHistorySidebar({ activeId, onSelect, onNewChat, open, onClos
     setEditingId(null);
   };
 
+  // Dates that have conversations (for calendar highlighting)
+  const conversationDates = useMemo(() => {
+    return conversations.map((c) => new Date(c.updated_at));
+  }, [conversations]);
+
   if (!open) return null;
 
-  const filtered = conversations.filter((c) =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = conversations.filter((c) => {
+    const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDate = selectedDate ? isSameDay(new Date(c.updated_at), selectedDate) : true;
+    return matchesSearch && matchesDate;
+  });
 
   const grouped: Record<string, Conversation[]> = {};
   filtered.forEach((c) => {
@@ -98,6 +108,44 @@ export function ChatHistorySidebar({ activeId, onSelect, onNewChat, open, onClos
             <History className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-xs font-semibold text-foreground tracking-tight truncate">History</span>
           </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="icon"
+                variant={selectedDate ? "secondary" : "ghost"}
+                className={cn(
+                  "h-7 w-7 rounded-lg shrink-0 transition-all",
+                  selectedDate ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Filter by date"
+              >
+                <CalendarIcon className="h-3.5 w-3.5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end" side="bottom">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => setSelectedDate(date)}
+                className={cn("p-3 pointer-events-auto")}
+                modifiers={{ hasChat: conversationDates }}
+                modifiersClassNames={{ hasChat: "bg-primary/15 font-semibold text-primary" }}
+                disabled={(date) => date > new Date()}
+              />
+              {selectedDate && (
+                <div className="px-3 pb-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-7 text-xs text-muted-foreground"
+                    onClick={() => setSelectedDate(undefined)}
+                  >
+                    Clear filter
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
           <Button
             onClick={() => { onNewChat(); onClose(); }}
             size="icon"
@@ -112,8 +160,8 @@ export function ChatHistorySidebar({ activeId, onSelect, onNewChat, open, onClos
           </Button>
         </div>
 
-        {/* Search */}
-        <div className="px-3 pb-2">
+        {/* Search + active date filter */}
+        <div className="px-3 pb-2 space-y-1.5">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
             <Input
@@ -123,6 +171,16 @@ export function ChatHistorySidebar({ activeId, onSelect, onNewChat, open, onClos
               className="pl-8 h-8 rounded-xl bg-secondary/50 border-border/30 text-xs placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-ring/50"
             />
           </div>
+          {selectedDate && (
+            <div className="flex items-center gap-1.5 px-1">
+              <span className="text-[10px] text-muted-foreground">
+                Showing: {format(selectedDate, "MMM d, yyyy")}
+              </span>
+              <button onClick={() => setSelectedDate(undefined)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Conversations */}
@@ -191,7 +249,7 @@ export function ChatHistorySidebar({ activeId, onSelect, onNewChat, open, onClos
               <div className="text-center py-10">
                 <MessageSquare className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
                 <p className="text-[11px] text-muted-foreground/50">
-                  {searchQuery ? "No matching chats" : "No conversations yet"}
+                  {searchQuery || selectedDate ? "No matching chats" : "No conversations yet"}
                 </p>
               </div>
             )}
