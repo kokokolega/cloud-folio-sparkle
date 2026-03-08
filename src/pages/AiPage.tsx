@@ -730,7 +730,7 @@ export default function AiPage() {
 
   return (
     <DashboardLayout noPadding>
-      <div className="h-[calc(100vh-48px)] md:h-screen flex">
+      <div className="h-full flex">
         <ResizablePanelGroup direction="horizontal" className="flex-1">
           <ResizablePanel defaultSize={historySidebarOpen && isAuthenticated ? 75 : 100} minSize={50}>
             <div className="h-full flex flex-col min-w-0 relative">
