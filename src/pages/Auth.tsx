@@ -21,7 +21,7 @@ export default function Auth() {
   const { session, loading } = useAuth();
   const { startGuestSession } = useGuestMode();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -48,13 +48,6 @@ export default function Auth() {
         if (error) throw error;
         toast.success("Check your email for a reset link");
         setMode("login");
-      } else if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        toast.success("Account created! Check your email to verify.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -170,12 +163,10 @@ export default function Auth() {
             >
               <h2 className="text-2xl font-semibold text-foreground tracking-tight mb-1.5">
                 {mode === "login" && "Welcome back"}
-                {mode === "signup" && "Create an account"}
                 {mode === "forgot" && "Reset password"}
               </h2>
               <p className="text-muted-foreground text-sm mb-8">
                 {mode === "login" && "Sign in to continue to Oltrid"}
-                {mode === "signup" && "Start using Oltrid for free"}
                 {mode === "forgot" && "Enter your email to receive a reset link"}
               </p>
             </motion.div>
@@ -257,7 +248,6 @@ export default function Auth() {
                 ) : (
                   <span className="flex items-center gap-2">
                     {mode === "login" && "Continue"}
-                    {mode === "signup" && "Create account"}
                     {mode === "forgot" && "Send reset link"}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>
@@ -288,22 +278,6 @@ export default function Auth() {
 
           {/* Mode switching */}
           <div className="mt-8 text-center text-sm text-muted-foreground">
-            {mode === "login" && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-                Don't have an account?{" "}
-                <button onClick={() => setMode("signup")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Sign up
-                </button>
-              </motion.p>
-            )}
-            {mode === "signup" && (
-              <p>
-                Already have an account?{" "}
-                <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Sign in
-                </button>
-              </p>
-            )}
             {mode === "forgot" && (
               <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
                 Back to sign in
