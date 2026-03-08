@@ -249,14 +249,6 @@ export default function CodrixPage() {
             )}
           </AnimatePresence>
 
-          {/* Image Generator Panel */}
-          <AnimatePresence>
-            {showImageGen && (
-              <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 320 }} exit={{ opacity: 0, width: 0 }} className="flex flex-col border-l border-border bg-background shrink-0 overflow-hidden">
-                <ImageGenerator onInsert={handleImageInsert} />
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
     </DashboardLayout>
