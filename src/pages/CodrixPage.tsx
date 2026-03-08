@@ -158,6 +158,20 @@ export default function CodrixPage() {
     } catch (e: any) { toast.error(e.message || "AI request failed"); } finally { setAiLoading(false); }
   };
 
+  const handleImageInsert = (dataUrl: string, alt: string) => {
+    const imgTag = `<img src="${dataUrl}" alt="${alt}" style="max-width: 100%; height: auto;" />`;
+    const htmlFile = files.find(f => f.language === "html");
+    if (htmlFile) {
+      setFiles(prev => prev.map(f => {
+        if (f.id !== htmlFile.id) return f;
+        const bodyEnd = f.content.lastIndexOf("</body>");
+        if (bodyEnd === -1) return { ...f, content: f.content + "\n" + imgTag };
+        return { ...f, content: f.content.slice(0, bodyEnd) + "  " + imgTag + "\n" + f.content.slice(bodyEnd) };
+      }));
+      setActiveFileId(htmlFile.id);
+    }
+  };
+
   return (
     <DashboardLayout noPadding>
       <div className="h-screen flex flex-col">
