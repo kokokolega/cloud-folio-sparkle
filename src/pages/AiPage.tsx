@@ -50,10 +50,8 @@ interface MemoryData {
 }
 
 const QUICK_PROMPTS = [
-  { icon: <NotebookPen className="h-4 w-4" />, text: "Create a new note" },
-  { icon: <MessageCircle className="h-4 w-4" />, text: "Summarize my notes" },
-  { icon: <Workflow className="h-4 w-4" />, text: "Draw a flowchart" },
-  { icon: <Globe2 className="h-4 w-4" />, text: "Search the web" },
+  { icon: <NotebookPen className="h-4 w-4" />, text: "Create a note", prompt: "Create a new note" },
+  { icon: <Globe2 className="h-4 w-4" />, text: "Search web", prompt: "Search the web" },
 ];
 
 function parseNoteMarker(content: string) {
