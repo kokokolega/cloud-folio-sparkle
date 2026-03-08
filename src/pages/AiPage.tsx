@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +8,7 @@ import { toast } from "sonner";
 import {
   Send, Loader2, Sparkles, StickyNote, FileDown, User, Bot, Trash2,
   PanelLeftClose, PanelLeftOpen, Clock, Globe, Paperclip, Download,
-  GitBranch, LayoutDashboard, X,
+  X, Plus, ArrowUp,
 } from "lucide-react";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
@@ -26,16 +25,16 @@ type Msg = { role: "user" | "assistant"; content: string; attachments?: FileAtta
 interface FileAttachment {
   name: string;
   type: string;
-  content: string; // base64 or text content
+  content: string;
 }
 
 const QUICK_PROMPTS = [
-  "Create a note about project planning tips",
-  "Make a presentation on time management",
-  "Draw a flowchart for user onboarding",
-  "Create a mind map about web development",
-  "Search the web for latest AI trends",
-  "Generate a diagram of a REST API architecture",
+  { icon: "📝", text: "Create a note about project planning tips" },
+  { icon: "📊", text: "Make a presentation on time management" },
+  { icon: "🔀", text: "Draw a flowchart for user onboarding" },
+  { icon: "🧠", text: "Create a mind map about web development" },
+  { icon: "🌐", text: "Search the web for latest AI trends" },
+  { icon: "📐", text: "Generate a diagram of a REST API architecture" },
 ];
 
 function parseNoteMarker(content: string) {
@@ -72,13 +71,11 @@ function extractMermaidBlocks(content: string): { before: string; mermaid: strin
   const parts: { before: string; mermaid: string; after: string }[] = [];
   let lastIndex = 0;
   let match;
-  
   while ((match = regex.exec(content)) !== null) {
     const before = content.slice(lastIndex, match.index);
     parts.push({ before, mermaid: match[1].trim(), after: "" });
     lastIndex = match.index + match[0].length;
   }
-  
   if (parts.length === 0) return [];
   parts[parts.length - 1].after = content.slice(lastIndex);
   return parts;
@@ -98,7 +95,7 @@ export default function AiPage() {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isAuthenticated = !!user;
@@ -108,6 +105,14 @@ export default function AiPage() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + "px";
+    }
+  }, [input]);
 
   const handleInputChange = (value: string) => {
     setInput(value);
@@ -129,20 +134,15 @@ export default function AiPage() {
     const noteContext = `[Note: ${note.title}]\n${note.content.replace(/<[^>]*>/g, "").slice(0, 500)}\n\n`;
     setInput(before + noteContext);
     setShowMentions(false);
-    inputRef.current?.focus();
+    textareaRef.current?.focus();
   };
 
   const handleFileAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    
     const newAttachments: FileAttachment[] = [];
     for (const file of Array.from(files)) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`${file.name} is too large (max 10MB)`);
-        continue;
-      }
-      
+      if (file.size > 10 * 1024 * 1024) { toast.error(`${file.name} is too large (max 10MB)`); continue; }
       try {
         const content = await new Promise<string>((resolve) => {
           const reader = new FileReader();
@@ -150,20 +150,13 @@ export default function AiPage() {
             reader.onload = () => resolve(reader.result as string);
             reader.readAsText(file);
           } else {
-            reader.onload = () => {
-              const base64 = (reader.result as string).split(",")[1];
-              resolve(base64);
-            };
+            reader.onload = () => { const base64 = (reader.result as string).split(",")[1]; resolve(base64); };
             reader.readAsDataURL(file);
           }
         });
-        
         newAttachments.push({ name: file.name, type: file.type, content });
-      } catch {
-        toast.error(`Failed to read ${file.name}`);
-      }
+      } catch { toast.error(`Failed to read ${file.name}`); }
     }
-    
     setAttachedFiles(prev => [...prev, ...newAttachments]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -178,67 +171,38 @@ export default function AiPage() {
       if (!convId) {
         const title = msgs[0].content.slice(0, 60) || "New Chat";
         const { data } = await supabase.from("ai_conversations").insert({ user_id: user.id, title }).select("id").single();
-        if (data) {
-          convId = data.id;
-          setActiveConversationId(convId);
-        }
+        if (data) { convId = data.id; setActiveConversationId(convId); }
       }
       if (convId) {
         const last2 = msgs.slice(-2);
         for (const msg of last2) {
-          await supabase.from("ai_messages").insert({
-            conversation_id: convId,
-            role: msg.role,
-            content: msg.content,
-          });
+          await supabase.from("ai_messages").insert({ conversation_id: convId, role: msg.role, content: msg.content });
         }
       }
-    } catch (e) {
-      console.error("Failed to save conversation:", e);
-    }
+    } catch (e) { console.error("Failed to save conversation:", e); }
     return convId;
   }, [user]);
 
   const loadConversation = useCallback(async (id: string) => {
-    const { data } = await supabase
-      .from("ai_messages")
-      .select("role, content")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true });
-    if (data) {
-      setMessages(data as Msg[]);
-      setActiveConversationId(id);
-    }
+    const { data } = await supabase.from("ai_messages").select("role, content").eq("conversation_id", id).order("created_at", { ascending: true });
+    if (data) { setMessages(data as Msg[]); setActiveConversationId(id); }
   }, []);
 
   const streamChat = useCallback(async (allMessages: Msg[]) => {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/ai-assistant`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-      body: JSON.stringify({ 
-        messages: allMessages.map(m => ({ role: m.role, content: m.content })),
-        webSearch: webSearchEnabled,
-      }),
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ messages: allMessages.map(m => ({ role: m.role, content: m.content })), webSearch: webSearchEnabled }),
     });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ error: "AI request failed" }));
-      throw new Error(err.error || `AI request failed (${resp.status})`);
-    }
-
+    if (!resp.ok) { const err = await resp.json().catch(() => ({ error: "AI request failed" })); throw new Error(err.error || `AI request failed (${resp.status})`); }
     const reader = resp.body!.getReader();
     const decoder = new TextDecoder();
     let full = "";
     let buffer = "";
-
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-
       let idx: number;
       while ((idx = buffer.indexOf("\n")) !== -1) {
         let line = buffer.slice(0, idx);
@@ -254,16 +218,11 @@ export default function AiPage() {
             full += c;
             setMessages((prev) => {
               const last = prev[prev.length - 1];
-              if (last?.role === "assistant") {
-                return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: full } : m);
-              }
+              if (last?.role === "assistant") return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: full } : m);
               return [...prev, { role: "assistant", content: full }];
             });
           }
-        } catch {
-          buffer = line + "\n" + buffer;
-          break;
-        }
+        } catch { buffer = line + "\n" + buffer; break; }
       }
     }
     return full;
@@ -272,23 +231,15 @@ export default function AiPage() {
   const send = async (text?: string) => {
     const msg = text || input.trim();
     if (!msg || isLoading) return;
-
-    // Build content with file attachments context
     let fullContent = msg;
     if (attachedFiles.length > 0) {
       const fileContext = attachedFiles.map(f => {
-        if (f.type.startsWith("text/") || f.name.match(/\.(txt|md|json|csv|xml|html|css|js|ts)$/i)) {
-          return `[Attached file: ${f.name}]\n${f.content.slice(0, 5000)}`;
-        }
+        if (f.type.startsWith("text/") || f.name.match(/\.(txt|md|json|csv|xml|html|css|js|ts)$/i)) return `[Attached file: ${f.name}]\n${f.content.slice(0, 5000)}`;
         return `[Attached file: ${f.name} (${f.type})]`;
       }).join("\n\n");
       fullContent = `${fileContext}\n\n${msg}`;
     }
-
-    if (webSearchEnabled) {
-      fullContent = `[Web Search Mode] ${fullContent}`;
-    }
-
+    if (webSearchEnabled) fullContent = `[Web Search Mode] ${fullContent}`;
     const userMsg: Msg = { role: "user", content: fullContent, attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -296,20 +247,10 @@ export default function AiPage() {
     setAttachedFiles([]);
     setShowMentions(false);
     setIsLoading(true);
-
     try {
       await streamChat(newMessages);
-      if (isAuthenticated) {
-        setMessages((current) => {
-          saveConversation(current, activeConversationId);
-          return current;
-        });
-      }
-    } catch (e: any) {
-      toast.error(e.message || "AI request failed");
-    } finally {
-      setIsLoading(false);
-    }
+      if (isAuthenticated) setMessages((current) => { saveConversation(current, activeConversationId); return current; });
+    } catch (e: any) { toast.error(e.message || "AI request failed"); } finally { setIsLoading(false); }
   };
 
   const saveAsNote = async (content: string) => {
@@ -320,10 +261,8 @@ export default function AiPage() {
     try {
       const { error } = await supabase.from("notes").insert({ title, content: cleanContent, color: "blue", user_id: user.id });
       if (error) throw error;
-      toast.success("Note saved successfully!");
-    } catch (e: any) {
-      toast.error("Failed to save note: " + e.message);
-    }
+      toast.success("Note saved!");
+    } catch (e: any) { toast.error("Failed to save note: " + e.message); }
   };
 
   const saveAsPdf = (content: string) => {
@@ -332,7 +271,7 @@ export default function AiPage() {
     const cleanContent = stripMarkers(content);
     const printWindow = window.open("", "_blank");
     if (!printWindow) { toast.error("Please allow popups"); return; }
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a2e; } .slide { page-break-after: always; padding: 60px 80px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; } h1 { font-size: 2.5em; margin-bottom: 0.5em; color: #1e40af; } h2 { font-size: 1.8em; margin-bottom: 0.5em; color: #3b82f6; } p { font-size: 1.2em; line-height: 1.6; margin: 0.5em 0; } ul, ol { font-size: 1.1em; padding-left: 1.5em; margin: 0.5em 0; } li { margin: 0.4em 0; line-height: 1.5; } @media print { .slide { min-height: auto; height: 100vh; } }</style></head><body>${cleanContent}</body></html>`);
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a2e; } .slide { page-break-after: always; padding: 60px 80px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; } h1 { font-size: 2.5em; margin-bottom: 0.5em; } h2 { font-size: 1.8em; margin-bottom: 0.5em; } p { font-size: 1.2em; line-height: 1.6; margin: 0.5em 0; } ul, ol { font-size: 1.1em; padding-left: 1.5em; margin: 0.5em 0; } li { margin: 0.4em 0; line-height: 1.5; } @media print { .slide { min-height: auto; height: 100vh; } }</style></head><body>${cleanContent}</body></html>`);
     printWindow.document.close();
     setTimeout(() => printWindow.print(), 500);
   };
@@ -345,17 +284,9 @@ export default function AiPage() {
     try {
       const { error } = await supabase.storage.from("user-files").upload(path, blob);
       if (error) throw error;
-      await supabase.from("files").insert({
-        name: `AI Output ${new Date().toLocaleDateString()}.html`,
-        type: "text/html",
-        size: blob.size,
-        storage_path: path,
-        user_id: user.id,
-      });
+      await supabase.from("files").insert({ name: `AI Output ${new Date().toLocaleDateString()}.html`, type: "text/html", size: blob.size, storage_path: path, user_id: user.id });
       toast.success("Saved to All Files!");
-    } catch (e: any) {
-      toast.error("Failed to save: " + e.message);
-    }
+    } catch (e: any) { toast.error("Failed to save: " + e.message); }
   };
 
   const downloadContent = (content: string) => {
@@ -369,15 +300,8 @@ export default function AiPage() {
     URL.revokeObjectURL(url);
   };
 
-  const clearChat = () => {
-    setMessages([]);
-    setActiveConversationId(null);
-  };
-
-  const handleNewChat = () => {
-    setMessages([]);
-    setActiveConversationId(null);
-  };
+  const clearChat = () => { setMessages([]); setActiveConversationId(null); };
+  const handleNewChat = () => { setMessages([]); setActiveConversationId(null); };
 
   if (guestExpired && !user) {
     return (
@@ -385,18 +309,17 @@ export default function AiPage() {
         <div className="max-w-md mx-auto mt-20 text-center space-y-4">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto" />
           <h2 className="text-xl font-semibold text-foreground">Guest Session Expired</h2>
-          <p className="text-sm text-muted-foreground">Your 1-hour guest session has ended. Sign up to continue using Oltrid AI with all features.</p>
-          <div className="flex gap-3 justify-center">
-            <Button onClick={() => navigate("/auth")} className="rounded-xl">Sign up / Login</Button>
-          </div>
+          <p className="text-sm text-muted-foreground">Your 1-hour guest session has ended.</p>
+          <Button onClick={() => navigate("/auth")} className="rounded-xl">Sign up / Login</Button>
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="h-[calc(100vh-80px)] flex">
+    <DashboardLayout noPadding>
+      <div className="h-[calc(100vh-0px)] md:h-screen flex">
+        {/* Chat history sidebar */}
         {isAuthenticated && (
           <ChatHistorySidebar
             activeId={activeConversationId}
@@ -407,10 +330,11 @@ export default function AiPage() {
           />
         )}
 
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
+        {/* Main chat area */}
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-border/50 shrink-0">
+            <div className="flex items-center gap-2">
               {isAuthenticated && (
                 <Button
                   variant="ghost"
@@ -421,221 +345,223 @@ export default function AiPage() {
                   {historySidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
                 </Button>
               )}
-              <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-foreground leading-tight">Oltrid AI</h1>
-                {isGuest && !user && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Guest · {guestMinutesLeft} min left
-                  </p>
-                )}
-              </div>
+              <span className="text-sm font-semibold text-foreground">Oltrid AI</span>
+              {isGuest && !user && (
+                <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                  Guest · {guestMinutesLeft}m
+                </span>
+              )}
             </div>
-            {messages.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearChat} className="h-7 gap-1.5 text-[11px] text-muted-foreground">
-                <Trash2 className="h-3 w-3" />
-                Clear
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                  <Plus className="h-3.5 w-3.5" /> New chat
+                </Button>
+              )}
+            </div>
           </div>
 
-          {/* Chat area */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-xl border border-border bg-card/50 p-4 space-y-4">
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center">
-                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <Sparkles className="h-7 w-7 text-primary" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground mb-1">What can I help you with?</h2>
-                <p className="text-[12px] text-muted-foreground mb-6 text-center max-w-md">
-                  Notes, presentations, diagrams, flowcharts, mind maps, web search & more. Type @ to reference a note.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full max-w-2xl">
-                  {QUICK_PROMPTS.map((p) => (
-                    <button key={p} onClick={() => send(p)} className="text-left text-[11px] px-3 py-2.5 rounded-lg border border-border bg-background hover:bg-accent transition-colors text-foreground">
-                      {p}
-                    </button>
-                  ))}
-                </div>
+              <div className="h-full flex flex-col items-center justify-center px-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center max-w-2xl w-full"
+                >
+                  <div className="h-16 w-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-6">
+                    <Sparkles className="h-8 w-8 text-foreground/80" />
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
+                    What can I help with?
+                  </h1>
+                  <p className="text-sm text-muted-foreground mb-10 max-w-md mx-auto">
+                    Notes, presentations, diagrams, web search & more. Type @ to reference a note.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
+                    {QUICK_PROMPTS.map((p) => (
+                      <button
+                        key={p.text}
+                        onClick={() => send(p.text)}
+                        className="flex items-center gap-3 text-left text-sm px-4 py-3 rounded-xl border border-border bg-background hover:bg-secondary/60 transition-colors text-foreground group"
+                      >
+                        <span className="text-lg">{p.icon}</span>
+                        <span className="text-muted-foreground group-hover:text-foreground transition-colors line-clamp-1">{p.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
               </div>
             ) : (
-              <AnimatePresence initial={false}>
-                {messages.map((msg, i) => {
-                  const isUser = msg.role === "user";
-                  const noteMarker = !isUser ? parseNoteMarker(msg.content) : null;
-                  const presentationMarker = !isUser ? parsePresentationMarker(msg.content) : null;
-                  const displayContent = stripMarkers(msg.content);
-                  const mermaidBlocks = !isUser ? extractMermaidBlocks(displayContent) : [];
+              <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-6">
+                <AnimatePresence initial={false}>
+                  {messages.map((msg, i) => {
+                    const isUser = msg.role === "user";
+                    const noteMarker = !isUser ? parseNoteMarker(msg.content) : null;
+                    const presentationMarker = !isUser ? parsePresentationMarker(msg.content) : null;
+                    const displayContent = stripMarkers(msg.content);
+                    const mermaidBlocks = !isUser ? extractMermaidBlocks(displayContent) : [];
 
-                  return (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}
-                    >
-                      {!isUser && (
-                        <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                          <Bot className="h-4 w-4 text-primary" />
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex gap-3"
+                      >
+                        <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 mt-1 ${isUser ? "bg-secondary" : "bg-secondary"}`}>
+                          {isUser ? <User className="h-3.5 w-3.5 text-foreground/70" /> : <Sparkles className="h-3.5 w-3.5 text-foreground/70" />}
                         </div>
-                      )}
-                      <div className={`max-w-[85%] ${isUser ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2.5" : "bg-muted/50 rounded-2xl rounded-bl-md px-4 py-2.5"}`}>
-                        {isUser ? (
-                          <div>
-                            {msg.attachments && msg.attachments.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                {msg.attachments.map((a, idx) => (
-                                  <span key={idx} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary-foreground/20">
-                                    <Paperclip className="h-2.5 w-2.5" /> {a.name}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                            <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.content.replace(/\[Attached file:.*?\]\n?/g, "").replace("[Web Search Mode] ", "")}</p>
-                          </div>
-                        ) : (
-                          <>
-                            {mermaidBlocks.length > 0 ? (
-                              <div className="space-y-3">
-                                {mermaidBlocks.map((block, bi) => (
-                                  <div key={bi}>
-                                    {block.before && (
-                                      <div className="text-[13px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />
-                                    )}
-                                    <MermaidDiagram chart={block.mermaid} />
-                                    {block.after && (
-                                      <div className="text-[13px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="text-[13px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
-                            )}
-                            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/30 flex-wrap">
-                              {noteMarker && (
-                                <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 rounded-lg" onClick={() => saveAsNote(msg.content)}>
-                                  <StickyNote className="h-3 w-3" /> Save Note
-                                </Button>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-muted-foreground mb-1.5">{isUser ? "You" : "Oltrid AI"}</p>
+                          {isUser ? (
+                            <div>
+                              {msg.attachments && msg.attachments.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                  {msg.attachments.map((a, idx) => (
+                                    <span key={idx} className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg bg-secondary border border-border">
+                                      <Paperclip className="h-3 w-3" /> {a.name}
+                                    </span>
+                                  ))}
+                                </div>
                               )}
-                              {presentationMarker && (
-                                <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 rounded-lg" onClick={() => saveAsPdf(msg.content)}>
-                                  <FileDown className="h-3 w-3" /> Save PDF
-                                </Button>
-                              )}
-                              {isAuthenticated && (
-                                <Button size="sm" variant="ghost" className="h-6 text-[10px] gap-1 rounded-lg text-muted-foreground" onClick={() => saveResponseAsFile(msg.content)}>
-                                  <FileDown className="h-3 w-3" /> Save to Files
-                                </Button>
-                              )}
-                              <Button size="sm" variant="ghost" className="h-6 text-[10px] gap-1 rounded-lg text-muted-foreground" onClick={() => downloadContent(msg.content)}>
-                                <Download className="h-3 w-3" /> Download
-                              </Button>
+                              <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                                {msg.content.replace(/\[Attached file:.*?\]\n?/g, "").replace("[Web Search Mode] ", "")}
+                              </p>
                             </div>
-                          </>
-                        )}
-                      </div>
-                      {isUser && (
-                        <div className="h-7 w-7 rounded-lg bg-secondary flex items-center justify-center shrink-0 mt-0.5">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <>
+                              {mermaidBlocks.length > 0 ? (
+                                <div className="space-y-3">
+                                  {mermaidBlocks.map((block, bi) => (
+                                    <div key={bi}>
+                                      {block.before && <div className="text-sm leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />}
+                                      <MermaidDiagram chart={block.mermaid} />
+                                      {block.after && <div className="text-sm leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-sm leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
+                              )}
+                              <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                                {noteMarker && (
+                                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-lg" onClick={() => saveAsNote(msg.content)}>
+                                    <StickyNote className="h-3 w-3" /> Save Note
+                                  </Button>
+                                )}
+                                {presentationMarker && (
+                                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-lg" onClick={() => saveAsPdf(msg.content)}>
+                                    <FileDown className="h-3 w-3" /> Save PDF
+                                  </Button>
+                                )}
+                                {isAuthenticated && (
+                                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-lg text-muted-foreground" onClick={() => saveResponseAsFile(msg.content)}>
+                                    <FileDown className="h-3 w-3" /> Save to Files
+                                  </Button>
+                                )}
+                                <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-lg text-muted-foreground" onClick={() => downloadContent(msg.content)}>
+                                  <Download className="h-3 w-3" /> Download
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
-                      )}
+                      </motion.div>
+                    );
+                  })}
+                  {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
+                      <div className="h-7 w-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-1">
+                        <Sparkles className="h-3.5 w-3.5 text-foreground/70" />
+                      </div>
+                      <div className="pt-1">
+                        <p className="text-xs font-medium text-muted-foreground mb-1.5">Oltrid AI</p>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
+                          <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
+                          <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
+                        </div>
+                      </div>
                     </motion.div>
-                  );
-                })}
-                {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                    <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Bot className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="bg-muted/50 rounded-2xl rounded-bl-md px-4 py-3">
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
 
-          {/* Attached files preview */}
-          {attachedFiles.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {attachedFiles.map((f, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg bg-muted border border-border">
-                  <Paperclip className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate max-w-[120px]">{f.name}</span>
-                  <button onClick={() => removeAttachment(i)} className="hover:text-destructive">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
+          {/* Input area */}
+          <div className="shrink-0 border-t border-border/50 bg-background">
+            <div className="max-w-3xl mx-auto px-4 md:px-6 py-3">
+              {/* Attached files */}
+              {attachedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {attachedFiles.map((f, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg bg-secondary border border-border">
+                      <Paperclip className="h-3 w-3 text-muted-foreground" />
+                      <span className="truncate max-w-[120px]">{f.name}</span>
+                      <button onClick={() => removeAttachment(i)} className="hover:text-destructive"><X className="h-3 w-3" /></button>
+                    </span>
+                  ))}
+                </div>
+              )}
 
-          {/* Input */}
-          <div className="mt-2 relative">
-            <NoteMentionDropdown
-              query={mentionQuery}
-              onSelect={handleMentionSelect}
-              visible={showMentions && isAuthenticated}
-            />
-            <div className="flex items-center gap-2">
-              <VoiceInput
-                onTranscript={(text) => {
-                  setInput(text);
-                  setTimeout(() => send(text), 100);
-                }}
-                disabled={isLoading}
-              />
-              
-              {/* Web search toggle */}
-              <Button
-                variant={webSearchEnabled ? "default" : "ghost"}
-                size="icon"
-                className={`h-9 w-9 rounded-xl shrink-0 ${webSearchEnabled ? "" : "text-muted-foreground"}`}
-                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                title="Toggle web search"
-              >
-                <Globe className="h-4 w-4" />
-              </Button>
+              {/* Mention dropdown */}
+              <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
 
-              {/* File attach */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-xl shrink-0 text-muted-foreground"
-                onClick={() => fileInputRef.current?.click()}
-                title="Attach file"
-              >
-                <Paperclip className="h-4 w-4" />
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleFileAttach}
-              />
+              {/* Input box */}
+              <div className="relative flex items-end gap-2 rounded-2xl border border-border bg-secondary/30 px-3 py-2 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring transition-all">
+                <div className="flex items-center gap-1 shrink-0 pb-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Attach file"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={webSearchEnabled ? "secondary" : "ghost"}
+                    size="icon"
+                    className={`h-8 w-8 rounded-lg ${webSearchEnabled ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                    title="Toggle web search"
+                  >
+                    <Globe className="h-4 w-4" />
+                  </Button>
+                  <VoiceInput
+                    onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }}
+                    disabled={isLoading}
+                  />
+                </div>
 
-              <Input
-                ref={inputRef}
-                placeholder={webSearchEnabled ? "Search the web…" : (isAuthenticated ? "Ask anything… Type @ to reference a note" : "Ask AI anything…")}
-                value={input}
-                onChange={(e) => handleInputChange(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
-                disabled={isLoading}
-                className="h-10 rounded-xl text-[13px] bg-card border-border"
-              />
-              <Button
-                size="icon"
-                className="h-10 w-10 rounded-xl shrink-0"
-                onClick={() => send()}
-                disabled={isLoading || !input.trim()}
-              >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </Button>
+                <textarea
+                  ref={textareaRef}
+                  placeholder={webSearchEnabled ? "Search the web…" : "Message Oltrid AI…"}
+                  value={input}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+                  disabled={isLoading}
+                  rows={1}
+                  className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-1.5 min-h-[36px] max-h-[200px]"
+                />
+
+                <Button
+                  size="icon"
+                  className="h-8 w-8 rounded-lg shrink-0 mb-0.5"
+                  onClick={() => send()}
+                  disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileAttach} />
+              <p className="text-[10px] text-muted-foreground/50 text-center mt-2">
+                Oltrid AI can make mistakes. Verify important information.
+              </p>
             </div>
           </div>
         </div>
