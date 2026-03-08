@@ -329,19 +329,24 @@
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.3); }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* Codrix syntax highlighting */
+.hl-comment { color: hsl(220, 10%, 45%); font-style: italic; }
+.hl-tag { color: hsl(350, 70%, 55%); }
+.hl-keyword { color: hsl(265, 60%, 60%); }
+.hl-string { color: hsl(95, 50%, 45%); }
+.hl-number { color: hsl(35, 80%, 55%); }
+.hl-property { color: hsl(210, 70%, 55%); }
+.hl-function { color: hsl(210, 70%, 55%); }
 
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.3);
-}
+.dark .hl-comment { color: hsl(220, 10%, 50%); }
+.dark .hl-tag { color: hsl(350, 75%, 65%); }
+.dark .hl-keyword { color: hsl(265, 65%, 70%); }
+.dark .hl-string { color: hsl(95, 55%, 55%); }
+.dark .hl-number { color: hsl(35, 85%, 60%); }
+.dark .hl-property { color: hsl(210, 75%, 65%); }
+.dark .hl-function { color: hsl(210, 75%, 65%); }
