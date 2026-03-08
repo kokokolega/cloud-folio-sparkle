@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert } from "lucide-react";
+import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert, User } from "lucide-react";
 import { toast } from "sonner";
 
 const BG_THEMES: { id: BgTheme; name: string; description: string; preview: string }[] = [
@@ -55,12 +55,7 @@ export default function SettingsPage() {
       setCustomImageUrl(urlData.publicUrl);
       setBgTheme("custom-image");
       toast.success("Background image set!");
-    } catch (err: any) {
-      toast.error(err.message || "Upload failed");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    } catch (err: any) { toast.error(err.message || "Upload failed"); } finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ""; }
   };
 
   const removeCustomImage = () => {
@@ -71,101 +66,114 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <h2 className="text-xl font-semibold text-foreground mb-6">Settings</h2>
+      <div className="max-w-lg mx-auto">
+        <h1 className="text-xl font-semibold text-foreground mb-6">Settings</h1>
 
-      <div className="max-w-lg space-y-6">
-        <div className="glass-card p-5 space-y-4">
-          <h3 className="font-medium text-foreground">Account</h3>
-          <p className="text-sm text-muted-foreground">{user?.email}</p>
-        </div>
-
-        {/* Dark Mode Toggle - moved from header */}
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              <Label className="text-sm font-medium">Dark Mode</Label>
-            </div>
-            <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
-          </div>
-        </div>
-
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ShieldAlert className="h-4 w-4" />
+        <div className="space-y-4">
+          {/* Account */}
+          <div className="glass-card p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
+                <User className="h-5 w-5 text-muted-foreground" />
+              </div>
               <div>
-                <Label className="text-sm font-medium">Auto Logout (1 min inactivity)</Label>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Automatically sign out after 1 minute of no activity</p>
+                <p className="text-sm font-medium text-foreground">Account</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
             </div>
-            <Switch checked={autoLogoutEnabled} onCheckedChange={setAutoLogoutEnabled} />
           </div>
-        </div>
 
-        <div className="glass-card p-5 space-y-4">
-          <div className="flex items-center gap-3">
-            <Palette className="h-4 w-4" />
-            <h3 className="font-medium text-foreground">Background Theme</h3>
+          {/* Appearance */}
+          <div className="glass-card p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {theme === "dark" ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
+                <div>
+                  <Label className="text-sm font-medium">Appearance</Label>
+                  <p className="text-[11px] text-muted-foreground">{theme === "dark" ? "Dark mode" : "Light mode"}</p>
+                </div>
+              </div>
+              <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">Choose an animated background for your workspace</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {BG_THEMES.map((t) => (
+
+          {/* Auto Logout */}
+          <div className="glass-card p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <Label className="text-sm font-medium">Auto Logout</Label>
+                  <p className="text-[11px] text-muted-foreground">Sign out after 1 min inactivity</p>
+                </div>
+              </div>
+              <Switch checked={autoLogoutEnabled} onCheckedChange={setAutoLogoutEnabled} />
+            </div>
+          </div>
+
+          {/* Background Theme */}
+          <div className="glass-card p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <Palette className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Background Theme</h3>
+                <p className="text-[11px] text-muted-foreground">Choose an animated background</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {BG_THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setBgTheme(t.id)}
+                  className={`relative rounded-xl border p-2.5 text-left transition-all hover:scale-[1.02] ${
+                    bgTheme === t.id ? "border-foreground/30 bg-secondary/50" : "border-border hover:border-foreground/15"
+                  }`}
+                >
+                  <div className={`h-10 rounded-lg mb-1.5 ${t.preview}`} />
+                  <p className="text-[11px] font-medium text-foreground">{t.name}</p>
+                  {bgTheme === t.id && (
+                    <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-foreground flex items-center justify-center">
+                      <Check className="h-2.5 w-2.5 text-background" />
+                    </div>
+                  )}
+                </button>
+              ))}
               <button
-                key={t.id}
-                onClick={() => setBgTheme(t.id)}
-                className={`relative rounded-xl border-2 p-3 text-left transition-all hover:scale-[1.02] ${
-                  bgTheme === t.id ? "border-primary shadow-md shadow-primary/10" : "border-border hover:border-muted-foreground/30"
+                onClick={() => { if (customImageUrl) setBgTheme("custom-image"); else fileInputRef.current?.click(); }}
+                className={`relative rounded-xl border p-2.5 text-left transition-all hover:scale-[1.02] ${
+                  bgTheme === "custom-image" ? "border-foreground/30 bg-secondary/50" : "border-border hover:border-foreground/15"
                 }`}
               >
-                <div className={`h-12 rounded-lg mb-2 ${t.preview}`} />
-                <p className="text-xs font-medium text-foreground">{t.name}</p>
-                <p className="text-[10px] text-muted-foreground">{t.description}</p>
-                {bgTheme === t.id && (
-                  <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="h-3 w-3 text-primary-foreground" />
+                <div className="h-10 rounded-lg mb-1.5 overflow-hidden flex items-center justify-center bg-muted/30">
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : customImageUrl ? <img src={customImageUrl} alt="Custom bg" className="w-full h-full object-cover rounded-lg" /> : <ImagePlus className="h-4 w-4 text-muted-foreground" />}
+                </div>
+                <p className="text-[11px] font-medium text-foreground">{customImageUrl ? "Your Image" : "Upload"}</p>
+                {bgTheme === "custom-image" && (
+                  <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-foreground flex items-center justify-center">
+                    <Check className="h-2.5 w-2.5 text-background" />
                   </div>
                 )}
               </button>
-            ))}
+            </div>
 
-            <button
-              onClick={() => { if (customImageUrl) setBgTheme("custom-image"); else fileInputRef.current?.click(); }}
-              className={`relative rounded-xl border-2 p-3 text-left transition-all hover:scale-[1.02] ${
-                bgTheme === "custom-image" ? "border-primary shadow-md shadow-primary/10" : "border-border hover:border-muted-foreground/30"
-              }`}
-            >
-              <div className="h-12 rounded-lg mb-2 overflow-hidden flex items-center justify-center bg-muted/30">
-                {uploading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : customImageUrl ? <img src={customImageUrl} alt="Custom bg" className="w-full h-full object-cover rounded-lg" /> : <ImagePlus className="h-5 w-5 text-muted-foreground" />}
+            {customImageUrl && (
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="text-xs rounded-lg" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                  {uploading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ImagePlus className="h-3 w-3 mr-1" />} Change
+                </Button>
+                <Button size="sm" variant="ghost" className="text-xs rounded-lg text-destructive hover:text-destructive" onClick={removeCustomImage}>
+                  <Trash2 className="h-3 w-3 mr-1" /> Remove
+                </Button>
               </div>
-              <p className="text-xs font-medium text-foreground">Your Image</p>
-              <p className="text-[10px] text-muted-foreground">{customImageUrl ? "Custom photo" : "Upload image"}</p>
-              {bgTheme === "custom-image" && (
-                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                  <Check className="h-3 w-3 text-primary-foreground" />
-                </div>
-              )}
-            </button>
+            )}
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           </div>
 
-          {customImageUrl && (
-            <div className="flex gap-2 pt-1">
-              <Button size="sm" variant="outline" className="text-xs rounded-lg" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-                {uploading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ImagePlus className="h-3 w-3 mr-1" />}
-                Change Image
-              </Button>
-              <Button size="sm" variant="ghost" className="text-xs rounded-lg text-destructive hover:text-destructive" onClick={removeCustomImage}>
-                <Trash2 className="h-3 w-3 mr-1" /> Remove
-              </Button>
-            </div>
-          )}
-
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          {/* Sign out */}
+          <Button variant="outline" onClick={() => signOut()} className="w-full rounded-xl gap-2 text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/5">
+            <LogOut className="h-4 w-4" /> Sign out
+          </Button>
         </div>
-
-        <Button variant="destructive" onClick={() => signOut()} className="rounded-xl">
-          <LogOut className="h-4 w-4 mr-2" /> Sign out
-        </Button>
       </div>
     </DashboardLayout>
   );

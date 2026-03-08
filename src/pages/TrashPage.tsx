@@ -7,7 +7,7 @@ import { FileGrid } from "@/components/files/FileGrid";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StickyNote, Files, RotateCcw } from "lucide-react";
+import { StickyNote, Files, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
 
@@ -18,12 +18,7 @@ export default function TrashPage() {
   const { data: trashedNotes = [], isLoading: notesLoading } = useQuery({
     queryKey: ["trashed-notes", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("notes")
-        .select("*")
-        .eq("user_id", user!.id)
-        .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
+      const { data, error } = await supabase.from("notes").select("*").eq("user_id", user!.id).not("deleted_at", "is", null).order("deleted_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -31,38 +26,25 @@ export default function TrashPage() {
   });
 
   const restoreNoteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("notes").update({ deleted_at: null }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["trashed-notes"] });
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Note restored");
-    },
+    mutationFn: async (id: string) => { const { error } = await supabase.from("notes").update({ deleted_at: null }).eq("id", id); if (error) throw error; },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["trashed-notes"] }); queryClient.invalidateQueries({ queryKey: ["notes"] }); toast.success("Note restored"); },
   });
 
   const permanentDeleteNoteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("notes").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["trashed-notes"] });
-      toast.success("Note permanently deleted");
-    },
+    mutationFn: async (id: string) => { const { error } = await supabase.from("notes").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["trashed-notes"] }); toast.success("Note permanently deleted"); },
   });
 
   return (
     <DashboardLayout>
-      <h2 className="text-xl font-semibold text-foreground mb-6">Trash</h2>
+      <h1 className="text-xl font-semibold text-foreground mb-6">Trash</h1>
 
       <Tabs defaultValue="files" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="files" className="gap-1.5 text-[13px]">
+        <TabsList className="mb-4 bg-secondary/50 rounded-xl border border-border">
+          <TabsTrigger value="files" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Files className="h-3.5 w-3.5" /> Files
           </TabsTrigger>
-          <TabsTrigger value="notes" className="gap-1.5 text-[13px]">
+          <TabsTrigger value="notes" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <StickyNote className="h-3.5 w-3.5" /> Notes
           </TabsTrigger>
         </TabsList>
@@ -75,15 +57,12 @@ export default function TrashPage() {
           {notesLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="glass-card animate-pulse p-4 space-y-3">
-                  <div className="h-4 bg-muted rounded w-3/4" />
-                  <div className="h-3 bg-muted rounded w-full" />
-                </div>
+                <div key={i} className="glass-card animate-pulse p-4 space-y-3"><div className="h-4 bg-muted rounded w-3/4" /><div className="h-3 bg-muted rounded w-full" /></div>
               ))}
             </div>
           ) : trashedNotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-              <StickyNote className="h-12 w-12 mb-4 opacity-20" />
+              <Trash2 className="h-12 w-12 mb-4 opacity-20" />
               <p className="text-base font-medium">No deleted notes</p>
               <p className="text-sm mt-1 text-muted-foreground/70">Deleted notes will appear here</p>
             </div>

@@ -2,87 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Söhne:wght@400;500;600&display=swap');
 
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --foreground: 0 0% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 0 0% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 0 0% 8%;
 
-    --primary: 211 100% 50%;
+    --primary: 0 0% 8%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 8%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 8%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 211 100% 50%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 8%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 4% 46%;
-    --sidebar-primary: 211 100% 50%;
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 0 0% 45%;
+    --sidebar-primary: 0 0% 8%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 96%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-accent: 0 0% 93%;
+    --sidebar-accent-foreground: 0 0% 8%;
+    --sidebar-border: 0 0% 91%;
+    --sidebar-ring: 0 0% 8%;
+
+    --chat-user: 0 0% 8%;
+    --chat-user-foreground: 0 0% 100%;
+    --chat-ai: 0 0% 97%;
+    --chat-ai-foreground: 0 0% 8%;
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
+    --background: 220 13% 8%;
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 13% 10%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 13% 10%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 211 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 220 13% 8%;
 
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 10% 16%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 220 10% 16%;
+    --muted-foreground: 220 5% 55%;
 
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 220 10% 16%;
+    --accent-foreground: 0 0% 95%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 211 100% 50%;
+    --border: 220 10% 18%;
+    --input: 220 10% 18%;
+    --ring: 0 0% 100%;
 
-    --sidebar-background: 0 0% 2%;
-    --sidebar-foreground: 240 5% 65%;
-    --sidebar-primary: 211 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4% 16%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-background: 220 13% 6%;
+    --sidebar-foreground: 220 5% 55%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 220 13% 8%;
+    --sidebar-accent: 220 10% 14%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 10% 15%;
+    --sidebar-ring: 0 0% 100%;
+
+    --chat-user: 220 10% 18%;
+    --chat-user-foreground: 0 0% 95%;
+    --chat-ai: 220 13% 10%;
+    --chat-ai-foreground: 0 0% 95%;
   }
 }
 
@@ -128,7 +138,6 @@
   color: hsl(var(--foreground));
 }
 
-/* ... keep existing code (all prose-editor styles from p through taskList) ... */
 .prose-editor p {
   margin: 0.25em 0;
 }
@@ -317,4 +326,22 @@
   20% { opacity: 0.8; }
   50% { opacity: 1; transform: translate(30px, -20px); }
   80% { opacity: 0.6; transform: translate(-15px, 10px); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
 }
