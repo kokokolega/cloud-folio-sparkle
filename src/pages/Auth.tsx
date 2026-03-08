@@ -21,7 +21,7 @@ export default function Auth() {
   const { session, loading } = useAuth();
   const { startGuestSession } = useGuestMode();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
