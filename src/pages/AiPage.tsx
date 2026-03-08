@@ -456,7 +456,7 @@ export default function AiPage() {
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5"
             />
-            <Sparkles className="h-9 w-9 text-foreground/80 relative z-10" />
+            <Bot className="h-9 w-9 text-foreground/80 relative z-10" />
           </div>
           <motion.div
             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
