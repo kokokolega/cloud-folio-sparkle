@@ -1,4 +1,4 @@
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2 } from "lucide-react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
