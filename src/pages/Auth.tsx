@@ -48,13 +48,6 @@ export default function Auth() {
         if (error) throw error;
         toast.success("Check your email for a reset link");
         setMode("login");
-      } else if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        toast.success("Account created! Check your email to verify.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
