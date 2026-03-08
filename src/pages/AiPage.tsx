@@ -7,8 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Send, Loader2, Sparkles, StickyNote, FileDown, User, Bot, Trash2,
-  PanelLeftClose, PanelLeftOpen, Clock, Globe, Paperclip, Download,
-  X, Plus, ArrowUp,
+  PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
+  X, Plus, ArrowUp, Zap, MessageSquarePlus, Search, BookOpen, Lightbulb,
+  LayoutGrid, GripVertical,
 } from "lucide-react";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
@@ -16,6 +17,11 @@ import { NoteMentionDropdown } from "@/components/ai/NoteMentionDropdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -29,12 +35,12 @@ interface FileAttachment {
 }
 
 const QUICK_PROMPTS = [
-  { icon: "📝", text: "Create a note about project planning tips" },
-  { icon: "📊", text: "Make a presentation on time management" },
-  { icon: "🔀", text: "Draw a flowchart for user onboarding" },
-  { icon: "🧠", text: "Create a mind map about web development" },
-  { icon: "🌐", text: "Search the web for latest AI trends" },
-  { icon: "📐", text: "Generate a diagram of a REST API architecture" },
+  { icon: <Zap className="h-4 w-4" />, text: "Create a note about project planning tips", color: "from-amber-500/10 to-orange-500/10 border-amber-500/20" },
+  { icon: <LayoutGrid className="h-4 w-4" />, text: "Make a presentation on time management", color: "from-blue-500/10 to-cyan-500/10 border-blue-500/20" },
+  { icon: <Lightbulb className="h-4 w-4" />, text: "Draw a flowchart for user onboarding", color: "from-emerald-500/10 to-green-500/10 border-emerald-500/20" },
+  { icon: <BookOpen className="h-4 w-4" />, text: "Create a mind map about web development", color: "from-purple-500/10 to-violet-500/10 border-purple-500/20" },
+  { icon: <Search className="h-4 w-4" />, text: "Search the web for latest AI trends", color: "from-rose-500/10 to-pink-500/10 border-rose-500/20" },
+  { icon: <MessageSquarePlus className="h-4 w-4" />, text: "Generate a diagram of a REST API", color: "from-sky-500/10 to-indigo-500/10 border-sky-500/20" },
 ];
 
 function parseNoteMarker(content: string) {
@@ -106,7 +112,6 @@ export default function AiPage() {
     }
   }, [messages]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -316,255 +321,362 @@ export default function AiPage() {
     );
   }
 
-  return (
-    <DashboardLayout noPadding>
-      <div className="h-[calc(100vh-0px)] md:h-screen flex">
-        {/* Chat history sidebar */}
-        {isAuthenticated && (
-          <ChatHistorySidebar
-            activeId={activeConversationId}
-            onSelect={loadConversation}
-            onNewChat={handleNewChat}
-            open={historySidebarOpen}
-            onClose={() => setHistorySidebarOpen(false)}
+  const renderWelcome = () => (
+    <div className="h-full flex flex-col items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="text-center max-w-2xl w-full"
+      >
+        {/* Animated logo */}
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1, type: "spring", stiffness: 200 }}
+          className="relative mx-auto mb-8"
+        >
+          <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-foreground/10 to-foreground/5 flex items-center justify-center mx-auto relative overflow-hidden">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5"
+            />
+            <Sparkles className="h-9 w-9 text-foreground/80 relative z-10" />
+          </div>
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-primary/5 to-primary/10 blur-xl -z-10"
           />
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-3xl md:text-4xl font-bold text-foreground mb-3 tracking-tight"
+        >
+          What can I help with?
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35 }}
+          className="text-sm text-muted-foreground mb-10 max-w-md mx-auto leading-relaxed"
+        >
+          Notes, presentations, diagrams, web search & more.
+          <br />
+          <span className="text-muted-foreground/60">Type <kbd className="px-1.5 py-0.5 rounded bg-secondary text-[11px] font-mono">@</kbd> to reference a note.</span>
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-xl mx-auto"
+        >
+          {QUICK_PROMPTS.map((p, i) => (
+            <motion.button
+              key={p.text}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 + i * 0.06 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => send(p.text)}
+              className={`flex items-center gap-3 text-left text-sm px-4 py-3.5 rounded-2xl border bg-gradient-to-br ${p.color} hover:shadow-md transition-shadow text-foreground group`}
+            >
+              <span className="text-foreground/60 group-hover:text-foreground/80 transition-colors">{p.icon}</span>
+              <span className="text-muted-foreground group-hover:text-foreground transition-colors line-clamp-1 text-[13px]">{p.text}</span>
+            </motion.button>
+          ))}
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+
+  const renderMessages = () => (
+    <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-1">
+      <AnimatePresence initial={false}>
+        {messages.map((msg, i) => {
+          const isUser = msg.role === "user";
+          const noteMarker = !isUser ? parseNoteMarker(msg.content) : null;
+          const presentationMarker = !isUser ? parsePresentationMarker(msg.content) : null;
+          const displayContent = stripMarkers(msg.content);
+          const mermaidBlocks = !isUser ? extractMermaidBlocks(displayContent) : [];
+
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className={`py-5 ${i > 0 ? "border-t border-border/30" : ""}`}
+            >
+              <div className="flex gap-3.5">
+                <motion.div
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                    isUser
+                      ? "bg-gradient-to-br from-foreground/10 to-foreground/5"
+                      : "bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10"
+                  }`}
+                >
+                  {isUser ? (
+                    <User className="h-4 w-4 text-foreground/60" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 text-foreground/70" />
+                  )}
+                </motion.div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground/70 mb-2 tracking-wide uppercase">
+                    {isUser ? "You" : "Oltrid AI"}
+                  </p>
+                  {isUser ? (
+                    <div>
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {msg.attachments.map((a, idx) => (
+                            <span key={idx} className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-xl bg-secondary/80 border border-border/50">
+                              <Paperclip className="h-3 w-3 text-muted-foreground" /> {a.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-wrap">
+                        {msg.content.replace(/\[Attached file:.*?\]\n?/g, "").replace("[Web Search Mode] ", "")}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {mermaidBlocks.length > 0 ? (
+                        <div className="space-y-3">
+                          {mermaidBlocks.map((block, bi) => (
+                            <div key={bi}>
+                              {block.before && <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />}
+                              <MermaidDiagram chart={block.mermaid} />
+                              {block.after && <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
+                      )}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="flex items-center gap-1.5 mt-4 flex-wrap"
+                      >
+                        {noteMarker && (
+                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => saveAsNote(msg.content)}>
+                            <StickyNote className="h-3 w-3" /> Save Note
+                          </Button>
+                        )}
+                        {presentationMarker && (
+                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => saveAsPdf(msg.content)}>
+                            <FileDown className="h-3 w-3" /> Save PDF
+                          </Button>
+                        )}
+                        {isAuthenticated && (
+                          <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-xl text-muted-foreground" onClick={() => saveResponseAsFile(msg.content)}>
+                            <FileDown className="h-3 w-3" /> Save to Files
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-xl text-muted-foreground" onClick={() => downloadContent(msg.content)}>
+                          <Download className="h-3 w-3" /> Download
+                        </Button>
+                      </motion.div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+        {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-5 border-t border-border/30">
+            <div className="flex gap-3.5">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <Sparkles className="h-4 w-4 text-foreground/70" />
+              </div>
+              <div className="pt-1">
+                <p className="text-xs font-semibold text-foreground/70 mb-2 tracking-wide uppercase">Oltrid AI</p>
+                <div className="flex items-center gap-1.5">
+                  <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} className="w-2 h-2 rounded-full bg-foreground/30" />
+                  <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }} className="w-2 h-2 rounded-full bg-foreground/30" />
+                  <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }} className="w-2 h-2 rounded-full bg-foreground/30" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  const renderInputArea = () => (
+    <div className="shrink-0 bg-background/80 backdrop-blur-xl">
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-3">
+        {attachedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {attachedFiles.map((f, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-xl bg-secondary/80 border border-border/50"
+              >
+                <Paperclip className="h-3 w-3 text-muted-foreground" />
+                <span className="truncate max-w-[120px]">{f.name}</span>
+                <button onClick={() => removeAttachment(i)} className="hover:text-destructive transition-colors"><X className="h-3 w-3" /></button>
+              </motion.span>
+            ))}
+          </div>
         )}
 
-        {/* Main chat area */}
-        <div className="flex-1 flex flex-col min-w-0 relative">
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-border/50 shrink-0">
-            <div className="flex items-center gap-2">
-              {isAuthenticated && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg"
-                  onClick={() => setHistorySidebarOpen(!historySidebarOpen)}
-                >
-                  {historySidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-                </Button>
-              )}
-              <span className="text-sm font-semibold text-foreground">Oltrid AI</span>
-              {isGuest && !user && (
-                <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                  Guest · {guestMinutesLeft}m
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              {messages.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-                  <Plus className="h-3.5 w-3.5" /> New chat
-                </Button>
-              )}
-            </div>
+        <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
+
+        <div className="relative flex items-end gap-2 rounded-2xl border border-border/60 bg-secondary/20 px-3 py-2 focus-within:border-foreground/20 focus-within:shadow-[0_0_0_1px_hsl(var(--foreground)/0.08)] transition-all duration-200">
+          <div className="flex items-center gap-0.5 shrink-0 pb-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+              onClick={() => fileInputRef.current?.click()}
+              title="Attach file"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={webSearchEnabled ? "secondary" : "ghost"}
+              size="icon"
+              className={`h-8 w-8 rounded-xl transition-all ${webSearchEnabled ? "text-foreground bg-secondary shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
+              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+              title="Toggle web search"
+            >
+              <Globe className="h-4 w-4" />
+            </Button>
+            <VoiceInput
+              onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }}
+              disabled={isLoading}
+            />
           </div>
 
-          {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center px-4">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center max-w-2xl w-full"
-                >
-                  <div className="h-16 w-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-6">
-                    <Sparkles className="h-8 w-8 text-foreground/80" />
-                  </div>
-                  <h1 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
-                    What can I help with?
-                  </h1>
-                  <p className="text-sm text-muted-foreground mb-10 max-w-md mx-auto">
-                    Notes, presentations, diagrams, web search & more. Type @ to reference a note.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
-                    {QUICK_PROMPTS.map((p) => (
-                      <button
-                        key={p.text}
-                        onClick={() => send(p.text)}
-                        className="flex items-center gap-3 text-left text-sm px-4 py-3 rounded-xl border border-border bg-background hover:bg-secondary/60 transition-colors text-foreground group"
-                      >
-                        <span className="text-lg">{p.icon}</span>
-                        <span className="text-muted-foreground group-hover:text-foreground transition-colors line-clamp-1">{p.text}</span>
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              </div>
-            ) : (
-              <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-6">
-                <AnimatePresence initial={false}>
-                  {messages.map((msg, i) => {
-                    const isUser = msg.role === "user";
-                    const noteMarker = !isUser ? parseNoteMarker(msg.content) : null;
-                    const presentationMarker = !isUser ? parsePresentationMarker(msg.content) : null;
-                    const displayContent = stripMarkers(msg.content);
-                    const mermaidBlocks = !isUser ? extractMermaidBlocks(displayContent) : [];
+          <textarea
+            ref={textareaRef}
+            placeholder={webSearchEnabled ? "Search the web…" : "Message Oltrid AI…"}
+            value={input}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+            disabled={isLoading}
+            rows={1}
+            className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/50 py-1.5 min-h-[36px] max-h-[200px]"
+          />
 
-                    return (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex gap-3"
-                      >
-                        <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 mt-1 ${isUser ? "bg-secondary" : "bg-secondary"}`}>
-                          {isUser ? <User className="h-3.5 w-3.5 text-foreground/70" /> : <Sparkles className="h-3.5 w-3.5 text-foreground/70" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-muted-foreground mb-1.5">{isUser ? "You" : "Oltrid AI"}</p>
-                          {isUser ? (
-                            <div>
-                              {msg.attachments && msg.attachments.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mb-2">
-                                  {msg.attachments.map((a, idx) => (
-                                    <span key={idx} className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg bg-secondary border border-border">
-                                      <Paperclip className="h-3 w-3" /> {a.name}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                              <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
-                                {msg.content.replace(/\[Attached file:.*?\]\n?/g, "").replace("[Web Search Mode] ", "")}
-                              </p>
-                            </div>
-                          ) : (
-                            <>
-                              {mermaidBlocks.length > 0 ? (
-                                <div className="space-y-3">
-                                  {mermaidBlocks.map((block, bi) => (
-                                    <div key={bi}>
-                                      {block.before && <div className="text-sm leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />}
-                                      <MermaidDiagram chart={block.mermaid} />
-                                      {block.after && <div className="text-sm leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="text-sm leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
-                              )}
-                              <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-                                {noteMarker && (
-                                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-lg" onClick={() => saveAsNote(msg.content)}>
-                                    <StickyNote className="h-3 w-3" /> Save Note
-                                  </Button>
-                                )}
-                                {presentationMarker && (
-                                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-lg" onClick={() => saveAsPdf(msg.content)}>
-                                    <FileDown className="h-3 w-3" /> Save PDF
-                                  </Button>
-                                )}
-                                {isAuthenticated && (
-                                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-lg text-muted-foreground" onClick={() => saveResponseAsFile(msg.content)}>
-                                    <FileDown className="h-3 w-3" /> Save to Files
-                                  </Button>
-                                )}
-                                <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-lg text-muted-foreground" onClick={() => downloadContent(msg.content)}>
-                                  <Download className="h-3 w-3" /> Download
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                  {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                      <div className="h-7 w-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-1">
-                        <Sparkles className="h-3.5 w-3.5 text-foreground/70" />
-                      </div>
-                      <div className="pt-1">
-                        <p className="text-xs font-medium text-muted-foreground mb-1.5">Oltrid AI</p>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
-                          <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
-                          <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-
-          {/* Input area */}
-          <div className="shrink-0 border-t border-border/50 bg-background">
-            <div className="max-w-3xl mx-auto px-4 md:px-6 py-3">
-              {/* Attached files */}
-              {attachedFiles.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {attachedFiles.map((f, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg bg-secondary border border-border">
-                      <Paperclip className="h-3 w-3 text-muted-foreground" />
-                      <span className="truncate max-w-[120px]">{f.name}</span>
-                      <button onClick={() => removeAttachment(i)} className="hover:text-destructive"><X className="h-3 w-3" /></button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Mention dropdown */}
-              <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
-
-              {/* Input box */}
-              <div className="relative flex items-end gap-2 rounded-2xl border border-border bg-secondary/30 px-3 py-2 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring transition-all">
-                <div className="flex items-center gap-1 shrink-0 pb-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                    onClick={() => fileInputRef.current?.click()}
-                    title="Attach file"
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={webSearchEnabled ? "secondary" : "ghost"}
-                    size="icon"
-                    className={`h-8 w-8 rounded-lg ${webSearchEnabled ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                    onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                    title="Toggle web search"
-                  >
-                    <Globe className="h-4 w-4" />
-                  </Button>
-                  <VoiceInput
-                    onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }}
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <textarea
-                  ref={textareaRef}
-                  placeholder={webSearchEnabled ? "Search the web…" : "Message Oltrid AI…"}
-                  value={input}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-                  disabled={isLoading}
-                  rows={1}
-                  className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-1.5 min-h-[36px] max-h-[200px]"
-                />
-
-                <Button
-                  size="icon"
-                  className="h-8 w-8 rounded-lg shrink-0 mb-0.5"
-                  onClick={() => send()}
-                  disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
-                </Button>
-              </div>
-
-              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileAttach} />
-              <p className="text-[10px] text-muted-foreground/50 text-center mt-2">
-                Oltrid AI can make mistakes. Verify important information.
-              </p>
-            </div>
-          </div>
+          <motion.div whileTap={{ scale: 0.9 }}>
+            <Button
+              size="icon"
+              className="h-8 w-8 rounded-xl shrink-0 mb-0.5 transition-all"
+              onClick={() => send()}
+              disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}
+            >
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+            </Button>
+          </motion.div>
         </div>
+
+        <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileAttach} />
+        <p className="text-[10px] text-muted-foreground/40 text-center mt-2">
+          Oltrid AI can make mistakes. Verify important information.
+        </p>
+      </div>
+    </div>
+  );
+
+  return (
+    <DashboardLayout noPadding>
+      <div className="h-[calc(100vh-48px)] md:h-screen flex">
+        <ResizablePanelGroup direction="horizontal" className="flex-1">
+          {/* Main chat area */}
+          <ResizablePanel defaultSize={historySidebarOpen && isAuthenticated ? 75 : 100} minSize={50}>
+            <div className="h-full flex flex-col min-w-0 relative">
+              {/* Top bar */}
+              <div className="flex items-center justify-between px-4 md:px-6 h-13 border-b border-border/30 shrink-0 bg-background/60 backdrop-blur-md">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-foreground/10 to-foreground/5 flex items-center justify-center">
+                      <Sparkles className="h-3.5 w-3.5 text-foreground/70" />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground tracking-tight">Oltrid AI</span>
+                  </div>
+                  {isGuest && !user && (
+                    <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">
+                      Guest · {guestMinutesLeft}m
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  {messages.length > 0 && (
+                    <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl">
+                      <Plus className="h-3.5 w-3.5" /> New
+                    </Button>
+                  )}
+                  {isAuthenticated && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground"
+                      onClick={() => setHistorySidebarOpen(!historySidebarOpen)}
+                      title="Chat history"
+                    >
+                      {historySidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Messages / Welcome */}
+              <div ref={scrollRef} className="flex-1 overflow-y-auto">
+                {messages.length === 0 ? renderWelcome() : renderMessages()}
+              </div>
+
+              {/* Input */}
+              {renderInputArea()}
+            </div>
+          </ResizablePanel>
+
+          {/* Right-side chat history sidebar - resizable */}
+          {historySidebarOpen && isAuthenticated && (
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={25} minSize={18} maxSize={40} className="hidden md:block">
+                <ChatHistorySidebar
+                  activeId={activeConversationId}
+                  onSelect={loadConversation}
+                  onNewChat={handleNewChat}
+                  open={true}
+                  onClose={() => setHistorySidebarOpen(false)}
+                />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
+
+        {/* Mobile chat history overlay */}
+        {historySidebarOpen && isAuthenticated && (
+          <div className="md:hidden">
+            <ChatHistorySidebar
+              activeId={activeConversationId}
+              onSelect={loadConversation}
+              onNewChat={handleNewChat}
+              open={true}
+              onClose={() => setHistorySidebarOpen(false)}
+            />
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
