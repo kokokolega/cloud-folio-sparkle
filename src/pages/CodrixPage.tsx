@@ -39,7 +39,7 @@ export default function CodrixPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [showAi, setShowAi] = useState(false);
-  const [showImageGen, setShowImageGen] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
