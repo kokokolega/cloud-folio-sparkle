@@ -737,7 +737,7 @@ export default function AiPage() {
                 <div className="flex items-center gap-2.5">
                   <div className="flex items-center gap-2">
                     <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-foreground/10 to-foreground/5 flex items-center justify-center">
-                      <Sparkles className="h-3.5 w-3.5 text-foreground/70" />
+                      <Bot className="h-3.5 w-3.5 text-foreground/70" />
                     </div>
                     <span className="text-sm font-semibold text-foreground tracking-tight">Oltrid AI</span>
                   </div>
