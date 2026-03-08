@@ -226,12 +226,10 @@ export default function CodrixPage() {
                 <Plus className="h-3 w-3" />
               </button>
             </div>
-            <textarea
-              ref={textareaRef}
+            <CodeEditor
               value={activeFile.content}
-              onChange={(e) => updateFileContent(e.target.value)}
-              className="flex-1 w-full p-4 bg-background text-foreground font-mono text-[13px] leading-relaxed resize-none outline-none"
-              spellCheck={false}
+              onChange={updateFileContent}
+              language={activeFile.language}
               placeholder={`Write ${activeFile.language.toUpperCase()} code here...`}
             />
           </div>
