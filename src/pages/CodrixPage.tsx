@@ -185,6 +185,8 @@ export default function CodrixPage() {
             <Button variant={showAi ? "secondary" : "ghost"} size="sm" className="h-7 rounded-lg text-[11px] gap-1" onClick={() => setShowAi(!showAi)}>
               <Sparkles className="h-3 w-3" /> AI
             </Button>
+            <Button variant={showImageGen ? "secondary" : "ghost"} size="sm" className="h-7 rounded-lg text-[11px] gap-1" onClick={() => setShowImageGen(!showImageGen)}>
+              <ImagePlus className="h-3 w-3" /> Image
             <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[11px] gap-1" onClick={runPreview}>
               <Play className="h-3 w-3" /> Run
             </Button>
