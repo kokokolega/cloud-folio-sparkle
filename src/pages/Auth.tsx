@@ -278,22 +278,6 @@ export default function Auth() {
 
           {/* Mode switching */}
           <div className="mt-8 text-center text-sm text-muted-foreground">
-            {mode === "login" && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-                Don't have an account?{" "}
-                <button onClick={() => setMode("signup")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Sign up
-                </button>
-              </motion.p>
-            )}
-            {mode === "signup" && (
-              <p>
-                Already have an account?{" "}
-                <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Sign in
-                </button>
-              </p>
-            )}
             {mode === "forgot" && (
               <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
                 Back to sign in
