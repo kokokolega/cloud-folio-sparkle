@@ -6,10 +6,10 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Loader2, Sparkles, StickyNote, FileDown, User,
+  Loader2, Bot, StickyNote, FileDown, User,
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
-  X, Plus, ArrowUp, Zap, MessageSquarePlus, Search, BookOpen, Lightbulb,
-  LayoutGrid, Pencil, Trash2, Brain,
+  X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
+  NotebookPen, MessageCircle, Workflow, Globe2,
 } from "lucide-react";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
