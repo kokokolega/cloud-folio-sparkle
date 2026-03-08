@@ -120,10 +120,6 @@ export function AppSidebar() {
             );
           })}
         </SidebarMenu>
-        {/* Collapse toggle on desktop */}
-        <div className="hidden md:flex justify-center pt-1">
-          <SidebarTrigger className="h-7 w-7 text-muted-foreground hover:text-foreground" />
-        </div>
       </SidebarFooter>
     </Sidebar>
   );
