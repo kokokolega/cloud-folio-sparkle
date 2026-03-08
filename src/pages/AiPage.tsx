@@ -359,7 +359,7 @@ export default function AiPage() {
       }
     }
     return full;
-  }, [webSearchEnabled, userNotes, userMemory]);
+  }, [webSearchEnabled, userNotes, userMemory, conversationHistory]);
 
   const send = async (text?: string) => {
     const msg = text || input.trim();
