@@ -495,7 +495,7 @@ export default function AiPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-lg mx-auto"
+          className="flex items-center justify-center gap-3"
         >
           {QUICK_PROMPTS.map((p, i) => (
             <motion.button
@@ -503,13 +503,13 @@ export default function AiPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.06 }}
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={() => send(p.text)}
-              className="flex flex-col items-center gap-2 text-center text-xs px-3 py-4 rounded-2xl border border-border/50 bg-secondary/30 hover:bg-secondary/60 hover:shadow-md transition-all text-foreground group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => send(p.prompt)}
+              className="h-10 w-10 rounded-xl border border-border/50 bg-secondary/30 hover:bg-secondary/60 hover:shadow-md transition-all flex items-center justify-center text-muted-foreground hover:text-foreground"
+              title={p.text}
             >
-              <span className="text-muted-foreground group-hover:text-foreground transition-colors">{p.icon}</span>
-              <span className="text-muted-foreground group-hover:text-foreground transition-colors text-[12px] leading-tight">{p.text}</span>
+              {p.icon}
             </motion.button>
           ))}
         </motion.div>
