@@ -6,9 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Play, Download, Save, Plus, Trash2, FileCode2, Code2,
-  Loader2, Send, Sparkles, Eye, X, ArrowUp,
+  Loader2, Send, Sparkles, Eye, X, ArrowUp, ImagePlus,
 } from "lucide-react";
 import { CodeEditor } from "@/components/codrix/CodeEditor";
+import { ImageGenerator } from "@/components/codrix/ImageGenerator";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;

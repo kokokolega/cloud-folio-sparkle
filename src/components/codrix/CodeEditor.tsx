@@ -1,7 +1,10 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import Prism from "prismjs";
+// @ts-ignore
 import "prismjs/components/prism-css";
+// @ts-ignore
 import "prismjs/components/prism-javascript";
+// @ts-ignore
 import "prismjs/components/prism-markup";
 
 const THEME_STYLES = `
