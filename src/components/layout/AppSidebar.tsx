@@ -37,21 +37,22 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className={cn("p-3 pb-2", collapsed && "flex items-center justify-center p-2")}>
+      <SidebarHeader className={cn("p-3 pb-2", collapsed && "md:flex md:items-center md:justify-center md:p-2")}>
+        {/* Desktop: collapsed = logo click to open; expanded = logo+text+close icon */}
         {collapsed ? (
           <button onClick={toggleSidebar} className="cursor-pointer hover:opacity-80 transition-opacity hidden md:flex">
             <OltridLogo className="h-7 w-7 shrink-0" />
           </button>
         ) : (
-          <div className="flex items-center gap-2 pl-1">
+          <div className="hidden md:flex items-center gap-2 pl-1">
             <OltridLogo className="h-6 w-6 shrink-0" />
             <span className="text-sm font-semibold tracking-tight text-foreground truncate">Oltrid</span>
-            <button onClick={toggleSidebar} className="ml-auto text-muted-foreground hover:text-foreground transition-colors hidden md:flex">
+            <button onClick={toggleSidebar} className="ml-auto text-muted-foreground hover:text-foreground transition-colors">
               <PanelLeftClose className="h-4 w-4" />
             </button>
           </div>
         )}
-        {/* Mobile: non-clickable header */}
+        {/* Mobile: single header */}
         <div className="flex items-center gap-2 pl-1 md:hidden">
           <OltridLogo className="h-6 w-6 shrink-0" />
           <span className="text-sm font-semibold tracking-tight text-foreground truncate">Oltrid</span>
