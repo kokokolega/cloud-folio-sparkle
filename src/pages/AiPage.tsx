@@ -644,7 +644,7 @@ export default function AiPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-5 border-t border-border/30">
             <div className="flex gap-3.5">
               <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                <Sparkles className="h-4 w-4 text-foreground/70" />
+                <Bot className="h-4 w-4 text-foreground/70" />
               </div>
               <div className="pt-1">
                 <p className="text-xs font-semibold text-foreground/70 mb-2 tracking-wide uppercase">Oltrid AI</p>
