@@ -40,7 +40,6 @@ export default function CodrixPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [showAi, setShowAi] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const activeFile = files.find(f => f.id === activeFileId) || files[0];
