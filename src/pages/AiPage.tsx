@@ -50,12 +50,10 @@ interface MemoryData {
 }
 
 const QUICK_PROMPTS = [
-  { icon: <Zap className="h-4 w-4" />, text: "Create a note about project planning tips", color: "from-amber-500/10 to-orange-500/10 border-amber-500/20" },
-  { icon: <LayoutGrid className="h-4 w-4" />, text: "Show me all my notes", color: "from-blue-500/10 to-cyan-500/10 border-blue-500/20" },
-  { icon: <Lightbulb className="h-4 w-4" />, text: "Draw a flowchart for user onboarding", color: "from-emerald-500/10 to-green-500/10 border-emerald-500/20" },
-  { icon: <Brain className="h-4 w-4" />, text: "Remember that I prefer dark mode and concise answers", color: "from-purple-500/10 to-violet-500/10 border-purple-500/20" },
-  { icon: <Search className="h-4 w-4" />, text: "Search the web for latest AI trends", color: "from-rose-500/10 to-pink-500/10 border-rose-500/20" },
-  { icon: <Pencil className="h-4 w-4" />, text: "Help me edit my most recent note", color: "from-sky-500/10 to-indigo-500/10 border-sky-500/20" },
+  { icon: <NotebookPen className="h-4 w-4" />, text: "Create a new note" },
+  { icon: <MessageCircle className="h-4 w-4" />, text: "Summarize my notes" },
+  { icon: <Workflow className="h-4 w-4" />, text: "Draw a flowchart" },
+  { icon: <Globe2 className="h-4 w-4" />, text: "Search the web" },
 ];
 
 function parseNoteMarker(content: string) {

@@ -18,7 +18,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const mainNav = [
-  { title: "Oltrid AI", url: "/", icon: Sparkles },
+  { title: "Oltrid AI", url: "/", icon: Bot },
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "All Files", url: "/files", icon: Files },
   { title: "Groups", url: "/groups", icon: Users },
