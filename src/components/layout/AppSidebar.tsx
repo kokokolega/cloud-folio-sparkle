@@ -37,13 +37,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-3 pb-2">
-        <div className={cn("flex items-center gap-2", collapsed ? "justify-center" : "pl-1")}>
-          <OltridLogo className="h-6 w-6 shrink-0" />
-          {!collapsed && (
+      <SidebarHeader className={cn("p-3 pb-2", collapsed && "flex items-center justify-center p-2")}>
+        {collapsed ? (
+          <OltridLogo className="h-7 w-7 shrink-0" />
+        ) : (
+          <div className="flex items-center gap-2 pl-1">
             <span className="text-sm font-semibold tracking-tight text-foreground truncate">Oltrid</span>
-          )}
-        </div>
+          </div>
+        )}
       </SidebarHeader>
 
       <SidebarContent>
