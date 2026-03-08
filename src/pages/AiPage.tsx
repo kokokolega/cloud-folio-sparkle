@@ -550,7 +550,7 @@ export default function AiPage() {
                       : "bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10"
                   }`}
                 >
-                  {isUser ? <User className="h-4 w-4 text-foreground/60" /> : <Sparkles className="h-4 w-4 text-foreground/70" />}
+                  {isUser ? <User className="h-4 w-4 text-foreground/60" /> : <Bot className="h-4 w-4 text-foreground/70" />}
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground/70 mb-2 tracking-wide uppercase">
