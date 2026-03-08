@@ -140,22 +140,39 @@ export default function AiPage() {
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [userNotes, setUserNotes] = useState<NoteData[]>([]);
   const [userMemory, setUserMemory] = useState<MemoryData[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<{ title: string; messages: { role: string; content: string }[] }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isAuthenticated = !!user;
 
-  // Load notes and memory on mount & when user changes
+  // Load notes, memory, and conversation history on mount & when user changes
   useEffect(() => {
     if (!user) return;
     const loadContext = async () => {
-      const [notesRes, memRes] = await Promise.all([
+      const [notesRes, memRes, convsRes] = await Promise.all([
         supabase.from("notes").select("id, title, content, color, pinned, updated_at").eq("user_id", user.id).is("deleted_at", null).order("updated_at", { ascending: false }).limit(100),
         supabase.from("ai_memory").select("id, key, value").eq("user_id", user.id).limit(100),
+        supabase.from("ai_conversations").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(20),
       ]);
       if (notesRes.data) setUserNotes(notesRes.data);
       if (memRes.data) setUserMemory(memRes.data);
+      
+      // Load recent messages from past conversations
+      if (convsRes.data && convsRes.data.length > 0) {
+        const historyPromises = convsRes.data.slice(0, 10).map(async (conv) => {
+          const { data: msgs } = await supabase
+            .from("ai_messages")
+            .select("role, content")
+            .eq("conversation_id", conv.id)
+            .order("created_at", { ascending: true })
+            .limit(10);
+          return { title: conv.title, messages: (msgs || []).map(m => ({ role: m.role, content: m.content.slice(0, 300) })) };
+        });
+        const history = await Promise.all(historyPromises);
+        setConversationHistory(history.filter(h => h.messages.length > 0));
+      }
     };
     loadContext();
   }, [user]);
@@ -307,6 +324,7 @@ export default function AiPage() {
         webSearch: webSearchEnabled,
         notesContext: userNotes.map(n => ({ id: n.id, title: n.title, content: n.content, color: n.color, pinned: n.pinned, updated_at: n.updated_at })),
         memoryContext: userMemory.map(m => ({ key: m.key, value: m.value })),
+        conversationHistory: conversationHistory,
       }),
     });
     if (!resp.ok) { const err = await resp.json().catch(() => ({ error: "AI request failed" })); throw new Error(err.error || `AI request failed (${resp.status})`); }
@@ -341,7 +359,7 @@ export default function AiPage() {
       }
     }
     return full;
-  }, [webSearchEnabled, userNotes, userMemory]);
+  }, [webSearchEnabled, userNotes, userMemory, conversationHistory]);
 
   const send = async (text?: string) => {
     const msg = text || input.trim();

@@ -67,7 +67,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, webSearch, notesContext, memoryContext } = await req.json();
+    const { messages, webSearch, notesContext, memoryContext, conversationHistory } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY)
@@ -91,6 +91,17 @@ serve(async (req) => {
       systemMessages.push({
         role: "system",
         content: `## USER'S NOTES (${notesContext.length} total)\nYou have full access to manage these notes. Use the note IDs when editing/deleting.\n${notesSummary}`,
+      });
+    }
+
+    if (conversationHistory && conversationHistory.length > 0) {
+      const historySummary = conversationHistory.map((conv: any) => {
+        const msgSummary = conv.messages.map((m: any) => `  ${m.role}: ${m.content}`).join("\n");
+        return `### "${conv.title}"\n${msgSummary}`;
+      }).join("\n\n");
+      systemMessages.push({
+        role: "system",
+        content: `## PREVIOUS CONVERSATION HISTORY\nThese are the user's recent past conversations with you. Use this context to provide continuity and recall past discussions.\n\n${historySummary}`,
       });
     }
 
