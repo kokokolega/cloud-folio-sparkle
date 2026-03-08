@@ -6,9 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Play, Download, Save, Plus, Trash2, FileCode2, Code2,
-  Loader2, Send, Sparkles, Eye, X, ArrowUp,
+  Loader2, Send, Sparkles, Eye, X, ArrowUp, ImagePlus,
 } from "lucide-react";
 import { CodeEditor } from "@/components/codrix/CodeEditor";
+import { ImageGenerator } from "@/components/codrix/ImageGenerator";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -39,6 +40,7 @@ export default function CodrixPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [showAi, setShowAi] = useState(false);
+  const [showImageGen, setShowImageGen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -156,6 +158,20 @@ export default function CodrixPage() {
     } catch (e: any) { toast.error(e.message || "AI request failed"); } finally { setAiLoading(false); }
   };
 
+  const handleImageInsert = (dataUrl: string, alt: string) => {
+    const imgTag = `<img src="${dataUrl}" alt="${alt}" style="max-width: 100%; height: auto;" />`;
+    const htmlFile = files.find(f => f.language === "html");
+    if (htmlFile) {
+      setFiles(prev => prev.map(f => {
+        if (f.id !== htmlFile.id) return f;
+        const bodyEnd = f.content.lastIndexOf("</body>");
+        if (bodyEnd === -1) return { ...f, content: f.content + "\n" + imgTag };
+        return { ...f, content: f.content.slice(0, bodyEnd) + "  " + imgTag + "\n" + f.content.slice(bodyEnd) };
+      }));
+      setActiveFileId(htmlFile.id);
+    }
+  };
+
   return (
     <DashboardLayout noPadding>
       <div className="h-screen flex flex-col">
@@ -168,6 +184,9 @@ export default function CodrixPage() {
           <div className="flex items-center gap-1.5">
             <Button variant={showAi ? "secondary" : "ghost"} size="sm" className="h-7 rounded-lg text-[11px] gap-1" onClick={() => setShowAi(!showAi)}>
               <Sparkles className="h-3 w-3" /> AI
+            </Button>
+            <Button variant={showImageGen ? "secondary" : "ghost"} size="sm" className="h-7 rounded-lg text-[11px] gap-1" onClick={() => setShowImageGen(!showImageGen)}>
+              <ImagePlus className="h-3 w-3" /> Image
             </Button>
             <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[11px] gap-1" onClick={runPreview}>
               <Play className="h-3 w-3" /> Run
@@ -243,6 +262,15 @@ export default function CodrixPage() {
                   <Button variant="ghost" size="icon" className="h-5 w-5 rounded" onClick={() => setShowPreview(false)}><X className="h-3 w-3" /></Button>
                 </div>
                 <iframe ref={iframeRef} className="flex-1 w-full bg-white" sandbox="allow-scripts allow-modals" title="Codrix Preview" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Image Generator Panel */}
+          <AnimatePresence>
+            {showImageGen && (
+              <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 320 }} exit={{ opacity: 0, width: 0 }} className="flex flex-col border-l border-border bg-background shrink-0 overflow-hidden">
+                <ImageGenerator onInsert={handleImageInsert} />
               </motion.div>
             )}
           </AnimatePresence>
