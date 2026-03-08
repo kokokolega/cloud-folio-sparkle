@@ -228,7 +228,7 @@ export default function AiPage() {
     if (!user || msgs.length < 2) return convId;
     try {
       if (!convId) {
-        const title = msgs[0].content.slice(0, 60) || "New Chat";
+        const title = msgs[0].content.split(/\s+/).slice(0, 2).join(" ") || "New Chat";
         const { data } = await supabase.from("ai_conversations").insert({ user_id: user.id, title }).select("id").single();
         if (data) { convId = data.id; setActiveConversationId(convId); }
       }
