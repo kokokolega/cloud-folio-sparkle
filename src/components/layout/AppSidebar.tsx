@@ -1,4 +1,4 @@
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2 } from "lucide-react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
@@ -32,17 +32,22 @@ const bottomNav = [
 
 export function AppSidebar() {
   const location = useLocation();
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className={cn("p-3 pb-2", collapsed && "flex items-center justify-center p-2")}>
         {collapsed ? (
-          <OltridLogo className="h-7 w-7 shrink-0" />
+          <button onClick={toggleSidebar} className="cursor-pointer hover:opacity-80 transition-opacity">
+            <OltridLogo className="h-7 w-7 shrink-0" />
+          </button>
         ) : (
           <div className="flex items-center gap-2 pl-1">
             <span className="text-sm font-semibold tracking-tight text-foreground truncate">Oltrid</span>
+            <button onClick={toggleSidebar} className="ml-auto text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
           </div>
         )}
       </SidebarHeader>
@@ -115,10 +120,6 @@ export function AppSidebar() {
             );
           })}
         </SidebarMenu>
-        {/* Collapse toggle on desktop */}
-        <div className="hidden md:flex justify-center pt-1">
-          <SidebarTrigger className="h-7 w-7 text-muted-foreground hover:text-foreground" />
-        </div>
       </SidebarFooter>
     </Sidebar>
   );
