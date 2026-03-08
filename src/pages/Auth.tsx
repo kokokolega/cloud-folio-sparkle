@@ -248,7 +248,6 @@ export default function Auth() {
                 ) : (
                   <span className="flex items-center gap-2">
                     {mode === "login" && "Continue"}
-                    {mode === "signup" && "Create account"}
                     {mode === "forgot" && "Send reset link"}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>
