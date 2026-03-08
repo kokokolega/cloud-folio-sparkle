@@ -6,10 +6,10 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Send, Loader2, Sparkles, StickyNote, FileDown, User, Bot, Trash2,
+  Loader2, Sparkles, StickyNote, FileDown, User,
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
   X, Plus, ArrowUp, Zap, MessageSquarePlus, Search, BookOpen, Lightbulb,
-  LayoutGrid, GripVertical,
+  LayoutGrid, Pencil, Trash2, Brain,
 } from "lucide-react";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
@@ -34,13 +34,28 @@ interface FileAttachment {
   content: string;
 }
 
+interface NoteData {
+  id: string;
+  title: string;
+  content: string;
+  color: string;
+  pinned: boolean;
+  updated_at: string;
+}
+
+interface MemoryData {
+  id: string;
+  key: string;
+  value: string;
+}
+
 const QUICK_PROMPTS = [
   { icon: <Zap className="h-4 w-4" />, text: "Create a note about project planning tips", color: "from-amber-500/10 to-orange-500/10 border-amber-500/20" },
-  { icon: <LayoutGrid className="h-4 w-4" />, text: "Make a presentation on time management", color: "from-blue-500/10 to-cyan-500/10 border-blue-500/20" },
+  { icon: <LayoutGrid className="h-4 w-4" />, text: "Show me all my notes", color: "from-blue-500/10 to-cyan-500/10 border-blue-500/20" },
   { icon: <Lightbulb className="h-4 w-4" />, text: "Draw a flowchart for user onboarding", color: "from-emerald-500/10 to-green-500/10 border-emerald-500/20" },
-  { icon: <BookOpen className="h-4 w-4" />, text: "Create a mind map about web development", color: "from-purple-500/10 to-violet-500/10 border-purple-500/20" },
+  { icon: <Brain className="h-4 w-4" />, text: "Remember that I prefer dark mode and concise answers", color: "from-purple-500/10 to-violet-500/10 border-purple-500/20" },
   { icon: <Search className="h-4 w-4" />, text: "Search the web for latest AI trends", color: "from-rose-500/10 to-pink-500/10 border-rose-500/20" },
-  { icon: <MessageSquarePlus className="h-4 w-4" />, text: "Generate a diagram of a REST API", color: "from-sky-500/10 to-indigo-500/10 border-sky-500/20" },
+  { icon: <Pencil className="h-4 w-4" />, text: "Help me edit my most recent note", color: "from-sky-500/10 to-indigo-500/10 border-sky-500/20" },
 ];
 
 function parseNoteMarker(content: string) {
@@ -51,6 +66,28 @@ function parseNoteMarker(content: string) {
     try { return JSON.parse(oldMatch[1]) as { title: string }; } catch { return null; }
   }
   try { return JSON.parse(match[1]) as { title: string }; } catch { return null; }
+}
+
+function parseEditNoteMarker(content: string) {
+  const match = content.match(/<!--OLTRID_EDIT_NOTE:(.*?)-->/);
+  if (!match) return null;
+  try { return JSON.parse(match[1]) as { id: string; title: string; content: string }; } catch { return null; }
+}
+
+function parseDeleteNoteMarker(content: string) {
+  const match = content.match(/<!--OLTRID_DELETE_NOTE:(.*?)-->/);
+  if (!match) return null;
+  try { return JSON.parse(match[1]) as { id: string }; } catch { return null; }
+}
+
+function parseMemoryMarker(content: string) {
+  const markers: { key: string; value: string }[] = [];
+  const regex = /<!--OLTRID_MEMORY:(.*?)-->/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    try { markers.push(JSON.parse(match[1])); } catch {}
+  }
+  return markers;
 }
 
 function parsePresentationMarker(content: string) {
@@ -66,6 +103,9 @@ function parsePresentationMarker(content: string) {
 function stripMarkers(content: string) {
   return content
     .replace(/<!--OLTRID_NOTE:.*?-->/g, "")
+    .replace(/<!--OLTRID_EDIT_NOTE:.*?-->/g, "")
+    .replace(/<!--OLTRID_DELETE_NOTE:.*?-->/g, "")
+    .replace(/<!--OLTRID_MEMORY:.*?-->/g, "")
     .replace(/<!--OLTRID_PRESENTATION:.*?-->/g, "")
     .replace(/<!--FYLIX_NOTE:.*?-->/g, "")
     .replace(/<!--FYLIX_PRESENTATION:.*?-->/g, "")
@@ -100,16 +140,30 @@ export default function AiPage() {
   const [showMentions, setShowMentions] = useState(false);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
+  const [userNotes, setUserNotes] = useState<NoteData[]>([]);
+  const [userMemory, setUserMemory] = useState<MemoryData[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isAuthenticated = !!user;
 
+  // Load notes and memory on mount & when user changes
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (!user) return;
+    const loadContext = async () => {
+      const [notesRes, memRes] = await Promise.all([
+        supabase.from("notes").select("id, title, content, color, pinned, updated_at").eq("user_id", user.id).is("deleted_at", null).order("updated_at", { ascending: false }).limit(100),
+        supabase.from("ai_memory").select("id, key, value").eq("user_id", user.id).limit(100),
+      ]);
+      if (notesRes.data) setUserNotes(notesRes.data);
+      if (memRes.data) setUserMemory(memRes.data);
+    };
+    loadContext();
+  }, [user]);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
   useEffect(() => {
@@ -193,11 +247,69 @@ export default function AiPage() {
     if (data) { setMessages(data as Msg[]); setActiveConversationId(id); }
   }, []);
 
+  // Process AI response for note/memory actions
+  const processAiActions = useCallback(async (responseContent: string) => {
+    if (!user) return;
+
+    // Handle note creation
+    const noteMarker = parseNoteMarker(responseContent);
+    // (handled by save button, not auto)
+
+    // Handle note editing
+    const editMarker = parseEditNoteMarker(responseContent);
+    if (editMarker) {
+      try {
+        const { error } = await supabase.from("notes").update({
+          title: editMarker.title,
+          content: editMarker.content,
+        }).eq("id", editMarker.id).eq("user_id", user.id);
+        if (error) throw error;
+        toast.success(`Note "${editMarker.title}" updated!`);
+        // Refresh notes
+        const { data } = await supabase.from("notes").select("id, title, content, color, pinned, updated_at").eq("user_id", user.id).is("deleted_at", null).order("updated_at", { ascending: false }).limit(100);
+        if (data) setUserNotes(data);
+      } catch (e: any) { toast.error("Failed to edit note: " + e.message); }
+    }
+
+    // Handle note deletion
+    const deleteMarker = parseDeleteNoteMarker(responseContent);
+    if (deleteMarker) {
+      try {
+        const { error } = await supabase.from("notes").update({ deleted_at: new Date().toISOString() }).eq("id", deleteMarker.id).eq("user_id", user.id);
+        if (error) throw error;
+        toast.success("Note moved to trash!");
+        setUserNotes(prev => prev.filter(n => n.id !== deleteMarker.id));
+      } catch (e: any) { toast.error("Failed to delete note: " + e.message); }
+    }
+
+    // Handle memory saving
+    const memoryMarkers = parseMemoryMarker(responseContent);
+    for (const mem of memoryMarkers) {
+      try {
+        // Upsert memory
+        const existing = userMemory.find(m => m.key === mem.key);
+        if (existing) {
+          await supabase.from("ai_memory").update({ value: mem.value, updated_at: new Date().toISOString() }).eq("id", existing.id);
+          setUserMemory(prev => prev.map(m => m.key === mem.key ? { ...m, value: mem.value } : m));
+        } else {
+          const { data } = await supabase.from("ai_memory").insert({ user_id: user.id, key: mem.key, value: mem.value }).select("id, key, value").single();
+          if (data) setUserMemory(prev => [...prev, data]);
+        }
+        toast.success(`Remembered: ${mem.key}`);
+      } catch (e: any) { console.error("Failed to save memory:", e); }
+    }
+  }, [user, userMemory]);
+
   const streamChat = useCallback(async (allMessages: Msg[]) => {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/ai-assistant`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_KEY}` },
-      body: JSON.stringify({ messages: allMessages.map(m => ({ role: m.role, content: m.content })), webSearch: webSearchEnabled }),
+      body: JSON.stringify({
+        messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+        webSearch: webSearchEnabled,
+        notesContext: userNotes.map(n => ({ id: n.id, title: n.title, content: n.content, color: n.color, pinned: n.pinned, updated_at: n.updated_at })),
+        memoryContext: userMemory.map(m => ({ key: m.key, value: m.value })),
+      }),
     });
     if (!resp.ok) { const err = await resp.json().catch(() => ({ error: "AI request failed" })); throw new Error(err.error || `AI request failed (${resp.status})`); }
     const reader = resp.body!.getReader();
@@ -231,7 +343,7 @@ export default function AiPage() {
       }
     }
     return full;
-  }, [webSearchEnabled]);
+  }, [webSearchEnabled, userNotes, userMemory]);
 
   const send = async (text?: string) => {
     const msg = text || input.trim();
@@ -253,7 +365,9 @@ export default function AiPage() {
     setShowMentions(false);
     setIsLoading(true);
     try {
-      await streamChat(newMessages);
+      const responseContent = await streamChat(newMessages);
+      // Process any AI actions in the response
+      await processAiActions(responseContent);
       if (isAuthenticated) setMessages((current) => { saveConversation(current, activeConversationId); return current; });
     } catch (e: any) { toast.error(e.message || "AI request failed"); } finally { setIsLoading(false); }
   };
@@ -267,6 +381,9 @@ export default function AiPage() {
       const { error } = await supabase.from("notes").insert({ title, content: cleanContent, color: "blue", user_id: user.id });
       if (error) throw error;
       toast.success("Note saved!");
+      // Refresh notes
+      const { data } = await supabase.from("notes").select("id, title, content, color, pinned, updated_at").eq("user_id", user.id).is("deleted_at", null).order("updated_at", { ascending: false }).limit(100);
+      if (data) setUserNotes(data);
     } catch (e: any) { toast.error("Failed to save note: " + e.message); }
   };
 
@@ -329,7 +446,6 @@ export default function AiPage() {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="text-center max-w-2xl w-full"
       >
-        {/* Animated logo */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -363,12 +479,21 @@ export default function AiPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35 }}
-          className="text-sm text-muted-foreground mb-10 max-w-md mx-auto leading-relaxed"
+          className="text-sm text-muted-foreground mb-3 max-w-md mx-auto leading-relaxed"
         >
-          Notes, presentations, diagrams, web search & more.
-          <br />
-          <span className="text-muted-foreground/60">Type <kbd className="px-1.5 py-0.5 rounded bg-secondary text-[11px] font-mono">@</kbd> to reference a note.</span>
+          Full control over your notes, persistent memory, diagrams & more.
         </motion.p>
+        {isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/60 mb-8"
+          >
+            <span className="flex items-center gap-1"><StickyNote className="h-3 w-3" /> {userNotes.length} notes</span>
+            <span className="flex items-center gap-1"><Brain className="h-3 w-3" /> {userMemory.length} memories</span>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -402,6 +527,9 @@ export default function AiPage() {
         {messages.map((msg, i) => {
           const isUser = msg.role === "user";
           const noteMarker = !isUser ? parseNoteMarker(msg.content) : null;
+          const editMarker = !isUser ? parseEditNoteMarker(msg.content) : null;
+          const deleteMarker = !isUser ? parseDeleteNoteMarker(msg.content) : null;
+          const memMarkers = !isUser ? parseMemoryMarker(msg.content) : [];
           const presentationMarker = !isUser ? parsePresentationMarker(msg.content) : null;
           const displayContent = stripMarkers(msg.content);
           const mermaidBlocks = !isUser ? extractMermaidBlocks(displayContent) : [];
@@ -424,11 +552,7 @@ export default function AiPage() {
                       : "bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10"
                   }`}
                 >
-                  {isUser ? (
-                    <User className="h-4 w-4 text-foreground/60" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 text-foreground/70" />
-                  )}
+                  {isUser ? <User className="h-4 w-4 text-foreground/60" /> : <Sparkles className="h-4 w-4 text-foreground/70" />}
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground/70 mb-2 tracking-wide uppercase">
@@ -464,11 +588,33 @@ export default function AiPage() {
                       ) : (
                         <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
                       )}
+
+                      {/* Action indicators */}
+                      {(editMarker || deleteMarker || memMarkers.length > 0) && (
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {editMarker && (
+                            <span className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                              <Pencil className="h-3 w-3" /> Note edited
+                            </span>
+                          )}
+                          {deleteMarker && (
+                            <span className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+                              <Trash2 className="h-3 w-3" /> Note deleted
+                            </span>
+                          )}
+                          {memMarkers.map((m, mi) => (
+                            <span key={mi} className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                              <Brain className="h-3 w-3" /> Remembered: {m.key}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="flex items-center gap-1.5 mt-4 flex-wrap"
+                        className="flex items-center gap-1.5 mt-3 flex-wrap"
                       >
                         {noteMarker && (
                           <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => saveAsNote(msg.content)}>
@@ -541,13 +687,7 @@ export default function AiPage() {
 
         <div className="relative flex items-end gap-2 rounded-2xl border border-border/60 bg-secondary/20 px-3 py-2 focus-within:border-foreground/20 focus-within:shadow-[0_0_0_1px_hsl(var(--foreground)/0.08)] transition-all duration-200">
           <div className="flex items-center gap-0.5 shrink-0 pb-0.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/80"
-              onClick={() => fileInputRef.current?.click()}
-              title="Attach file"
-            >
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/80" onClick={() => fileInputRef.current?.click()} title="Attach file">
               <Paperclip className="h-4 w-4" />
             </Button>
             <Button
@@ -559,15 +699,12 @@ export default function AiPage() {
             >
               <Globe className="h-4 w-4" />
             </Button>
-            <VoiceInput
-              onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }}
-              disabled={isLoading}
-            />
+            <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
           </div>
 
           <textarea
             ref={textareaRef}
-            placeholder={webSearchEnabled ? "Search the web…" : "Message Oltrid AI…"}
+            placeholder={webSearchEnabled ? "Search the web…" : "Message Oltrid AI… (@ to mention notes)"}
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
@@ -577,12 +714,7 @@ export default function AiPage() {
           />
 
           <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="icon"
-              className="h-8 w-8 rounded-xl shrink-0 mb-0.5 transition-all"
-              onClick={() => send()}
-              disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}
-            >
+            <Button size="icon" className="h-8 w-8 rounded-xl shrink-0 mb-0.5 transition-all" onClick={() => send()} disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}>
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </Button>
           </motion.div>
@@ -600,7 +732,6 @@ export default function AiPage() {
     <DashboardLayout noPadding>
       <div className="h-[calc(100vh-48px)] md:h-screen flex">
         <ResizablePanelGroup direction="horizontal" className="flex-1">
-          {/* Main chat area */}
           <ResizablePanel defaultSize={historySidebarOpen && isAuthenticated ? 75 : 100} minSize={50}>
             <div className="h-full flex flex-col min-w-0 relative">
               {/* Top bar */}
@@ -613,9 +744,7 @@ export default function AiPage() {
                     <span className="text-sm font-semibold text-foreground tracking-tight">Oltrid AI</span>
                   </div>
                   {isGuest && !user && (
-                    <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">
-                      Guest · {guestMinutesLeft}m
-                    </span>
+                    <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">Guest · {guestMinutesLeft}m</span>
                   )}
                 </div>
                 <div className="flex items-center gap-1">
@@ -625,56 +754,34 @@ export default function AiPage() {
                     </Button>
                   )}
                   {isAuthenticated && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground"
-                      onClick={() => setHistorySidebarOpen(!historySidebarOpen)}
-                      title="Chat history"
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground" onClick={() => setHistorySidebarOpen(!historySidebarOpen)} title="Chat history">
                       {historySidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
                     </Button>
                   )}
                 </div>
               </div>
 
-              {/* Messages / Welcome */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 
-              {/* Input */}
               {renderInputArea()}
             </div>
           </ResizablePanel>
 
-          {/* Right-side chat history sidebar - resizable */}
           {historySidebarOpen && isAuthenticated && (
             <>
               <ResizableHandle withHandle />
               <ResizablePanel defaultSize={25} minSize={18} maxSize={40} className="hidden md:block">
-                <ChatHistorySidebar
-                  activeId={activeConversationId}
-                  onSelect={loadConversation}
-                  onNewChat={handleNewChat}
-                  open={true}
-                  onClose={() => setHistorySidebarOpen(false)}
-                />
+                <ChatHistorySidebar activeId={activeConversationId} onSelect={loadConversation} onNewChat={handleNewChat} open={true} onClose={() => setHistorySidebarOpen(false)} />
               </ResizablePanel>
             </>
           )}
         </ResizablePanelGroup>
 
-        {/* Mobile chat history overlay */}
         {historySidebarOpen && isAuthenticated && (
           <div className="md:hidden">
-            <ChatHistorySidebar
-              activeId={activeConversationId}
-              onSelect={loadConversation}
-              onNewChat={handleNewChat}
-              open={true}
-              onClose={() => setHistorySidebarOpen(false)}
-            />
+            <ChatHistorySidebar activeId={activeConversationId} onSelect={loadConversation} onNewChat={handleNewChat} open={true} onClose={() => setHistorySidebarOpen(false)} />
           </div>
         )}
       </div>
