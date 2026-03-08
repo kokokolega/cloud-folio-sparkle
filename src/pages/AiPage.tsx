@@ -140,6 +140,7 @@ export default function AiPage() {
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [userNotes, setUserNotes] = useState<NoteData[]>([]);
   const [userMemory, setUserMemory] = useState<MemoryData[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<{ title: string; messages: { role: string; content: string }[] }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
