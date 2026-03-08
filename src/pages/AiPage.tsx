@@ -6,10 +6,10 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Loader2, Sparkles, StickyNote, FileDown, User,
+  Loader2, Bot, StickyNote, FileDown, User,
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
-  X, Plus, ArrowUp, Zap, MessageSquarePlus, Search, BookOpen, Lightbulb,
-  LayoutGrid, Pencil, Trash2, Brain,
+  X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
+  NotebookPen, MessageCircle, Workflow, Globe2,
 } from "lucide-react";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
@@ -50,12 +50,10 @@ interface MemoryData {
 }
 
 const QUICK_PROMPTS = [
-  { icon: <Zap className="h-4 w-4" />, text: "Create a note about project planning tips", color: "from-amber-500/10 to-orange-500/10 border-amber-500/20" },
-  { icon: <LayoutGrid className="h-4 w-4" />, text: "Show me all my notes", color: "from-blue-500/10 to-cyan-500/10 border-blue-500/20" },
-  { icon: <Lightbulb className="h-4 w-4" />, text: "Draw a flowchart for user onboarding", color: "from-emerald-500/10 to-green-500/10 border-emerald-500/20" },
-  { icon: <Brain className="h-4 w-4" />, text: "Remember that I prefer dark mode and concise answers", color: "from-purple-500/10 to-violet-500/10 border-purple-500/20" },
-  { icon: <Search className="h-4 w-4" />, text: "Search the web for latest AI trends", color: "from-rose-500/10 to-pink-500/10 border-rose-500/20" },
-  { icon: <Pencil className="h-4 w-4" />, text: "Help me edit my most recent note", color: "from-sky-500/10 to-indigo-500/10 border-sky-500/20" },
+  { icon: <NotebookPen className="h-4 w-4" />, text: "Create a new note" },
+  { icon: <MessageCircle className="h-4 w-4" />, text: "Summarize my notes" },
+  { icon: <Workflow className="h-4 w-4" />, text: "Draw a flowchart" },
+  { icon: <Globe2 className="h-4 w-4" />, text: "Search the web" },
 ];
 
 function parseNoteMarker(content: string) {
@@ -458,7 +456,7 @@ export default function AiPage() {
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5"
             />
-            <Sparkles className="h-9 w-9 text-foreground/80 relative z-10" />
+            <Bot className="h-9 w-9 text-foreground/80 relative z-10" />
           </div>
           <motion.div
             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -499,7 +497,7 @@ export default function AiPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-xl mx-auto"
+          className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-lg mx-auto"
         >
           {QUICK_PROMPTS.map((p, i) => (
             <motion.button
@@ -507,13 +505,13 @@ export default function AiPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.06 }}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => send(p.text)}
-              className={`flex items-center gap-3 text-left text-sm px-4 py-3.5 rounded-2xl border bg-gradient-to-br ${p.color} hover:shadow-md transition-shadow text-foreground group`}
+              className="flex flex-col items-center gap-2 text-center text-xs px-3 py-4 rounded-2xl border border-border/50 bg-secondary/30 hover:bg-secondary/60 hover:shadow-md transition-all text-foreground group"
             >
-              <span className="text-foreground/60 group-hover:text-foreground/80 transition-colors">{p.icon}</span>
-              <span className="text-muted-foreground group-hover:text-foreground transition-colors line-clamp-1 text-[13px]">{p.text}</span>
+              <span className="text-muted-foreground group-hover:text-foreground transition-colors">{p.icon}</span>
+              <span className="text-muted-foreground group-hover:text-foreground transition-colors text-[12px] leading-tight">{p.text}</span>
             </motion.button>
           ))}
         </motion.div>
@@ -552,7 +550,7 @@ export default function AiPage() {
                       : "bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10"
                   }`}
                 >
-                  {isUser ? <User className="h-4 w-4 text-foreground/60" /> : <Sparkles className="h-4 w-4 text-foreground/70" />}
+                  {isUser ? <User className="h-4 w-4 text-foreground/60" /> : <Bot className="h-4 w-4 text-foreground/70" />}
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground/70 mb-2 tracking-wide uppercase">
@@ -646,7 +644,7 @@ export default function AiPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-5 border-t border-border/30">
             <div className="flex gap-3.5">
               <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                <Sparkles className="h-4 w-4 text-foreground/70" />
+                <Bot className="h-4 w-4 text-foreground/70" />
               </div>
               <div className="pt-1">
                 <p className="text-xs font-semibold text-foreground/70 mb-2 tracking-wide uppercase">Oltrid AI</p>
@@ -739,7 +737,7 @@ export default function AiPage() {
                 <div className="flex items-center gap-2.5">
                   <div className="flex items-center gap-2">
                     <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-foreground/10 to-foreground/5 flex items-center justify-center">
-                      <Sparkles className="h-3.5 w-3.5 text-foreground/70" />
+                      <Bot className="h-3.5 w-3.5 text-foreground/70" />
                     </div>
                     <span className="text-sm font-semibold text-foreground tracking-tight">Oltrid AI</span>
                   </div>
