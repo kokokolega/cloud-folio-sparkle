@@ -324,6 +324,7 @@ export default function AiPage() {
         webSearch: webSearchEnabled,
         notesContext: userNotes.map(n => ({ id: n.id, title: n.title, content: n.content, color: n.color, pinned: n.pinned, updated_at: n.updated_at })),
         memoryContext: userMemory.map(m => ({ key: m.key, value: m.value })),
+        conversationHistory: conversationHistory,
       }),
     });
     if (!resp.ok) { const err = await resp.json().catch(() => ({ error: "AI request failed" })); throw new Error(err.error || `AI request failed (${resp.status})`); }
