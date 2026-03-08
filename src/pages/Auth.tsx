@@ -163,12 +163,10 @@ export default function Auth() {
             >
               <h2 className="text-2xl font-semibold text-foreground tracking-tight mb-1.5">
                 {mode === "login" && "Welcome back"}
-                {mode === "signup" && "Create an account"}
                 {mode === "forgot" && "Reset password"}
               </h2>
               <p className="text-muted-foreground text-sm mb-8">
                 {mode === "login" && "Sign in to continue to Oltrid"}
-                {mode === "signup" && "Start using Oltrid for free"}
                 {mode === "forgot" && "Enter your email to receive a reset link"}
               </p>
             </motion.div>
