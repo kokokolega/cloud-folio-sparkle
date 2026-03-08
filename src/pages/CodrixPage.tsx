@@ -8,6 +8,7 @@ import {
   Play, Download, Save, Plus, Trash2, FileCode2, Code2,
   Loader2, Send, Sparkles, Eye, X, ArrowUp,
 } from "lucide-react";
+import { CodeEditor } from "@/components/codrix/CodeEditor";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
