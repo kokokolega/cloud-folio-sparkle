@@ -94,6 +94,17 @@ serve(async (req) => {
       });
     }
 
+    if (conversationHistory && conversationHistory.length > 0) {
+      const historySummary = conversationHistory.map((conv: any) => {
+        const msgSummary = conv.messages.map((m: any) => `  ${m.role}: ${m.content}`).join("\n");
+        return `### "${conv.title}"\n${msgSummary}`;
+      }).join("\n\n");
+      systemMessages.push({
+        role: "system",
+        content: `## PREVIOUS CONVERSATION HISTORY\nThese are the user's recent past conversations with you. Use this context to provide continuity and recall past discussions.\n\n${historySummary}`,
+      });
+    }
+
     if (webSearch) {
       systemMessages.push({
         role: "system",
