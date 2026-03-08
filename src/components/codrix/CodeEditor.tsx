@@ -1,83 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from "react";
-import Prism from "prismjs";
-// @ts-ignore
-import "prismjs/components/prism-css";
-// @ts-ignore
-import "prismjs/components/prism-javascript";
-// @ts-ignore
-import "prismjs/components/prism-markup";
-
-const THEME_STYLES = `
-.codrix-highlight .token.comment,
-.codrix-highlight .token.prolog,
-.codrix-highlight .token.doctype,
-.codrix-highlight .token.cdata { color: hsl(220, 10%, 45%); font-style: italic; }
-
-.codrix-highlight .token.punctuation { color: hsl(220, 10%, 55%); }
-
-.codrix-highlight .token.property,
-.codrix-highlight .token.tag,
-.codrix-highlight .token.boolean,
-.codrix-highlight .token.number,
-.codrix-highlight .token.constant,
-.codrix-highlight .token.symbol { color: hsl(350, 70%, 55%); }
-
-.codrix-highlight .token.selector,
-.codrix-highlight .token.attr-name,
-.codrix-highlight .token.string,
-.codrix-highlight .token.char,
-.codrix-highlight .token.builtin { color: hsl(95, 50%, 45%); }
-
-.codrix-highlight .token.operator,
-.codrix-highlight .token.entity,
-.codrix-highlight .token.url { color: hsl(35, 80%, 55%); }
-
-.codrix-highlight .token.atrule,
-.codrix-highlight .token.attr-value,
-.codrix-highlight .token.keyword { color: hsl(265, 60%, 60%); }
-
-.codrix-highlight .token.function,
-.codrix-highlight .token.class-name { color: hsl(210, 70%, 55%); }
-
-.codrix-highlight .token.regex,
-.codrix-highlight .token.important,
-.codrix-highlight .token.variable { color: hsl(35, 80%, 55%); }
-
-.dark .codrix-highlight .token.comment,
-.dark .codrix-highlight .token.prolog,
-.dark .codrix-highlight .token.doctype,
-.dark .codrix-highlight .token.cdata { color: hsl(220, 10%, 50%); }
-
-.dark .codrix-highlight .token.punctuation { color: hsl(220, 10%, 60%); }
-
-.dark .codrix-highlight .token.property,
-.dark .codrix-highlight .token.tag,
-.dark .codrix-highlight .token.boolean,
-.dark .codrix-highlight .token.number,
-.dark .codrix-highlight .token.constant,
-.dark .codrix-highlight .token.symbol { color: hsl(350, 75%, 65%); }
-
-.dark .codrix-highlight .token.selector,
-.dark .codrix-highlight .token.attr-name,
-.dark .codrix-highlight .token.string,
-.dark .codrix-highlight .token.char,
-.dark .codrix-highlight .token.builtin { color: hsl(95, 55%, 55%); }
-
-.dark .codrix-highlight .token.operator,
-.dark .codrix-highlight .token.entity,
-.dark .codrix-highlight .token.url { color: hsl(35, 85%, 60%); }
-
-.dark .codrix-highlight .token.atrule,
-.dark .codrix-highlight .token.attr-value,
-.dark .codrix-highlight .token.keyword { color: hsl(265, 65%, 70%); }
-
-.dark .codrix-highlight .token.function,
-.dark .codrix-highlight .token.class-name { color: hsl(210, 75%, 65%); }
-
-.dark .codrix-highlight .token.regex,
-.dark .codrix-highlight .token.important,
-.dark .codrix-highlight .token.variable { color: hsl(35, 85%, 60%); }
-`;
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 
 interface CodeEditorProps {
   value: string;
@@ -86,31 +7,54 @@ interface CodeEditorProps {
   placeholder?: string;
 }
 
-const LANG_MAP: Record<string, string> = {
-  html: "markup",
-  css: "css",
-  js: "javascript",
+// Simple regex-based syntax highlighting (no external deps)
+function highlightHTML(code: string): string {
+  return code
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/(\/\/.*)/g, '<span class="hl-comment">$1</span>')
+    .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="hl-comment">$1</span>')
+    .replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="hl-tag">$2</span>')
+    .replace(/\b(const|let|var|function|return|if|else|for|while|class|import|export|from|default|async|await|new|this|true|false|null|undefined|typeof|instanceof)\b/g, '<span class="hl-keyword">$1</span>')
+    .replace(/(["'`])((?:(?!\1)[\s\S])*?)\1/g, '<span class="hl-string">$1$2$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g, '<span class="hl-number">$1</span>');
+}
+
+function highlightCSS(code: string): string {
+  return code
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="hl-comment">$1</span>')
+    .replace(/([\w-]+)(\s*:)/g, '<span class="hl-property">$1</span>$2')
+    .replace(/(#[\da-fA-F]{3,8})\b/g, '<span class="hl-number">$1</span>')
+    .replace(/\b(\d+\.?\d*)(px|em|rem|%|vh|vw|s|ms|deg|fr)?\b/g, '<span class="hl-number">$1$2</span>')
+    .replace(/(["'])((?:(?!\1)[\s\S])*?)\1/g, '<span class="hl-string">$1$2$1</span>');
+}
+
+function highlightJS(code: string): string {
+  return code
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/(\/\/.*)/g, '<span class="hl-comment">$1</span>')
+    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="hl-comment">$1</span>')
+    .replace(/\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|class|extends|import|export|from|default|async|await|new|this|super|try|catch|finally|throw|typeof|instanceof|in|of|yield|void|delete)\b/g, '<span class="hl-keyword">$1</span>')
+    .replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, '<span class="hl-number">$1</span>')
+    .replace(/(["'`])((?:(?!\1)[\s\S])*?)\1/g, '<span class="hl-string">$1$2$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g, '<span class="hl-number">$1</span>')
+    .replace(/\b([A-Z]\w*)\b/g, '<span class="hl-function">$1</span>')
+    .replace(/(\w+)(\s*\()/g, '<span class="hl-function">$1</span>$2');
+}
+
+const HIGHLIGHTERS: Record<string, (code: string) => string> = {
+  html: highlightHTML,
+  css: highlightCSS,
+  js: highlightJS,
 };
 
 export function CodeEditor({ value, onChange, language, placeholder }: CodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
-  const [styleInjected, setStyleInjected] = useState(false);
 
-  useEffect(() => {
-    if (!styleInjected) {
-      const style = document.createElement("style");
-      style.textContent = THEME_STYLES;
-      document.head.appendChild(style);
-      setStyleInjected(true);
-      return () => { document.head.removeChild(style); };
-    }
-  }, [styleInjected]);
-
-  const highlighted = useCallback(() => {
-    const grammar = Prism.languages[LANG_MAP[language]];
-    if (!grammar) return value;
-    return Prism.highlight(value, grammar, LANG_MAP[language]);
+  const highlighted = useMemo(() => {
+    const fn = HIGHLIGHTERS[language] || highlightHTML;
+    return fn(value);
   }, [value, language]);
 
   const syncScroll = () => {
@@ -124,10 +68,10 @@ export function CodeEditor({ value, onChange, language, placeholder }: CodeEdito
     <div className="relative flex-1 overflow-hidden">
       <pre
         ref={preRef}
-        className="codrix-highlight absolute inset-0 p-4 font-mono text-[13px] leading-relaxed overflow-auto pointer-events-none m-0 whitespace-pre-wrap break-words"
+        className="absolute inset-0 p-4 font-mono text-[13px] leading-relaxed overflow-auto pointer-events-none m-0 whitespace-pre-wrap break-words"
         aria-hidden="true"
       >
-        <code dangerouslySetInnerHTML={{ __html: highlighted() + "\n" }} />
+        <code dangerouslySetInnerHTML={{ __html: highlighted + "\n" }} />
       </pre>
       <textarea
         ref={textareaRef}
