@@ -111,8 +111,7 @@ export default function Auth() {
               <span className="text-muted-foreground">for everything.</span>
             </h1>
             <p className="text-muted-foreground text-base leading-relaxed mb-12 max-w-sm">
-              Notes, files, code, diagrams — all powered by AI.
-              Think it. Create it. Organize it.
+             From ideas to execution - manage notes, files, code, and diagrams with AI.
             </p>
           </motion.div>
 
