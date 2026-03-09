@@ -14,7 +14,6 @@ const features = [
   { icon: Brain, label: "AI Assistant", desc: "Chat with powerful AI models" },
   { icon: FileText, label: "Smart Notes", desc: "Rich notes with AI editing" },
   { icon: Code2, label: "Codrix IDE", desc: "Code editor with AI generation" },
-  { icon: Palette, label: "Whiteboards", desc: "Visual collaboration canvas" },
 ];
 
 export default function Auth() {
