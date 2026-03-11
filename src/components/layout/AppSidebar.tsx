@@ -4,6 +4,8 @@ import { useLocation } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { OfflineIndicator } from "@/components/ui/offline-indicator";
+import { useOfflineStatus } from "@/hooks/useOfflineStatus";
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +36,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
+  const offlineStatus = useOfflineStatus();
 
   return (
     <Sidebar collapsible="icon">
@@ -90,6 +93,20 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-2 pb-2 space-y-0.5">
+        {/* Offline Status Indicator */}
+        <div className="px-2 py-1">
+          <OfflineIndicator
+            isOnline={offlineStatus.isOnline}
+            isOffline={offlineStatus.isOffline}
+            pendingSyncCount={offlineStatus.pendingSyncCount}
+            isSyncing={offlineStatus.isSyncing}
+            onSync={offlineStatus.triggerSync}
+            connectionType={offlineStatus.connectionType}
+            effectiveType={offlineStatus.effectiveType}
+            className="w-full justify-center"
+          />
+        </div>
+        
         <SidebarMenu>
           {bottomNav.map((item) => {
             const isActive = location.pathname === item.url;

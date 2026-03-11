@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOfflineNotes } from "@/hooks/useOfflineNotes";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, StickyNote, Search } from "lucide-react";
+import { Plus, StickyNote, Search, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const NOTE_COLORS = [
   { id: "default", label: "Default", bg: "bg-card", border: "border-border" },
@@ -24,61 +26,46 @@ export { NOTE_COLORS };
 
 export default function NotesPage() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [editingNote, setEditingNote] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  const { data: notes = [], isLoading } = useQuery({
-    queryKey: ["notes", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("notes").select("*").eq("user_id", user!.id).is("deleted_at", null).order("pinned", { ascending: false }).order("updated_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
+  // Use offline-enabled notes hook
+  const {
+    notes,
+    isLoading,
+    isOfflineMode,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    autoSave,
+  } = useOfflineNotes({ limit: 100, enableOffline: true });
 
-  const createMutation = useMutation({
-    mutationFn: async (note: { title: string; content: string; color: string }) => {
-      const { error } = await supabase.from("notes").insert({ ...note, user_id: user!.id });
-      if (error) throw error;
-    },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["notes"] }); setIsCreating(false); toast.success("Note created"); },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; title?: string; content?: string; color?: string; pinned?: boolean }) => {
-      const { error } = await supabase.from("notes").update(updates).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["notes"] }); setEditingNote(null); toast.success("Note updated"); },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("notes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["notes"] }); toast.success("Note moved to trash"); },
-  });
+  const filtered = notes.filter((n: any) => 
+    n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    n.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const pinned = filtered.filter((n: any) => n.pinned);
+  const unpinned = filtered.filter((n: any) => !n.pinned);
 
   const handleAutoSave = (data: { title: string; content: string; color: string }) => {
     if (!editingNote?.id) return;
-    supabase.from("notes").update(data).eq("id", editingNote.id).then(({ error }) => {
-      if (!error) queryClient.invalidateQueries({ queryKey: ["notes"] });
-    });
+    autoSave(editingNote.id, data);
   };
-
-  const filtered = notes.filter((n: any) => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase()));
-  const pinned = filtered.filter((n: any) => n.pinned);
-  const unpinned = filtered.filter((n: any) => !n.pinned);
 
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <h1 className="text-xl font-semibold text-foreground">Notes</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-foreground">Notes</h1>
+            {isOfflineMode && (
+              <Badge variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
+                <WifiOff className="h-3 w-3 mr-1" />
+                Offline
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center gap-2 flex-1 max-w-md">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -129,7 +116,13 @@ export default function NotesPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
                     {pinned.map((note: any) => (
-                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
+                      <NoteCard 
+                        key={note.id} 
+                        note={note} 
+                        onEdit={() => setEditingNote(note)} 
+                        onDelete={() => deleteMutation.mutate(note.id)} 
+                        onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} 
+                      />
                     ))}
                   </AnimatePresence>
                 </div>
@@ -141,7 +134,13 @@ export default function NotesPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
                     {unpinned.map((note: any) => (
-                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
+                      <NoteCard 
+                        key={note.id} 
+                        note={note} 
+                        onEdit={() => setEditingNote(note)} 
+                        onDelete={() => deleteMutation.mutate(note.id)} 
+                        onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} 
+                      />
                     ))}
                   </AnimatePresence>
                 </div>
