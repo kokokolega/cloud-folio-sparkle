@@ -1,4 +1,4 @@
-import { Wifi, WifiOff, Sync, AlertCircle } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
@@ -98,9 +98,9 @@ export function OfflineIndicator({
                 }`}
               >
                 {isSyncing ? (
-                  <Sync className="h-3 w-3 animate-spin" />
+                  <RefreshCw className="h-3 w-3 animate-spin" />
                 ) : (
-                  <Sync className="h-3 w-3" />
+                  <RefreshCw className="h-3 w-3" />
                 )}
                 {pendingSyncCount > 0 && (
                   <Badge variant="secondary" className="h-4 px-1 text-xs">
