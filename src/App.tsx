@@ -52,6 +52,7 @@ const App = () => (
               <Route path="/codrix" element={<ProtectedRoute allowGuest><CodrixPage /></ProtectedRoute>} />
               <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
