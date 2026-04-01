@@ -9,6 +9,7 @@ interface OfflineStatus {
   pendingSyncCount: number;
   isSyncing: boolean;
   lastSyncTime?: Date;
+  triggerSync: () => Promise<any>;
 }
 
 export function useOfflineStatus(): OfflineStatus {
