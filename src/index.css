@@ -107,6 +107,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Slightly larger base font on mobile for readability */
+  @media (max-width: 767px) {
+    html {
+      font-size: 17px;
+    }
+  }
 }
 
 @layer utilities {
