@@ -357,9 +357,11 @@ class OfflineSync {
     const { id, conversation_id, lastSynced, isDirty, ...msgData } = message;
     
     await supabase.from('ai_messages').upsert({
+      id,
+      conversation_id,
       ...msgData,
       created_at: message.created_at
-    });
+    } as any);
 
     // Mark as synced
     await offlineStorage.saveMessage({
