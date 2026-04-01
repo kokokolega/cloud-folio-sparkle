@@ -379,7 +379,7 @@ class OfflineSync {
   startAutoSync(intervalMs = 30000): void {
     this.stopAutoSync();
     
-    this.syncInterval = setInterval(() => {
+    this.syncInterval = window.setInterval(() => {
       if (this.isOnline && !this.isSyncing) {
         this.syncAll().catch(console.error);
       }

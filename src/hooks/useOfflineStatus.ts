@@ -13,7 +13,7 @@ interface OfflineStatus {
 }
 
 export function useOfflineStatus(): OfflineStatus {
-  const [status, setStatus] = useState<OfflineStatus>({
+  const [status, setStatus] = useState<Omit<OfflineStatus, 'triggerSync'>>({
     isOnline: navigator.onLine,
     isOffline: !navigator.onLine,
     pendingSyncCount: 0,
