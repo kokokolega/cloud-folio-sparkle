@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, ArrowRight, Sparkles, FileText, Brain, Code2, Palette, Eye, EyeOff } from "lucide-react";
+import { Loader2, ArrowRight, Sparkles, FileText, Brain, Code2, Eye, EyeOff, Zap, Shield } from "lucide-react";
 import { OltridLogo } from "@/components/OltridLogo";
 
 const features = [
