@@ -35,6 +35,8 @@ export default function Auth() {
     );
   }
 
+  const isMobile = useIsMobile();
+
   if (session) return <Navigate to="/" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
