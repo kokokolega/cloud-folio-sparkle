@@ -777,12 +777,14 @@ export default function AiPage() {
                 </div>
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-0">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-4">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 
-              <div className="sticky bottom-0 z-20">
-                {renderInputArea()}
+              <div className="sticky bottom-0 z-20 pointer-events-none">
+                <div className="pointer-events-auto">
+                  {renderInputArea()}
+                </div>
               </div>
             </div>
           </ResizablePanel>
