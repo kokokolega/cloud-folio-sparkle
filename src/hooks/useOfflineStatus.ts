@@ -89,5 +89,5 @@ export function useOfflineStatus(): OfflineStatus {
   return {
     ...status,
     triggerSync,
-  } as OfflineStatus & { triggerSync: typeof triggerSync };
+  };
 }
