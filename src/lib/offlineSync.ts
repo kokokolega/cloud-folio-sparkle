@@ -320,9 +320,11 @@ class OfflineSync {
       await supabase.from('notes').delete().eq('id', id);
     } else {
       await supabase.from('notes').upsert({
+        id,
+        user_id,
         ...noteData,
         updated_at: new Date().toISOString()
-      });
+      } as any);
     }
 
     // Mark as synced
