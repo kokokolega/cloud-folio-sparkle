@@ -680,7 +680,7 @@ export default function AiPage() {
   );
 
   const renderInputArea = () => (
-    <div className="shrink-0 bg-background/80 backdrop-blur-xl">
+    <div className="shrink-0 bg-background/80 backdrop-blur-xl border-t border-border/30">
       <div className="max-w-3xl mx-auto px-4 md:px-6 py-3">
         {attachedFiles.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
