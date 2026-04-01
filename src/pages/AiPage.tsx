@@ -680,8 +680,8 @@ export default function AiPage() {
   );
 
   const renderInputArea = () => (
-    <div className="shrink-0 bg-background/80 backdrop-blur-xl border-t border-border/30">
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-3">
+    <div className="shrink-0 px-3 md:px-6 pb-3 pt-2">
+      <div className="max-w-3xl mx-auto">
         {attachedFiles.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {attachedFiles.map((f, i) => (
@@ -701,7 +701,7 @@ export default function AiPage() {
 
         <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
 
-        <div className="relative flex items-end gap-2 rounded-2xl border border-border/60 bg-secondary/20 px-3 py-2 focus-within:border-foreground/20 focus-within:shadow-[0_0_0_1px_hsl(var(--foreground)/0.08)] transition-all duration-200">
+        <div className="relative flex items-end gap-2 rounded-2xl border border-border/60 bg-background/90 backdrop-blur-xl shadow-lg px-3 py-2 focus-within:border-foreground/20 focus-within:shadow-[0_0_0_1px_hsl(var(--foreground)/0.08),0_8px_25px_-5px_hsl(var(--foreground)/0.1)] transition-all duration-200">
           <div className="flex items-center gap-0.5 shrink-0 pb-0.5">
             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/80" onClick={() => fileInputRef.current?.click()} title="Attach file">
               <Paperclip className="h-4 w-4" />
@@ -777,12 +777,14 @@ export default function AiPage() {
                 </div>
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-0">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-4">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 
-              <div className="sticky bottom-0 z-20">
-                {renderInputArea()}
+              <div className="sticky bottom-0 z-20 pointer-events-none">
+                <div className="pointer-events-auto">
+                  {renderInputArea()}
+                </div>
               </div>
             </div>
           </ResizablePanel>

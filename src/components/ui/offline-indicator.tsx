@@ -59,30 +59,31 @@ export function OfflineIndicator({
     return 'Online';
   };
 
+  // Only show when offline or syncing
+  if (isOnline && pendingSyncCount === 0 && !isSyncing) {
+    return null;
+  }
+
   return (
     <TooltipProvider>
       <div className={`flex items-center gap-2 ${className}`}>
-        {/* Connection Status */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-secondary/50 border border-border/40">
-              <div className={`w-2 h-2 rounded-full ${getConnectionColor()} ${isOnline ? 'animate-pulse' : ''}`} />
-              <span className="text-xs font-medium text-foreground">
-                {getConnectionText()}
-              </span>
-              {isOffline && <WifiOff className="h-3 w-3 text-muted-foreground" />}
-              {isOnline && <Wifi className="h-3 w-3 text-muted-foreground" />}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="text-xs">
-            <div className="space-y-1">
-              <p>Connection: {getConnectionText()}</p>
-              {connectionType && <p>Type: {connectionType}</p>}
-              {effectiveType && <p>Speed: {effectiveType}</p>}
-              {isOffline && <p className="text-red-500">No internet connection</p>}
-            </div>
-          </TooltipContent>
-        </Tooltip>
+        {/* Only show connection status when offline */}
+        {isOffline && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-secondary/50 border border-border/40">
+                <div className={`w-2 h-2 rounded-full ${getConnectionColor()}`} />
+                <span className="text-xs font-medium text-foreground">
+                  Offline
+                </span>
+                <WifiOff className="h-3 w-3 text-muted-foreground" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              <p className="text-red-500">No internet connection</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {/* Sync Status */}
         {(pendingSyncCount > 0 || isSyncing) && (

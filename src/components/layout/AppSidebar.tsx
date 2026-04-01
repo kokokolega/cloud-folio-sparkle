@@ -1,4 +1,4 @@
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose } from "lucide-react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 const mainNav = [
   { title: "Oltrid AI", url: "/", icon: Bot },
+  { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "All Files", url: "/files", icon: Files },
   { title: "Groups", url: "/groups", icon: Users },
