@@ -320,9 +320,11 @@ class OfflineSync {
       await supabase.from('notes').delete().eq('id', id);
     } else {
       await supabase.from('notes').upsert({
+        id,
+        user_id,
         ...noteData,
         updated_at: new Date().toISOString()
-      });
+      } as any);
     }
 
     // Mark as synced
@@ -337,9 +339,11 @@ class OfflineSync {
     const { id, user_id, lastSynced, isDirty, ...convData } = conversation;
     
     await supabase.from('ai_conversations').upsert({
+      id,
+      user_id,
       ...convData,
       updated_at: new Date().toISOString()
-    });
+    } as any);
 
     // Mark as synced
     await offlineStorage.saveConversation({
@@ -353,9 +357,11 @@ class OfflineSync {
     const { id, conversation_id, lastSynced, isDirty, ...msgData } = message;
     
     await supabase.from('ai_messages').upsert({
+      id,
+      conversation_id,
       ...msgData,
       created_at: message.created_at
-    });
+    } as any);
 
     // Mark as synced
     await offlineStorage.saveMessage({
@@ -373,7 +379,7 @@ class OfflineSync {
   startAutoSync(intervalMs = 30000): void {
     this.stopAutoSync();
     
-    this.syncInterval = setInterval(() => {
+    this.syncInterval = window.setInterval(() => {
       if (this.isOnline && !this.isSyncing) {
         this.syncAll().catch(console.error);
       }

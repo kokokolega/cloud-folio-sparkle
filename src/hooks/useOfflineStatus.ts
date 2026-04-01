@@ -9,10 +9,11 @@ interface OfflineStatus {
   pendingSyncCount: number;
   isSyncing: boolean;
   lastSyncTime?: Date;
+  triggerSync: () => Promise<any>;
 }
 
 export function useOfflineStatus(): OfflineStatus {
-  const [status, setStatus] = useState<OfflineStatus>({
+  const [status, setStatus] = useState<Omit<OfflineStatus, 'triggerSync'>>({
     isOnline: navigator.onLine,
     isOffline: !navigator.onLine,
     pendingSyncCount: 0,
