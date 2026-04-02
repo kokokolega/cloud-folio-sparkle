@@ -50,10 +50,10 @@ interface MemoryData {
 }
 
 const QUICK_PROMPTS = [
-  { icon: <NotebookPen className="h-4 w-4" />, text: "Create note", prompt: "Create a new note" },
-  { icon: <Globe2 className="h-4 w-4" />, text: "Search web", prompt: "Search the web" },
-  { icon: <Workflow className="h-4 w-4" />, text: "Flowchart", prompt: "Draw a flowchart" },
-  { icon: <Brain className="h-4 w-4" />, text: "Summarize", prompt: "Summarize my notes" },
+  { icon: <NotebookPen className="h-5 w-5" />, text: "Create note", prompt: "Create a new note", color: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300" },
+  { icon: <Globe2 className="h-5 w-5" />, text: "Search web", prompt: "Search the web", color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" },
+  { icon: <Workflow className="h-5 w-5" />, text: "Flowchart", prompt: "Draw a flowchart", color: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300" },
+  { icon: <Brain className="h-5 w-5" />, text: "Summarize", prompt: "Summarize my notes", color: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300" },
 ];
 
 function parseNoteMarker(content: string) {
@@ -147,7 +147,6 @@ export default function AiPage() {
 
   const isAuthenticated = !!user;
 
-  // Load notes, memory, and conversation history on mount & when user changes
   useEffect(() => {
     if (!user) return;
     const loadContext = async () => {
@@ -158,16 +157,10 @@ export default function AiPage() {
       ]);
       if (notesRes.data) setUserNotes(notesRes.data);
       if (memRes.data) setUserMemory(memRes.data);
-      
-      // Load recent messages from past conversations
       if (convsRes.data && convsRes.data.length > 0) {
         const historyPromises = convsRes.data.slice(0, 10).map(async (conv) => {
           const { data: msgs } = await supabase
-            .from("ai_messages")
-            .select("role, content")
-            .eq("conversation_id", conv.id)
-            .order("created_at", { ascending: true })
-            .limit(10);
+            .from("ai_messages").select("role, content").eq("conversation_id", conv.id).order("created_at", { ascending: true }).limit(10);
           return { title: conv.title, messages: (msgs || []).map(m => ({ role: m.role, content: m.content.slice(0, 300) })) };
         });
         const history = await Promise.all(historyPromises);
@@ -262,31 +255,18 @@ export default function AiPage() {
     if (data) { setMessages(data as Msg[]); setActiveConversationId(id); }
   }, []);
 
-  // Process AI response for note/memory actions
   const processAiActions = useCallback(async (responseContent: string) => {
     if (!user) return;
-
-    // Handle note creation
-    const noteMarker = parseNoteMarker(responseContent);
-    // (handled by save button, not auto)
-
-    // Handle note editing
     const editMarker = parseEditNoteMarker(responseContent);
     if (editMarker) {
       try {
-        const { error } = await supabase.from("notes").update({
-          title: editMarker.title,
-          content: editMarker.content,
-        }).eq("id", editMarker.id).eq("user_id", user.id);
+        const { error } = await supabase.from("notes").update({ title: editMarker.title, content: editMarker.content }).eq("id", editMarker.id).eq("user_id", user.id);
         if (error) throw error;
         toast.success(`Note "${editMarker.title}" updated!`);
-        // Refresh notes
         const { data } = await supabase.from("notes").select("id, title, content, color, pinned, updated_at").eq("user_id", user.id).is("deleted_at", null).order("updated_at", { ascending: false }).limit(100);
         if (data) setUserNotes(data);
       } catch (e: any) { toast.error("Failed to edit note: " + e.message); }
     }
-
-    // Handle note deletion
     const deleteMarker = parseDeleteNoteMarker(responseContent);
     if (deleteMarker) {
       try {
@@ -296,12 +276,9 @@ export default function AiPage() {
         setUserNotes(prev => prev.filter(n => n.id !== deleteMarker.id));
       } catch (e: any) { toast.error("Failed to delete note: " + e.message); }
     }
-
-    // Handle memory saving
     const memoryMarkers = parseMemoryMarker(responseContent);
     for (const mem of memoryMarkers) {
       try {
-        // Upsert memory
         const existing = userMemory.find(m => m.key === mem.key);
         if (existing) {
           await supabase.from("ai_memory").update({ value: mem.value, updated_at: new Date().toISOString() }).eq("id", existing.id);
@@ -382,7 +359,6 @@ export default function AiPage() {
     setIsLoading(true);
     try {
       const responseContent = await streamChat(newMessages);
-      // Process any AI actions in the response
       await processAiActions(responseContent);
       if (isAuthenticated) setMessages((current) => { saveConversation(current, activeConversationId); return current; });
     } catch (e: any) { toast.error(e.message || "AI request failed"); } finally { setIsLoading(false); }
@@ -397,7 +373,6 @@ export default function AiPage() {
       const { error } = await supabase.from("notes").insert({ title, content: cleanContent, color: "blue", user_id: user.id });
       if (error) throw error;
       toast.success("Note saved!");
-      // Refresh notes
       const { data } = await supabase.from("notes").select("id, title, content, color, pinned, updated_at").eq("user_id", user.id).is("deleted_at", null).order("updated_at", { ascending: false }).limit(100);
       if (data) setUserNotes(data);
     } catch (e: any) { toast.error("Failed to save note: " + e.message); }
@@ -409,37 +384,43 @@ export default function AiPage() {
     const cleanContent = stripMarkers(content);
     const printWindow = window.open("", "_blank");
     if (!printWindow) { toast.error("Please allow popups"); return; }
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a2e; } .slide { page-break-after: always; padding: 60px 80px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; } h1 { font-size: 2.5em; margin-bottom: 0.5em; } h2 { font-size: 1.8em; margin-bottom: 0.5em; } p { font-size: 1.2em; line-height: 1.6; margin: 0.5em 0; } ul, ol { font-size: 1.1em; padding-left: 1.5em; margin: 0.5em 0; } li { margin: 0.4em 0; line-height: 1.5; } @media print { .slide { min-height: auto; height: 100vh; } }</style></head><body>${cleanContent}</body></html>`);
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:system-ui,sans-serif;padding:2rem;max-width:800px;margin:0 auto;line-height:1.6}h1,h2,h3{margin-top:1.5em}ul,ol{padding-left:1.5em}</style></head><body>${cleanContent}</body></html>`);
     printWindow.document.close();
-    setTimeout(() => printWindow.print(), 500);
+    printWindow.print();
   };
 
   const saveResponseAsFile = async (content: string) => {
-    if (!user) { toast.error("Sign up to save files"); return; }
+    if (!user) return;
     const cleanContent = stripMarkers(content);
-    const blob = new Blob([cleanContent], { type: "text/html" });
-    const path = `${user.id}/ai-output-${Date.now()}.html`;
+    const blob = new Blob([cleanContent], { type: "text/markdown" });
+    const file = new File([blob], `ai-response-${Date.now()}.md`, { type: "text/markdown" });
+    const path = `${user.id}/${file.name}`;
     try {
-      const { error } = await supabase.storage.from("user-files").upload(path, blob);
-      if (error) throw error;
-      await supabase.from("files").insert({ name: `AI Output ${new Date().toLocaleDateString()}.html`, type: "text/html", size: blob.size, storage_path: path, user_id: user.id });
-      toast.success("Saved to All Files!");
+      const { error: uploadError } = await supabase.storage.from("user-files").upload(path, file);
+      if (uploadError) throw uploadError;
+      await supabase.from("files").insert({ name: file.name, storage_path: path, type: file.type, size: file.size, user_id: user.id });
+      toast.success("Saved to files!");
     } catch (e: any) { toast.error("Failed to save: " + e.message); }
   };
 
   const downloadContent = (content: string) => {
     const cleanContent = stripMarkers(content);
-    const blob = new Blob([cleanContent], { type: "text/html" });
+    const blob = new Blob([cleanContent], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `oltrid-output-${Date.now()}.html`;
-    a.click();
+    a.href = url; a.download = `ai-response-${Date.now()}.md`; a.click();
     URL.revokeObjectURL(url);
   };
 
-  const clearChat = () => { setMessages([]); setActiveConversationId(null); };
-  const handleNewChat = () => { setMessages([]); setActiveConversationId(null); };
+  const clearChat = () => {
+    setMessages([]);
+    setActiveConversationId(null);
+  };
+
+  const handleNewChat = () => {
+    setMessages([]);
+    setActiveConversationId(null);
+  };
 
   if (guestExpired && !user) {
     return (
@@ -460,79 +441,62 @@ export default function AiPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="text-center max-w-2xl w-full"
+        className="text-center max-w-xl w-full"
       >
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1, type: "spring", stiffness: 200 }}
-          className="relative mx-auto mb-8"
-        >
-          <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-foreground/10 to-foreground/5 flex items-center justify-center mx-auto relative overflow-hidden">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5"
-            />
-            <Bot className="h-9 w-9 text-foreground/80 relative z-10" />
-          </div>
-          <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-primary/5 to-primary/10 blur-xl -z-10"
-          />
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-3xl md:text-4xl font-bold text-foreground mb-3 tracking-tight"
+          transition={{ delay: 0.1 }}
+          className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight leading-[1.1]"
         >
-          What can I help with?
+          Welcome to Oltrid
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          className="text-sm text-muted-foreground mb-3 max-w-md mx-auto leading-relaxed"
+          transition={{ delay: 0.25 }}
+          className="text-base text-muted-foreground mb-10 max-w-md mx-auto leading-relaxed"
         >
-          Full control over your notes, persistent memory, diagrams & more.
+          Get started by sending a task and Chat can do the rest. Not sure where to start?
         </motion.p>
-        {isAuthenticated && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/60 mb-8"
-          >
-            <span className="flex items-center gap-1"><StickyNote className="h-3 w-3" /> {userNotes.length} notes</span>
-            <span className="flex items-center gap-1"><Brain className="h-3 w-3" /> {userMemory.length} memories</span>
-          </motion.div>
-        )}
 
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-md mx-auto"
+          transition={{ delay: 0.35 }}
+          className="grid grid-cols-2 gap-3 max-w-lg mx-auto"
         >
           {QUICK_PROMPTS.map((p, i) => (
             <motion.button
               key={p.text}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + i * 0.06 }}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
+              transition={{ delay: 0.4 + i * 0.06 }}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => send(p.prompt)}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border/50 bg-secondary/30 hover:bg-secondary/60 hover:shadow-md transition-all text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border border-border/50 bg-card hover:shadow-lg transition-all duration-200 group text-left"
             >
-              {p.icon}
-              <span className="text-[12px]">{p.text}</span>
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${p.color}`}>
+                {p.icon}
+              </div>
+              <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground">{p.text}</span>
+              <Plus className="h-4 w-4 text-muted-foreground/40 ml-auto shrink-0 group-hover:text-muted-foreground" />
             </motion.button>
           ))}
         </motion.div>
+
+        {isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/50 mt-8"
+          >
+            <span className="flex items-center gap-1"><StickyNote className="h-3 w-3" /> {userNotes.length} notes</span>
+            <span className="flex items-center gap-1"><Brain className="h-3 w-3" /> {userMemory.length} memories</span>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );
@@ -605,7 +569,6 @@ export default function AiPage() {
                         <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
                       )}
 
-                      {/* Action indicators */}
                       {(editMarker || deleteMarker || memMarkers.length > 0) && (
                         <div className="flex flex-wrap gap-1.5 mt-3">
                           {editMarker && (
@@ -680,7 +643,7 @@ export default function AiPage() {
   );
 
   const renderInputArea = () => (
-    <div className="shrink-0 px-3 md:px-6 pb-3 pt-2">
+    <div className="shrink-0 px-4 md:px-8 pb-4 pt-2">
       <div className="max-w-3xl mx-auto">
         {attachedFiles.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -701,23 +664,7 @@ export default function AiPage() {
 
         <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
 
-        <div className="relative flex items-end gap-2 rounded-2xl border border-border/60 bg-background/90 backdrop-blur-xl shadow-lg px-3 py-2 focus-within:border-foreground/20 focus-within:shadow-[0_0_0_1px_hsl(var(--foreground)/0.08),0_8px_25px_-5px_hsl(var(--foreground)/0.1)] transition-all duration-200">
-          <div className="flex items-center gap-0.5 shrink-0 pb-0.5">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/80" onClick={() => fileInputRef.current?.click()} title="Attach file">
-              <Paperclip className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={webSearchEnabled ? "secondary" : "ghost"}
-              size="icon"
-              className={`h-8 w-8 rounded-xl transition-all ${webSearchEnabled ? "text-foreground bg-secondary shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
-              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-              title="Toggle web search"
-            >
-              <Globe className="h-4 w-4" />
-            </Button>
-            <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
-          </div>
-
+        <div className="relative flex items-end gap-2 rounded-2xl border border-border/70 bg-card shadow-[0_2px_12px_-2px_hsl(0_0%_0%/0.08)] px-4 py-3 focus-within:border-foreground/20 focus-within:shadow-[0_2px_20px_-4px_hsl(0_0%_0%/0.12)] transition-all duration-200">
           <textarea
             ref={textareaRef}
             placeholder={webSearchEnabled ? "Search the web…" : "Message Oltrid AI… (@ to mention notes)"}
@@ -726,18 +673,37 @@ export default function AiPage() {
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             disabled={isLoading}
             rows={1}
-            className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/50 py-1.5 min-h-[36px] max-h-[200px]"
+            className="flex-1 bg-transparent border-0 outline-none resize-none text-[15px] text-foreground placeholder:text-muted-foreground/40 py-0.5 min-h-[28px] max-h-[200px]"
           />
 
           <motion.div whileTap={{ scale: 0.9 }}>
-            <Button size="icon" className="h-8 w-8 rounded-xl shrink-0 mb-0.5 transition-all" onClick={() => send()} disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}>
+            <Button size="icon" className="h-9 w-9 rounded-xl shrink-0 transition-all" onClick={() => send()} disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}>
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </Button>
           </motion.div>
         </div>
 
+        {/* Bottom toolbar */}
+        <div className="flex items-center gap-1 mt-2 px-1">
+          <Button variant="ghost" size="sm" className="h-7 rounded-lg text-muted-foreground/60 hover:text-foreground text-xs gap-1.5 px-2" onClick={() => fileInputRef.current?.click()}>
+            <Paperclip className="h-3.5 w-3.5" /> Attach
+          </Button>
+          <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
+          <Button
+            variant={webSearchEnabled ? "secondary" : "ghost"}
+            size="sm"
+            className={`h-7 rounded-lg text-xs gap-1.5 px-2 ${webSearchEnabled ? "text-foreground" : "text-muted-foreground/60 hover:text-foreground"}`}
+            onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+          >
+            <Globe className="h-3.5 w-3.5" /> Browse Web
+          </Button>
+          <div className="ml-auto text-[10px] text-muted-foreground/30">
+            {input.length} / 3,000
+          </div>
+        </div>
+
         <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileAttach} />
-        <p className="text-[10px] text-muted-foreground/40 text-center mt-2">
+        <p className="text-[10px] text-muted-foreground/30 text-center mt-2">
           Oltrid AI can make mistakes. Verify important information.
         </p>
       </div>
@@ -751,14 +717,9 @@ export default function AiPage() {
           <ResizablePanel defaultSize={historySidebarOpen && isAuthenticated ? 75 : 100} minSize={50}>
             <div className="h-full flex flex-col min-w-0 relative">
               {/* Top bar */}
-              <div className="flex items-center justify-between px-4 md:px-6 h-13 border-b border-border/30 shrink-0 bg-background/60 backdrop-blur-md">
+              <div className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-border/40 shrink-0 bg-background/80 backdrop-blur-sm">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-foreground/10 to-foreground/5 flex items-center justify-center">
-                      <Bot className="h-3.5 w-3.5 text-foreground/70" />
-                    </div>
-                    <span className="text-sm font-semibold text-foreground tracking-tight">Oltrid AI</span>
-                  </div>
+                  <span className="text-[15px] font-semibold text-foreground tracking-tight">Oltrid AI</span>
                   {isGuest && !user && (
                     <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">Guest · {guestMinutesLeft}m</span>
                   )}
