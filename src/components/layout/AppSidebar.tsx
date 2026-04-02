@@ -1,11 +1,9 @@
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3 } from "lucide-react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, HelpCircle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { OfflineIndicator } from "@/components/ui/offline-indicator";
-import { useOfflineStatus } from "@/hooks/useOfflineStatus";
 import {
   Sidebar,
   SidebarContent,
@@ -14,7 +12,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -37,19 +34,18 @@ export function AppSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
-  const offlineStatus = useOfflineStatus();
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className={cn("p-3 pb-2", collapsed && "flex items-center justify-center p-2")}>
+      <SidebarHeader className={cn("p-4 pb-3", collapsed && "flex items-center justify-center p-2")}>
         {collapsed ? (
           <button onClick={toggleSidebar} className="cursor-pointer hover:opacity-80 transition-opacity">
             <OltridLogo className="h-7 w-7 shrink-0" />
           </button>
         ) : (
-          <div className="flex items-center gap-2 pl-1">
-            <OltridLogo className="h-6 w-6 shrink-0" />
-            <span className="text-sm font-semibold tracking-tight text-foreground truncate">Oltrid</span>
+          <div className="flex items-center gap-2.5 pl-0.5">
+            <OltridLogo className="h-7 w-7 shrink-0" />
+            <span className="text-[15px] font-bold tracking-tight text-foreground truncate">Oltrid</span>
             <button onClick={toggleSidebar} className="ml-auto text-muted-foreground hover:text-foreground transition-colors hidden md:flex">
               <PanelLeftClose className="h-4 w-4" />
             </button>
@@ -58,8 +54,8 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <ScrollArea className="flex-1 px-2 pt-1">
-          <SidebarMenu>
+        <ScrollArea className="flex-1 px-3 pt-1">
+          <SidebarMenu className="space-y-0.5">
             {mainNav.map((item) => {
               const isActive = location.pathname === item.url || (item.url === "/" && location.pathname === "/ai");
               return (
@@ -71,9 +67,12 @@ export function AppSidebar() {
                           to={item.url}
                           end
                           className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all duration-150",
+                            isActive
+                              ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                              : "text-foreground/65 hover:bg-secondary hover:text-foreground"
                           )}
-                          activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                          activeClassName=""
                         >
                           <item.icon className="h-[18px] w-[18px] shrink-0" />
                           {!collapsed && <span className="truncate">{item.title}</span>}
@@ -93,22 +92,13 @@ export function AppSidebar() {
         </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter className="px-2 pb-2 space-y-0.5">
-        {/* Offline Status Indicator */}
-        <div className="px-2 py-1">
-          <OfflineIndicator
-            isOnline={offlineStatus.isOnline}
-            isOffline={offlineStatus.isOffline}
-            pendingSyncCount={offlineStatus.pendingSyncCount}
-            isSyncing={offlineStatus.isSyncing}
-            onSync={offlineStatus.triggerSync}
-            connectionType={offlineStatus.connectionType}
-            effectiveType={offlineStatus.effectiveType}
-            className="w-full justify-center"
-          />
-        </div>
-        
-        <SidebarMenu>
+      <SidebarFooter className="px-3 pb-3 space-y-0.5">
+        {!collapsed && (
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold px-3 pt-2 pb-1">
+            Settings & Help
+          </p>
+        )}
+        <SidebarMenu className="space-y-0.5">
           {bottomNav.map((item) => {
             const isActive = location.pathname === item.url;
             return (
@@ -120,9 +110,12 @@ export function AppSidebar() {
                         to={item.url}
                         end
                         className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all duration-150",
+                          isActive
+                            ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                            : "text-foreground/65 hover:bg-secondary hover:text-foreground"
                         )}
-                        activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                        activeClassName=""
                       >
                         <item.icon className="h-[18px] w-[18px] shrink-0" />
                         {!collapsed && <span className="truncate">{item.title}</span>}
