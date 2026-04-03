@@ -26,6 +26,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [mobileStep, setMobileStep] = useState(0); // 0 = welcome, 1 = login form
 
   if (loading) {
     return (
