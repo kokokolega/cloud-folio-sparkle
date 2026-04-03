@@ -67,231 +67,310 @@ export default function Auth() {
     navigate("/");
   };
 
-  // Mobile layout
+  const handleSwipeDragEnd = useCallback((_: any, info: PanInfo) => {
+    if (mobileStep === 0 && info.offset.x < -60) {
+      setMobileStep(1);
+    } else if (mobileStep === 1 && info.offset.x > 60) {
+      setMobileStep(0);
+    }
+  }, [mobileStep]);
+
+  // Mobile step-wise layout
   if (isMobile) {
     return (
-      <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute w-[300px] h-[300px] rounded-full bg-primary/[0.06] blur-[80px]"
-            animate={{
-              x: ["-20%", "30%", "-20%"],
-              y: ["-10%", "20%", "-10%"],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "-5%", right: "-10%" }}
-          />
-          <motion.div
-            className="absolute w-[250px] h-[250px] rounded-full bg-primary/[0.04] blur-[60px]"
-            animate={{
-              x: ["10%", "-20%", "10%"],
-              y: ["5%", "-15%", "5%"],
-              scale: [1, 1.3, 1],
-            }}
-            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            style={{ bottom: "10%", left: "-5%" }}
-          />
-          {/* Floating particles */}
-          {[...Array(6)].map((_, i) => (
+      <div className="min-h-screen flex flex-col bg-background overflow-hidden relative">
+        <AnimatePresence mode="wait">
+          {mobileStep === 0 ? (
+            /* ── Step 0: Welcome / Intro ── */
             <motion.div
-              key={i}
-              className="absolute w-1 h-1 rounded-full bg-foreground/20"
-              animate={{
-                y: [0, -40, 0],
-                x: [0, (i % 2 === 0 ? 15 : -15), 0],
-                opacity: [0.2, 0.8, 0.2],
-              }}
-              transition={{ duration: 3 + i * 0.5, repeat: Infinity, delay: i * 0.4 }}
-              style={{ top: `${20 + i * 12}%`, left: `${10 + i * 15}%` }}
-            />
-          ))}
-        </div>
-
-        {/* Top section with logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="pt-12 pb-6 px-6 relative z-10"
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
-            className="flex items-center gap-3 mb-8"
-          >
-            <div className="relative">
-              <OltridLogo className="h-10 w-10" />
-              <motion.div
-                animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute -inset-2 rounded-2xl bg-primary/10 blur-lg -z-10"
-              />
-            </div>
-            <span className="text-xl font-bold text-foreground tracking-tight">Oltrid</span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="text-3xl font-bold text-foreground tracking-tight leading-tight"
-          >
-            {mode === "login" ? "Welcome\nback" : "Reset\npassword"}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-muted-foreground text-sm mt-2"
-          >
-            {mode === "login" ? "Sign in to continue" : "We'll send you a reset link"}
-          </motion.p>
-        </motion.div>
-
-        {/* Feature pills */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="flex gap-2 px-6 mb-6 overflow-x-auto no-scrollbar"
-        >
-          {[
-            { icon: <Brain className="h-3.5 w-3.5" />, text: "AI Assistant" },
-            { icon: <FileText className="h-3.5 w-3.5" />, text: "Smart Notes" },
-            { icon: <Code2 className="h-3.5 w-3.5" />, text: "Codrix IDE" },
-            { icon: <Shield className="h-3.5 w-3.5" />, text: "Secure" },
-          ].map((f, i) => (
-            <motion.div
-              key={f.text}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + i * 0.06 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-muted-foreground text-xs whitespace-nowrap shrink-0"
+              key="welcome"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="min-h-screen flex flex-col relative"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={handleSwipeDragEnd}
             >
-              {f.icon}
-              {f.text}
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex-1 px-6 relative z-10"
-        >
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <Input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              className="h-13 rounded-2xl bg-secondary/40 border border-border text-base placeholder:text-muted-foreground/50 focus-visible:ring-2 focus-visible:ring-ring"
-            />
-
-            <AnimatePresence mode="wait">
-              {mode !== "forgot" && (
+              {/* Dark gradient hero background */}
+              <div className="flex-1 relative bg-foreground overflow-hidden flex flex-col justify-end px-6 pb-8 pt-16">
+                {/* Animated gradient orbs on dark bg */}
                 <motion.div
-                  key="password-mobile"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25 }}
+                  className="absolute w-[350px] h-[350px] rounded-full bg-primary-foreground/[0.06] blur-[100px]"
+                  animate={{ x: ["-20%", "20%", "-20%"], y: ["-10%", "15%", "-10%"] }}
+                  transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ top: "5%", right: "-15%" }}
+                />
+                <motion.div
+                  className="absolute w-[280px] h-[280px] rounded-full bg-primary-foreground/[0.04] blur-[80px]"
+                  animate={{ x: ["10%", "-15%", "10%"], y: ["5%", "-10%", "5%"] }}
+                  transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ top: "30%", left: "-10%" }}
+                />
+
+                {/* Logo */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="absolute top-12 left-6 flex items-center gap-2.5"
                 >
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      autoComplete="current-password"
-                      className="h-13 rounded-2xl bg-secondary/40 border border-border text-base placeholder:text-muted-foreground/50 focus-visible:ring-2 focus-visible:ring-ring pr-12"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
+                  <OltridLogo className="h-8 w-8 brightness-200" />
+                  <span className="text-lg font-semibold text-primary-foreground/90">Oltrid</span>
                 </motion.div>
-              )}
-            </AnimatePresence>
 
-            {mode === "login" && (
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setMode("forgot")}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                {/* Hero text */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                  Forgot password?
-                </button>
+                  <h1 className="text-[2.5rem] font-bold text-primary-foreground leading-[1.1] tracking-tight mb-4">
+                    Your AI
+                    <br />
+                    Workspace for
+                    <br />
+                    Everything
+                  </h1>
+                  <p className="text-primary-foreground/50 text-sm max-w-[260px]">
+                    Notes, files, code, and AI — all in one powerful workspace.
+                  </p>
+                </motion.div>
+
+                {/* Feature chips */}
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex flex-wrap gap-2 mt-6"
+                >
+                  {[
+                    { icon: <Brain className="h-3 w-3" />, text: "AI Assistant" },
+                    { icon: <FileText className="h-3 w-3" />, text: "Smart Notes" },
+                    { icon: <Code2 className="h-3 w-3" />, text: "Codrix IDE" },
+                    { icon: <Shield className="h-3 w-3" />, text: "Secure" },
+                  ].map((f, i) => (
+                    <motion.span
+                      key={f.text}
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5 + i * 0.06 }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-foreground/10 border border-primary-foreground/10 text-primary-foreground/70 text-[11px]"
+                    >
+                      {f.icon}
+                      {f.text}
+                    </motion.span>
+                  ))}
+                </motion.div>
               </div>
-            )}
 
-            <motion.div whileTap={{ scale: 0.97 }}>
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="w-full h-13 rounded-2xl text-base font-semibold transition-all duration-300"
-              >
-                {submitting ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <span className="flex items-center gap-2">
-                    {mode === "login" ? "Continue" : "Send reset link"}
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
-                )}
-              </Button>
+              {/* Bottom nav bar */}
+              <div className="bg-foreground px-6 pb-8 pt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      whileTap={{ scale: 0.9 }}
+                      className="h-12 w-12 rounded-full bg-primary-foreground/10 flex items-center justify-center"
+                    >
+                      <ChevronLeft className="h-5 w-5 text-primary-foreground/50" />
+                    </motion.div>
+                    <motion.div
+                      whileTap={{ scale: 0.9 }}
+                      className="h-14 w-14 rounded-full bg-primary-foreground flex items-center justify-center shadow-lg shadow-primary-foreground/20"
+                      onClick={() => setMobileStep(1)}
+                    >
+                      <Play className="h-5 w-5 text-foreground ml-0.5" />
+                    </motion.div>
+                  </div>
+                  <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setMobileStep(1)}
+                    className="flex items-center gap-2 px-5 py-3 rounded-full bg-primary-foreground/10 cursor-pointer"
+                  >
+                    <span className="text-primary-foreground/80 text-sm font-medium">Start</span>
+                    <ArrowRight className="h-4 w-4 text-primary-foreground/60" />
+                  </motion.div>
+                </div>
+
+                {/* Step indicator */}
+                <div className="flex items-center justify-center gap-2 mt-5">
+                  <div className="h-1.5 w-6 rounded-full bg-primary-foreground/80" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground/20" />
+                </div>
+              </div>
             </motion.div>
-          </form>
+          ) : (
+            /* ── Step 1: Login Form ── */
+            <motion.div
+              key="login-form"
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="min-h-screen flex flex-col relative"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={handleSwipeDragEnd}
+            >
+              {/* Top bar with back + brand */}
+              <div className="flex items-center justify-between px-5 pt-12 pb-4">
+                <motion.button
+                  whileTap={{ scale: 0.85 }}
+                  onClick={() => setMobileStep(0)}
+                  className="h-10 w-10 rounded-xl bg-secondary/60 flex items-center justify-center"
+                >
+                  <ChevronLeft className="h-5 w-5 text-foreground" />
+                </motion.button>
+                <div className="flex items-center gap-2">
+                  <OltridLogo className="h-7 w-7" />
+                  <span className="text-base font-semibold text-foreground tracking-tight">Oltrid</span>
+                </div>
+                <div className="w-10" />
+              </div>
 
-          <div className="mt-6">
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-              <div className="relative flex justify-center text-xs"><span className="bg-background px-3 text-muted-foreground">or</span></div>
-            </div>
-            <motion.div whileTap={{ scale: 0.97 }}>
-              <Button
-                variant="outline"
-                onClick={handleGuestAccess}
-                className="w-full h-13 rounded-2xl text-base gap-2 border-border"
-              >
-                <Sparkles className="h-4 w-4" />
-                Try as Guest
-              </Button>
+              {/* Form card */}
+              <div className="flex-1 px-6 pt-4 pb-6 flex flex-col">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-card rounded-3xl border border-border/50 shadow-[0_4px_24px_-4px_hsl(0_0%_0%/0.08)] p-6 flex-1 flex flex-col"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={mode}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <h2 className="text-xl font-bold text-foreground text-center mb-1">
+                        {mode === "login" ? "Welcome to\nOltrid, login now!" : "Reset your\npassword"}
+                      </h2>
+                      <p className="text-muted-foreground text-xs text-center mb-6">
+                        {mode === "login" ? "Sign in to access your workspace" : "We'll send you a reset link"}
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+
+                  <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-medium text-foreground mb-1.5 block">Email</label>
+                        <Input
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          autoComplete="email"
+                          className="h-12 rounded-xl bg-secondary/30 border-border/60 text-sm placeholder:text-muted-foreground/40"
+                        />
+                      </div>
+
+                      <AnimatePresence mode="wait">
+                        {mode !== "forgot" && (
+                          <motion.div
+                            key="pw"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <label className="text-xs font-medium text-foreground mb-1.5 block">Password</label>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                minLength={6}
+                                autoComplete="current-password"
+                                className="h-12 rounded-xl bg-secondary/30 border-border/60 text-sm placeholder:text-muted-foreground/40 pr-11"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                              >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {mode === "login" && (
+                        <div className="flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={() => setMode("forgot")}
+                            className="text-xs text-primary font-medium"
+                          >
+                            Forgot password?
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-auto space-y-3 pt-4">
+                      <motion.div whileTap={{ scale: 0.97 }}>
+                        <Button
+                          type="submit"
+                          disabled={submitting}
+                          className="w-full h-13 rounded-2xl text-base font-semibold"
+                        >
+                          {submitting ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            mode === "login" ? "Login" : "Send reset link"
+                          )}
+                        </Button>
+                      </motion.div>
+
+                      <div className="relative my-2">
+                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/50" /></div>
+                        <div className="relative flex justify-center text-[10px]"><span className="bg-card px-3 text-muted-foreground">or</span></div>
+                      </div>
+
+                      <motion.div whileTap={{ scale: 0.97 }}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleGuestAccess}
+                          className="w-full h-12 rounded-2xl text-sm gap-2 border-border/60"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                          Try as Guest
+                        </Button>
+                      </motion.div>
+
+                      {mode === "forgot" && (
+                        <button
+                          type="button"
+                          onClick={() => setMode("login")}
+                          className="w-full text-center text-sm text-foreground font-medium mt-2"
+                        >
+                          Back to sign in
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </motion.div>
+
+                {/* Step indicator */}
+                <div className="flex items-center justify-center gap-2 mt-5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-foreground/20" />
+                  <div className="h-1.5 w-6 rounded-full bg-foreground/80" />
+                </div>
+              </div>
             </motion.div>
-          </div>
-
-          {mode === "forgot" && (
-            <div className="mt-6 text-center">
-              <button onClick={() => setMode("login")} className="text-sm text-foreground font-medium hover:underline underline-offset-4">
-                Back to sign in
-              </button>
-            </div>
           )}
-        </motion.div>
-
-        {/* Bottom branding */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="py-6 px-6 text-center"
-        >
-          <p className="text-[10px] text-muted-foreground/40">Your AI workspace for everything</p>
-        </motion.div>
+        </AnimatePresence>
       </div>
     );
   }
