@@ -21,12 +21,13 @@ export default function Auth() {
   const { session, loading } = useAuth();
   const { startGuestSession } = useGuestMode();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [mode, setMode] = useState<"login" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [mobileStep, setMobileStep] = useState(0); // 0 = welcome, 1 = login form
+  const [mobileStep, setMobileStep] = useState(0);
 
   if (loading) {
     return (
@@ -35,8 +36,6 @@ export default function Auth() {
       </div>
     );
   }
-
-  const isMobile = useIsMobile();
 
   if (session) return <Navigate to="/" replace />;
 
