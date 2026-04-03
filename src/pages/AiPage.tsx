@@ -9,8 +9,15 @@ import {
   Loader2, Bot, StickyNote, FileDown, User,
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
   X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
-  NotebookPen, MessageCircle, Workflow, Globe2,
+  NotebookPen, MessageCircle, Workflow, Globe2, ChevronDown, Sparkles,
+  FileText, Image, Code, ListChecks,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
 import { NoteMentionDropdown } from "@/components/ai/NoteMentionDropdown";
