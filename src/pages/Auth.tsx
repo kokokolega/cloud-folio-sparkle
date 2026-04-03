@@ -74,13 +74,6 @@ export default function Auth() {
     navigate("/");
   };
 
-  const handleSwipeDragEnd = useCallback((_: any, info: PanInfo) => {
-    if (mobileStep === 0 && info.offset.x < -60) {
-      setMobileStep(1);
-    } else if (mobileStep === 1 && info.offset.x > 60) {
-      setMobileStep(0);
-    }
-  }, [mobileStep]);
 
   // Mobile step-wise layout
   if (isMobile) {
