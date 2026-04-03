@@ -56,6 +56,17 @@ interface MemoryData {
   value: string;
 }
 
+const AI_FEATURES = [
+  { label: "General", icon: <MessageCircle className="h-4 w-4" />, prefill: "" },
+  { label: "Create Note", icon: <NotebookPen className="h-4 w-4" />, prefill: "Create a new note about " },
+  { label: "Web Search", icon: <Globe2 className="h-4 w-4" />, prefill: "" },
+  { label: "Flowchart", icon: <Workflow className="h-4 w-4" />, prefill: "Draw a flowchart for " },
+  { label: "Summarize", icon: <Brain className="h-4 w-4" />, prefill: "Summarize my notes" },
+  { label: "Edit Note", icon: <Pencil className="h-4 w-4" />, prefill: "Edit my note " },
+  { label: "Code Help", icon: <Code className="h-4 w-4" />, prefill: "Help me write code for " },
+  { label: "To-Do List", icon: <ListChecks className="h-4 w-4" />, prefill: "Create a checklist for " },
+];
+
 const QUICK_PROMPTS = [
   { icon: <NotebookPen className="h-5 w-5" />, text: "Create note", prompt: "Create a new note", color: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300" },
   { icon: <Globe2 className="h-5 w-5" />, text: "Search web", prompt: "Search the web", color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" },
