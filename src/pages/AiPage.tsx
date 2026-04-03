@@ -9,8 +9,15 @@ import {
   Loader2, Bot, StickyNote, FileDown, User,
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
   X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
-  NotebookPen, MessageCircle, Workflow, Globe2,
+  NotebookPen, MessageCircle, Workflow, Globe2, ChevronDown, Sparkles,
+  FileText, Image, Code, ListChecks,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { VoiceInput } from "@/components/ai/VoiceInput";
 import { ChatHistorySidebar } from "@/components/ai/ChatHistorySidebar";
 import { NoteMentionDropdown } from "@/components/ai/NoteMentionDropdown";
@@ -48,6 +55,17 @@ interface MemoryData {
   key: string;
   value: string;
 }
+
+const AI_FEATURES = [
+  { label: "General", icon: <MessageCircle className="h-4 w-4" />, prefill: "" },
+  { label: "Create Note", icon: <NotebookPen className="h-4 w-4" />, prefill: "Create a new note about " },
+  { label: "Web Search", icon: <Globe2 className="h-4 w-4" />, prefill: "" },
+  { label: "Flowchart", icon: <Workflow className="h-4 w-4" />, prefill: "Draw a flowchart for " },
+  { label: "Summarize", icon: <Brain className="h-4 w-4" />, prefill: "Summarize my notes" },
+  { label: "Edit Note", icon: <Pencil className="h-4 w-4" />, prefill: "Edit my note " },
+  { label: "Code Help", icon: <Code className="h-4 w-4" />, prefill: "Help me write code for " },
+  { label: "To-Do List", icon: <ListChecks className="h-4 w-4" />, prefill: "Create a checklist for " },
+];
 
 const QUICK_PROMPTS = [
   { icon: <NotebookPen className="h-5 w-5" />, text: "Create note", prompt: "Create a new note", color: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300" },
@@ -138,6 +156,7 @@ export default function AiPage() {
   const [showMentions, setShowMentions] = useState(false);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
+  const [selectedFeature, setSelectedFeature] = useState("General");
   const [userNotes, setUserNotes] = useState<NoteData[]>([]);
   const [userMemory, setUserMemory] = useState<MemoryData[]>([]);
   const [conversationHistory, setConversationHistory] = useState<{ title: string; messages: { role: string; content: string }[] }[]>([]);
@@ -697,7 +716,37 @@ export default function AiPage() {
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[12px] text-muted-foreground/40 hidden md:inline">Gemini 3 Flash</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[12px] text-muted-foreground/60 hover:text-foreground gap-1 px-2">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{selectedFeature}</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {AI_FEATURES.map((feature) => (
+                    <DropdownMenuItem
+                      key={feature.label}
+                      onClick={() => {
+                        setSelectedFeature(feature.label);
+                        if (feature.prefill) {
+                          setInput(feature.prefill);
+                        }
+                        if (feature.label === "Web Search") {
+                          setWebSearchEnabled(true);
+                        } else {
+                          setWebSearchEnabled(false);
+                        }
+                      }}
+                      className="gap-2 text-[13px]"
+                    >
+                      {feature.icon}
+                      {feature.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
               {(input.trim() || attachedFiles.length > 0) && (
                 <motion.div whileTap={{ scale: 0.9 }} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
