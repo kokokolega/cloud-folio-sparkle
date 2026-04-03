@@ -643,7 +643,7 @@ export default function AiPage() {
   );
 
   const renderInputArea = () => (
-    <div className="shrink-0 px-4 md:px-8 pb-4 pt-2">
+    <div className="shrink-0 px-3 md:px-6 pb-3 md:pb-5 pt-2">
       <div className="max-w-3xl mx-auto">
         {attachedFiles.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -664,48 +664,53 @@ export default function AiPage() {
 
         <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
 
-        <div className="relative flex items-end gap-2 rounded-2xl border border-border/70 bg-card shadow-[0_2px_12px_-2px_hsl(0_0%_0%/0.08)] px-4 py-3 focus-within:border-foreground/20 focus-within:shadow-[0_2px_20px_-4px_hsl(0_0%_0%/0.12)] transition-all duration-200">
-          <textarea
-            ref={textareaRef}
-            placeholder={webSearchEnabled ? "Search the web…" : "Message Oltrid AI… (@ to mention notes)"}
-            value={input}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-            disabled={isLoading}
-            rows={1}
-            className="flex-1 bg-transparent border-0 outline-none resize-none text-[15px] text-foreground placeholder:text-muted-foreground/40 py-0.5 min-h-[28px] max-h-[200px]"
-          />
+        <div className="rounded-2xl border border-border/60 bg-card shadow-[0_1px_8px_-2px_hsl(0_0%_0%/0.06)] focus-within:border-foreground/15 focus-within:shadow-[0_2px_16px_-4px_hsl(0_0%_0%/0.1)] transition-all duration-200">
+          {/* Textarea row */}
+          <div className="px-4 pt-3 pb-2">
+            <textarea
+              ref={textareaRef}
+              placeholder={webSearchEnabled ? "Search the web…" : "How can I help you today?"}
+              value={input}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+              disabled={isLoading}
+              rows={1}
+              className="w-full bg-transparent border-0 outline-none resize-none text-[15px] text-foreground placeholder:text-muted-foreground/50 min-h-[28px] max-h-[200px]"
+            />
+          </div>
 
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button size="icon" className="h-9 w-9 rounded-xl shrink-0 transition-all" onClick={() => send()} disabled={isLoading || (!input.trim() && attachedFiles.length === 0)}>
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
-            </Button>
-          </motion.div>
-        </div>
+          {/* Bottom toolbar inside the card */}
+          <div className="flex items-center justify-between px-3 pb-2.5">
+            <div className="flex items-center gap-0.5">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground/50 hover:text-foreground" onClick={() => fileInputRef.current?.click()} title="Attach file">
+                <Plus className="h-4.5 w-4.5" />
+              </Button>
+              <Button
+                variant={webSearchEnabled ? "secondary" : "ghost"}
+                size="icon"
+                className={`h-8 w-8 rounded-lg ${webSearchEnabled ? "text-foreground" : "text-muted-foreground/50 hover:text-foreground"}`}
+                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                title="Browse Web"
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+            </div>
 
-        {/* Bottom toolbar */}
-        <div className="flex items-center gap-1 mt-2 px-1">
-          <Button variant="ghost" size="sm" className="h-7 rounded-lg text-muted-foreground/60 hover:text-foreground text-xs gap-1.5 px-2" onClick={() => fileInputRef.current?.click()}>
-            <Paperclip className="h-3.5 w-3.5" /> Attach
-          </Button>
-          <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
-          <Button
-            variant={webSearchEnabled ? "secondary" : "ghost"}
-            size="sm"
-            className={`h-7 rounded-lg text-xs gap-1.5 px-2 ${webSearchEnabled ? "text-foreground" : "text-muted-foreground/60 hover:text-foreground"}`}
-            onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-          >
-            <Globe className="h-3.5 w-3.5" /> Browse Web
-          </Button>
-          <div className="ml-auto text-[10px] text-muted-foreground/30">
-            {input.length} / 3,000
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] text-muted-foreground/40 hidden md:inline">Gemini 3 Flash</span>
+              <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
+              {(input.trim() || attachedFiles.length > 0) && (
+                <motion.div whileTap={{ scale: 0.9 }} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
+                  <Button size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => send()} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+                  </Button>
+                </motion.div>
+              )}
+            </div>
           </div>
         </div>
 
         <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileAttach} />
-        <p className="text-[10px] text-muted-foreground/30 text-center mt-2">
-          Oltrid AI can make mistakes. Verify important information.
-        </p>
       </div>
     </div>
   );
@@ -738,14 +743,12 @@ export default function AiPage() {
                 </div>
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-4">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 
-              <div className="sticky bottom-0 z-20 pointer-events-none">
-                <div className="pointer-events-auto">
-                  {renderInputArea()}
-                </div>
+              <div className="shrink-0 bg-background border-t border-border/30">
+                {renderInputArea()}
               </div>
             </div>
           </ResizablePanel>
