@@ -293,16 +293,24 @@ export function GroupChat({ groupId }: GroupChatProps) {
           <AnimatePresence initial={false}>
             {messages.map((msg: any) => {
               const isMe = msg.user_id === user?.id;
-              const displayName = getDisplayName(msg.email);
+              const name = getDisplayName(msg.email, msg.display_name);
               return (
                 <motion.div
                   key={msg.id}
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex flex-col ${isMe ? "items-end" : "items-start"} group/msg`}
+                  className={`flex ${isMe ? "flex-row-reverse" : "flex-row"} gap-2 group/msg`}
                 >
+                  {/* Avatar */}
+                  {!isMe && (
+                    <Avatar className="h-7 w-7 mt-4 shrink-0">
+                      {msg.avatar_url ? <AvatarImage src={msg.avatar_url} alt={name} /> : null}
+                      <AvatarFallback className="text-[10px] bg-secondary">{getInitial(msg.email, msg.display_name)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                   <span className="text-[10px] text-muted-foreground mb-0.5 px-1">
-                    {isMe ? "You" : displayName}
+                    {isMe ? "You" : name}
                   </span>
                   <div className={`relative max-w-[75%] ${isMe ? "flex flex-row-reverse gap-1" : "flex flex-row gap-1"}`}>
                     <div
