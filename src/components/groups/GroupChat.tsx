@@ -8,6 +8,7 @@ import {
   Send, Loader2, Smile, Trash2, Reply, X, Paperclip, Image as ImageIcon,
   FileText, Download, CornerDownRight
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -47,12 +48,12 @@ export function GroupChat({ groupId }: GroupChatProps) {
       const userIds = [...new Set(data.map((m: any) => m.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, email")
+        .select("user_id, email, display_name, avatar_url")
         .in("user_id", userIds);
 
-      const profileMap: Record<string, string> = {};
+      const profileMap: Record<string, { email: string; display_name: string | null; avatar_url: string | null }> = {};
       profiles?.forEach((p: any) => {
-        profileMap[p.user_id] = p.email || "Unknown";
+        profileMap[p.user_id] = { email: p.email || "Unknown", display_name: p.display_name, avatar_url: p.avatar_url };
       });
 
       // Fetch reply-to messages
@@ -64,15 +65,21 @@ export function GroupChat({ groupId }: GroupChatProps) {
           .select("id, content, user_id")
           .in("id", replyIds);
         replies?.forEach((r: any) => {
-          replyMap[r.id] = { ...r, email: profileMap[r.user_id] || "Unknown" };
+          const p = profileMap[r.user_id];
+          replyMap[r.id] = { ...r, email: p?.email || "Unknown", display_name: p?.display_name };
         });
       }
 
-      return data.map((m: any) => ({
-        ...m,
-        email: profileMap[m.user_id] || "Unknown",
-        replyMessage: m.reply_to ? replyMap[m.reply_to] : null,
-      }));
+      return data.map((m: any) => {
+        const p = profileMap[m.user_id];
+        return {
+          ...m,
+          email: p?.email || "Unknown",
+          display_name: p?.display_name || null,
+          avatar_url: p?.avatar_url || null,
+          replyMessage: m.reply_to ? replyMap[m.reply_to] : null,
+        };
+      });
     },
     refetchInterval: 3000,
   });
@@ -200,7 +207,8 @@ export function GroupChat({ groupId }: GroupChatProps) {
     sendMutation.mutate({ content: message.trim() });
   };
 
-  const getDisplayName = (email: string) => email.split("@")[0];
+  const getDisplayName = (email: string, name?: string | null) => name || email.split("@")[0];
+  const getInitial = (email: string, name?: string | null) => (name?.[0] || email?.[0] || "U").toUpperCase();
 
   const renderAttachment = (msg: any) => {
     if (!msg.attachment_url) return null;
@@ -234,7 +242,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
       <div className="flex items-start gap-1.5 mb-1 px-2 py-1 rounded-lg bg-background/30 border-l-2 border-primary/50 text-[11px]">
         <CornerDownRight className="h-3 w-3 mt-0.5 text-primary/60 shrink-0" />
         <div className="min-w-0">
-          <span className="font-medium text-primary/80">{getDisplayName(msg.replyMessage.email)}</span>
+          <span className="font-medium text-primary/80">{getDisplayName(msg.replyMessage.email, msg.replyMessage.display_name)}</span>
           <p className="text-muted-foreground truncate">{msg.replyMessage.content}</p>
         </div>
       </div>
@@ -285,16 +293,24 @@ export function GroupChat({ groupId }: GroupChatProps) {
           <AnimatePresence initial={false}>
             {messages.map((msg: any) => {
               const isMe = msg.user_id === user?.id;
-              const displayName = getDisplayName(msg.email);
+              const name = getDisplayName(msg.email, msg.display_name);
               return (
                 <motion.div
                   key={msg.id}
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex flex-col ${isMe ? "items-end" : "items-start"} group/msg`}
+                  className={`flex ${isMe ? "flex-row-reverse" : "flex-row"} gap-2 group/msg`}
                 >
+                  {/* Avatar */}
+                  {!isMe && (
+                    <Avatar className="h-7 w-7 mt-4 shrink-0">
+                      {msg.avatar_url ? <AvatarImage src={msg.avatar_url} alt={name} /> : null}
+                      <AvatarFallback className="text-[10px] bg-secondary">{getInitial(msg.email, msg.display_name)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                   <span className="text-[10px] text-muted-foreground mb-0.5 px-1">
-                    {isMe ? "You" : displayName}
+                    {isMe ? "You" : name}
                   </span>
                   <div className={`relative max-w-[75%] ${isMe ? "flex flex-row-reverse gap-1" : "flex flex-row gap-1"}`}>
                     <div
@@ -355,6 +371,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
                   <span className="text-[9px] text-muted-foreground/60 mt-0.5 px-1">
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
+                  </div>
                 </motion.div>
               );
             })}

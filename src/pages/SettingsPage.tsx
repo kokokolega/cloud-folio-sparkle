@@ -4,10 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useBackgroundTheme, BgTheme } from "@/hooks/useBackgroundTheme";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert, User } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert, User, Camera, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 const BG_THEMES: { id: BgTheme; name: string; description: string; preview: string }[] = [
@@ -28,8 +31,65 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { bgTheme, setBgTheme, customImageUrl, setCustomImageUrl } = useBackgroundTheme();
+  const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [displayName, setDisplayName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch profile
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user!.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (profile?.display_name) setDisplayName(profile.display_name);
+  }, [profile]);
+
+  // Update display name
+  const updateName = useMutation({
+    mutationFn: async (name: string) => {
+      const { error } = await supabase.from("profiles").update({ display_name: name }).eq("user_id", user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setEditingName(false);
+      toast.success("Name updated!");
+    },
+  });
+
+  // Upload avatar
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error("Image must be under 2MB"); return; }
+    setAvatarUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("user-files").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("user-files").getPublicUrl(path);
+      await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", user.id);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success("Profile picture updated!");
+    } catch (err: any) { toast.error(err.message || "Upload failed"); }
+    finally { setAvatarUploading(false); if (avatarInputRef.current) avatarInputRef.current.value = ""; }
+  };
 
   const [autoLogoutEnabled, setAutoLogoutEnabled] = useState(() => {
     const stored = localStorage.getItem("oltrid-auto-logout");
@@ -70,15 +130,56 @@ export default function SettingsPage() {
         <h1 className="text-xl font-semibold text-foreground mb-6">Settings</h1>
 
         <div className="space-y-4">
-          {/* Account */}
+          {/* Profile */}
           <div className="glass-card p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-                <User className="h-5 w-5 text-muted-foreground" />
+            <div className="flex items-center gap-4 mb-4">
+              <div className="relative">
+                <Avatar className="h-16 w-16 border-2 border-border">
+                  {profile?.avatar_url ? (
+                    <AvatarImage src={profile.avatar_url} alt="Profile" />
+                  ) : null}
+                  <AvatarFallback className="bg-secondary text-lg">
+                    {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors"
+                  disabled={avatarUploading}
+                >
+                  {avatarUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+                </button>
+                <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
               </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Account</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
+              <div className="flex-1 min-w-0">
+                {editingName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Your name"
+                      className="h-8 text-sm rounded-lg"
+                      autoFocus
+                      onKeyDown={(e) => e.key === "Enter" && displayName.trim() && updateName.mutate(displayName.trim())}
+                    />
+                    <Button size="sm" className="h-8 rounded-lg text-xs" onClick={() => displayName.trim() && updateName.mutate(displayName.trim())} disabled={updateName.isPending}>
+                      Save
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-8 rounded-lg text-xs" onClick={() => { setEditingName(false); setDisplayName(profile?.display_name || ""); }}>
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {profile?.display_name || "Set your name"}
+                    </p>
+                    <button onClick={() => setEditingName(true)} className="text-muted-foreground hover:text-foreground">
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>
               </div>
             </div>
           </div>
