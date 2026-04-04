@@ -371,6 +371,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
                   <span className="text-[9px] text-muted-foreground/60 mt-0.5 px-1">
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
+                  </div>
                 </motion.div>
               );
             })}
