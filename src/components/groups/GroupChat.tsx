@@ -65,15 +65,21 @@ export function GroupChat({ groupId }: GroupChatProps) {
           .select("id, content, user_id")
           .in("id", replyIds);
         replies?.forEach((r: any) => {
-          replyMap[r.id] = { ...r, email: profileMap[r.user_id] || "Unknown" };
+          const p = profileMap[r.user_id];
+          replyMap[r.id] = { ...r, email: p?.email || "Unknown", display_name: p?.display_name };
         });
       }
 
-      return data.map((m: any) => ({
-        ...m,
-        email: profileMap[m.user_id] || "Unknown",
-        replyMessage: m.reply_to ? replyMap[m.reply_to] : null,
-      }));
+      return data.map((m: any) => {
+        const p = profileMap[m.user_id];
+        return {
+          ...m,
+          email: p?.email || "Unknown",
+          display_name: p?.display_name || null,
+          avatar_url: p?.avatar_url || null,
+          replyMessage: m.reply_to ? replyMap[m.reply_to] : null,
+        };
+      });
     },
     refetchInterval: 3000,
   });
