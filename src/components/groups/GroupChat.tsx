@@ -48,12 +48,12 @@ export function GroupChat({ groupId }: GroupChatProps) {
       const userIds = [...new Set(data.map((m: any) => m.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, email")
+        .select("user_id, email, display_name, avatar_url")
         .in("user_id", userIds);
 
-      const profileMap: Record<string, string> = {};
+      const profileMap: Record<string, { email: string; display_name: string | null; avatar_url: string | null }> = {};
       profiles?.forEach((p: any) => {
-        profileMap[p.user_id] = p.email || "Unknown";
+        profileMap[p.user_id] = { email: p.email || "Unknown", display_name: p.display_name, avatar_url: p.avatar_url };
       });
 
       // Fetch reply-to messages
