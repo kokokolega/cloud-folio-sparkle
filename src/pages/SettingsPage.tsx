@@ -130,15 +130,56 @@ export default function SettingsPage() {
         <h1 className="text-xl font-semibold text-foreground mb-6">Settings</h1>
 
         <div className="space-y-4">
-          {/* Account */}
+          {/* Profile */}
           <div className="glass-card p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-                <User className="h-5 w-5 text-muted-foreground" />
+            <div className="flex items-center gap-4 mb-4">
+              <div className="relative">
+                <Avatar className="h-16 w-16 border-2 border-border">
+                  {profile?.avatar_url ? (
+                    <AvatarImage src={profile.avatar_url} alt="Profile" />
+                  ) : null}
+                  <AvatarFallback className="bg-secondary text-lg">
+                    {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors"
+                  disabled={avatarUploading}
+                >
+                  {avatarUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+                </button>
+                <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
               </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Account</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
+              <div className="flex-1 min-w-0">
+                {editingName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Your name"
+                      className="h-8 text-sm rounded-lg"
+                      autoFocus
+                      onKeyDown={(e) => e.key === "Enter" && displayName.trim() && updateName.mutate(displayName.trim())}
+                    />
+                    <Button size="sm" className="h-8 rounded-lg text-xs" onClick={() => displayName.trim() && updateName.mutate(displayName.trim())} disabled={updateName.isPending}>
+                      Save
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-8 rounded-lg text-xs" onClick={() => { setEditingName(false); setDisplayName(profile?.display_name || ""); }}>
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {profile?.display_name || "Set your name"}
+                    </p>
+                    <button onClick={() => setEditingName(true)} className="text-muted-foreground hover:text-foreground">
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>
               </div>
             </div>
           </div>
