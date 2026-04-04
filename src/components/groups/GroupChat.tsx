@@ -8,6 +8,7 @@ import {
   Send, Loader2, Smile, Trash2, Reply, X, Paperclip, Image as ImageIcon,
   FileText, Download, CornerDownRight
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
