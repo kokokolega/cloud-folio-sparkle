@@ -242,7 +242,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
       <div className="flex items-start gap-1.5 mb-1 px-2 py-1 rounded-lg bg-background/30 border-l-2 border-primary/50 text-[11px]">
         <CornerDownRight className="h-3 w-3 mt-0.5 text-primary/60 shrink-0" />
         <div className="min-w-0">
-          <span className="font-medium text-primary/80">{getDisplayName(msg.replyMessage.email)}</span>
+          <span className="font-medium text-primary/80">{getDisplayName(msg.replyMessage.email, msg.replyMessage.display_name)}</span>
           <p className="text-muted-foreground truncate">{msg.replyMessage.content}</p>
         </div>
       </div>
