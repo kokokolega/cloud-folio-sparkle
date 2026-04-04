@@ -31,8 +31,65 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { bgTheme, setBgTheme, customImageUrl, setCustomImageUrl } = useBackgroundTheme();
+  const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [displayName, setDisplayName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch profile
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user!.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (profile?.display_name) setDisplayName(profile.display_name);
+  }, [profile]);
+
+  // Update display name
+  const updateName = useMutation({
+    mutationFn: async (name: string) => {
+      const { error } = await supabase.from("profiles").update({ display_name: name }).eq("user_id", user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setEditingName(false);
+      toast.success("Name updated!");
+    },
+  });
+
+  // Upload avatar
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error("Image must be under 2MB"); return; }
+    setAvatarUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("user-files").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("user-files").getPublicUrl(path);
+      await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", user.id);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success("Profile picture updated!");
+    } catch (err: any) { toast.error(err.message || "Upload failed"); }
+    finally { setAvatarUploading(false); if (avatarInputRef.current) avatarInputRef.current.value = ""; }
+  };
 
   const [autoLogoutEnabled, setAutoLogoutEnabled] = useState(() => {
     const stored = localStorage.getItem("oltrid-auto-logout");
