@@ -75,6 +75,7 @@ export function UploadDialog({ open, onOpenChange, folderId, groupId }: UploadDi
         const { error: dbError } = await supabase.from("files").insert({
           user_id: user.id,
           folder_id: folderId || null,
+          group_id: groupId || null,
           name: file.name,
           type: fileType,
           size: file.size,
