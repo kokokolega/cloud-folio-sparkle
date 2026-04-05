@@ -96,31 +96,6 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-3 pb-3 space-y-0.5">
-        {!collapsed && user && (
-          <NavLink to="/settings" end className="flex items-center gap-2.5 px-3 py-2 mb-2 rounded-xl hover:bg-secondary/50 transition-colors" activeClassName="">
-            <Avatar className="h-7 w-7 shrink-0">
-              {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
-              <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{initials}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-[12px] font-medium text-foreground truncate">{displayName}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
-            </div>
-          </NavLink>
-        )}
-        {collapsed && user && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <NavLink to="/settings" end className="flex justify-center py-2 mb-2" activeClassName="">
-                <Avatar className="h-7 w-7">
-                  {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={displayName} /> : null}
-                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{initials}</AvatarFallback>
-                </Avatar>
-              </NavLink>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="text-xs">{displayName}</TooltipContent>
-          </Tooltip>
-        )}
         {!collapsed && (
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold px-3 pt-2 pb-1">
             Settings & Help
