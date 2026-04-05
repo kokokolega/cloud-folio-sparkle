@@ -307,10 +307,12 @@ export function GroupChat({ groupId }: GroupChatProps) {
                 >
                   {/* Avatar */}
                   {!isMe && (
-                    <Avatar className="h-7 w-7 mt-4 shrink-0">
-                      {msg.avatar_url ? <AvatarImage src={msg.avatar_url} alt={name} /> : null}
-                      <AvatarFallback className="text-[10px] bg-secondary">{getInitial(msg.email, msg.display_name)}</AvatarFallback>
-                    </Avatar>
+                    <button onClick={() => setProfileView(msg)} className="shrink-0">
+                      <Avatar className="h-7 w-7 mt-4">
+                        {msg.avatar_url ? <AvatarImage src={msg.avatar_url} alt={name} /> : null}
+                        <AvatarFallback className="text-[10px] bg-secondary">{getInitial(msg.email, msg.display_name)}</AvatarFallback>
+                      </Avatar>
+                    </button>
                   )}
                   <div className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                   <span className="text-[10px] text-muted-foreground mb-0.5 px-1">
