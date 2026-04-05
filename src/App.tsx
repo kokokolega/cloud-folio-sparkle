@@ -31,12 +31,12 @@ const App = () => (
     <ThemeProvider>
       <BgThemeProvider>
         <AnimatedBackground />
+      <BrowserRouter>
       <AuthProvider>
       <GuestProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -55,10 +55,10 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
         </TooltipProvider>
       </GuestProvider>
       </AuthProvider>
+      </BrowserRouter>
       </BgThemeProvider>
     </ThemeProvider>
   </QueryClientProvider>
