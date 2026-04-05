@@ -23,6 +23,7 @@ import JoinGroupPage from "./pages/JoinGroupPage";
 import CodrixPage from "./pages/CodrixPage";
 import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/DashboardPage";
+import FoldersPage from "./pages/FoldersPage";
 
 const queryClient = new QueryClient();
 
