@@ -19,7 +19,7 @@ interface UploadDialogProps {
   groupId?: string | null;
 }
 
-export function UploadDialog({ open, onOpenChange, folderId }: UploadDialogProps) {
+export function UploadDialog({ open, onOpenChange, folderId, groupId }: UploadDialogProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<File[]>([]);
