@@ -460,6 +460,33 @@ export function GroupChat({ groupId }: GroupChatProps) {
           <Send className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Member Profile Dialog */}
+      <Dialog open={!!profileView} onOpenChange={(o) => !o && setProfileView(null)}>
+        <DialogContent className="sm:max-w-xs rounded-2xl border-0 glass-card">
+          <DialogHeader>
+            <DialogTitle className="text-center">Member Profile</DialogTitle>
+          </DialogHeader>
+          {profileView && (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <Avatar className="h-20 w-20 border-2 border-border">
+                {profileView.avatar_url ? <AvatarImage src={profileView.avatar_url} /> : null}
+                <AvatarFallback className="text-2xl bg-secondary">
+                  {getInitial(profileView.email, profileView.display_name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="text-center">
+                <p className="font-semibold text-foreground">
+                  {profileView.display_name || profileView.email?.split("@")[0]}
+                </p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 justify-center mt-1">
+                  <Mail className="h-3 w-3" /> {profileView.email}
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

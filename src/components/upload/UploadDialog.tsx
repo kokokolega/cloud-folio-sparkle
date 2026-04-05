@@ -16,6 +16,7 @@ interface UploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   folderId?: string | null;
+  groupId?: string | null;
 }
 
 export function UploadDialog({ open, onOpenChange, folderId }: UploadDialogProps) {
