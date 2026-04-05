@@ -37,7 +37,25 @@ const bottomNav = [
 export function AppSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
+  const { user } = useAuth();
   const collapsed = state === "collapsed";
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("user_id", user!.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const displayName = profile?.display_name || user?.email?.split("@")[0] || "User";
+  const initials = (profile?.display_name?.[0] || user?.email?.[0] || "U").toUpperCase();
 
   return (
     <Sidebar collapsible="icon">
