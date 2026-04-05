@@ -16,9 +16,10 @@ interface UploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   folderId?: string | null;
+  groupId?: string | null;
 }
 
-export function UploadDialog({ open, onOpenChange, folderId }: UploadDialogProps) {
+export function UploadDialog({ open, onOpenChange, folderId, groupId }: UploadDialogProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<File[]>([]);
@@ -74,6 +75,7 @@ export function UploadDialog({ open, onOpenChange, folderId }: UploadDialogProps
         const { error: dbError } = await supabase.from("files").insert({
           user_id: user.id,
           folder_id: folderId || null,
+          group_id: groupId || null,
           name: file.name,
           type: fileType,
           size: file.size,

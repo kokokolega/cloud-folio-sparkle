@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Send, Loader2, Smile, Trash2, Reply, X, Paperclip, Image as ImageIcon,
-  FileText, Download, CornerDownRight
+  FileText, Download, CornerDownRight, Mail
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +17,9 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle
+} from "@/components/ui/dialog";
 
 interface GroupChatProps {
   groupId: string;
@@ -30,6 +33,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const [message, setMessage] = useState("");
   const [replyTo, setReplyTo] = useState<any>(null);
   const [activeEmojiMsg, setActiveEmojiMsg] = useState<string | null>(null);
+  const [profileView, setProfileView] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -303,10 +307,12 @@ export function GroupChat({ groupId }: GroupChatProps) {
                 >
                   {/* Avatar */}
                   {!isMe && (
-                    <Avatar className="h-7 w-7 mt-4 shrink-0">
-                      {msg.avatar_url ? <AvatarImage src={msg.avatar_url} alt={name} /> : null}
-                      <AvatarFallback className="text-[10px] bg-secondary">{getInitial(msg.email, msg.display_name)}</AvatarFallback>
-                    </Avatar>
+                    <button onClick={() => setProfileView(msg)} className="shrink-0">
+                      <Avatar className="h-7 w-7 mt-4">
+                        {msg.avatar_url ? <AvatarImage src={msg.avatar_url} alt={name} /> : null}
+                        <AvatarFallback className="text-[10px] bg-secondary">{getInitial(msg.email, msg.display_name)}</AvatarFallback>
+                      </Avatar>
+                    </button>
                   )}
                   <div className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                   <span className="text-[10px] text-muted-foreground mb-0.5 px-1">
@@ -454,6 +460,33 @@ export function GroupChat({ groupId }: GroupChatProps) {
           <Send className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Member Profile Dialog */}
+      <Dialog open={!!profileView} onOpenChange={(o) => !o && setProfileView(null)}>
+        <DialogContent className="sm:max-w-xs rounded-2xl border-0 glass-card">
+          <DialogHeader>
+            <DialogTitle className="text-center">Member Profile</DialogTitle>
+          </DialogHeader>
+          {profileView && (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <Avatar className="h-20 w-20 border-2 border-border">
+                {profileView.avatar_url ? <AvatarImage src={profileView.avatar_url} /> : null}
+                <AvatarFallback className="text-2xl bg-secondary">
+                  {getInitial(profileView.email, profileView.display_name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="text-center">
+                <p className="font-semibold text-foreground">
+                  {profileView.display_name || profileView.email?.split("@")[0]}
+                </p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 justify-center mt-1">
+                  <Mail className="h-3 w-3" /> {profileView.email}
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

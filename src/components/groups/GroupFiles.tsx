@@ -85,7 +85,7 @@ export function GroupFiles({ groupId, searchQuery }: GroupFilesProps) {
         </div>
       )}
 
-      <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
+      <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} groupId={groupId} />
     </div>
   );
 }
