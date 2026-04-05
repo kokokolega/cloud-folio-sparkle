@@ -23,6 +23,7 @@ import JoinGroupPage from "./pages/JoinGroupPage";
 import CodrixPage from "./pages/CodrixPage";
 import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/DashboardPage";
+import FoldersPage from "./pages/FoldersPage";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +35,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <GuestProvider>
-        <TooltipProvider>
+            <TooltipProvider>
           <Toaster />
           <Sonner />
             <Routes>
@@ -45,6 +46,7 @@ const App = () => (
               {/* AI-first landing */}
               <Route path="/" element={<ProtectedRoute allowGuest><AiPage /></ProtectedRoute>} />
               <Route path="/files" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/folders" element={<ProtectedRoute><FoldersPage /></ProtectedRoute>} />
               <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
               <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
               <Route path="/join/:inviteCode" element={<ProtectedRoute><JoinGroupPage /></ProtectedRoute>} />

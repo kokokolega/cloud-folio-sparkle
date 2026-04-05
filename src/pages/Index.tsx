@@ -3,15 +3,17 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { FileGrid } from "@/components/files/FileGrid";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Files, Image, FileText, Plus, Search, Upload } from "lucide-react";
+import { Files, Image, FileText, FolderOpen, Plus, Search, Upload } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { UploadDialog } from "@/components/upload/UploadDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function Index() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
-  const [typeFilter, setTypeFilter] = useState<"all" | "image" | "pdf">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "image" | "pdf" | "folders">("all");
   const [uploadOpen, setUploadOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
@@ -20,6 +22,14 @@ export default function Index() {
     setDragOver(false);
     if (e.dataTransfer.files.length > 0) setUploadOpen(true);
   }, []);
+
+  const handleTabChange = (v: string) => {
+    if (v === "folders") {
+      navigate("/folders");
+    } else {
+      setTypeFilter(v as "all" | "image" | "pdf");
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -58,7 +68,7 @@ export default function Index() {
           </div>
         </div>
 
-        <Tabs value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)} className="mb-6">
+        <Tabs value={typeFilter} onValueChange={handleTabChange} className="mb-6">
           <TabsList className="bg-secondary/50 rounded-xl border border-border">
             <TabsTrigger value="all" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Files className="h-3.5 w-3.5" /> All
@@ -69,10 +79,13 @@ export default function Index() {
             <TabsTrigger value="pdf" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <FileText className="h-3.5 w-3.5" /> PDFs
             </TabsTrigger>
+            <TabsTrigger value="folders" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <FolderOpen className="h-3.5 w-3.5" /> Folders
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
-        <FileGrid searchQuery={searchQuery} sortBy={sortBy} typeFilter={typeFilter === "all" ? undefined : typeFilter} />
+        <FileGrid searchQuery={searchQuery} sortBy={sortBy} typeFilter={typeFilter === "all" ? undefined : typeFilter === "folders" ? undefined : typeFilter} />
       </div>
       <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
     </DashboardLayout>
