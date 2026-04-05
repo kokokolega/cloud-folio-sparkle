@@ -33,6 +33,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const [message, setMessage] = useState("");
   const [replyTo, setReplyTo] = useState<any>(null);
   const [activeEmojiMsg, setActiveEmojiMsg] = useState<string | null>(null);
+  const [profileView, setProfileView] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
