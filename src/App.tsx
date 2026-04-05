@@ -32,8 +32,8 @@ const App = () => (
       <BgThemeProvider>
         <AnimatedBackground />
       <BrowserRouter>
-      <AuthProvider>
-      <GuestProvider>
+        <AuthProvider>
+          <GuestProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
