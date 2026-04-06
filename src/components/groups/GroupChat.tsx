@@ -189,19 +189,6 @@ export function GroupChat({ groupId }: GroupChatProps) {
   });
 
   // File upload
-  const handleFileUpload = useCallback(async (file: File) => {
-    const ext = file.name.split(".").pop();
-    const path = `group-chat/${groupId}/${Date.now()}-${file.name}`;
-    const { error: uploadErr } = await supabase.storage.from("user-files").upload(path, file);
-    if (uploadErr) { toast.error("Upload failed"); return; }
-    const { data: urlData } = supabase.storage.from("user-files").getPublicUrl(path);
-    const isImage = file.type.startsWith("image/");
-    sendMutation.mutate({
-      content: isImage ? `📷 ${file.name}` : `📎 ${file.name}`,
-      attachmentUrl: urlData.publicUrl,
-      attachmentType: isImage ? "image" : "file",
-    });
-  }, [groupId, sendMutation]);
 
   const handleSend = () => {
     if (!message.trim()) return;
