@@ -35,7 +35,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const [activeEmojiMsg, setActiveEmojiMsg] = useState<string | null>(null);
   const [profileView, setProfileView] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
 
   // Fetch messages with reply info
   const { data: messages = [], isLoading } = useQuery({
