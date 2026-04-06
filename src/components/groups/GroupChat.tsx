@@ -408,42 +408,6 @@ export function GroupChat({ groupId }: GroupChatProps) {
 
       {/* Input area */}
       <div className={`flex items-center gap-2 ${replyTo ? "" : "mt-3"}`}>
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/*,.pdf,.doc,.docx,.txt,.zip"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFileUpload(file);
-            e.target.value = "";
-          }}
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl shrink-0">
-              <Paperclip className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start">
-            <DropdownMenuItem onClick={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.accept = "image/*";
-                fileInputRef.current.click();
-              }
-            }}>
-              <ImageIcon className="h-4 w-4 mr-2" /> Photo
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.accept = ".pdf,.doc,.docx,.txt,.zip,.xlsx,.csv";
-                fileInputRef.current.click();
-              }
-            }}>
-              <FileText className="h-4 w-4 mr-2" /> Document
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
         <Input
           placeholder="Type a message..."
           value={message}
