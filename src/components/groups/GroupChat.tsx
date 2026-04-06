@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Send, Loader2, Smile, Trash2, Reply, X, Paperclip, Image as ImageIcon,
+  Send, Loader2, Smile, Trash2, Reply, X,
   FileText, Download, CornerDownRight, Mail
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -14,9 +14,6 @@ import { toast } from "sonner";
 import {
   Popover, PopoverContent, PopoverTrigger
 } from "@/components/ui/popover";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
@@ -35,7 +32,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const [activeEmojiMsg, setActiveEmojiMsg] = useState<string | null>(null);
   const [profileView, setProfileView] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
 
   // Fetch messages with reply info
   const { data: messages = [], isLoading } = useQuery({
@@ -192,19 +189,6 @@ export function GroupChat({ groupId }: GroupChatProps) {
   });
 
   // File upload
-  const handleFileUpload = useCallback(async (file: File) => {
-    const ext = file.name.split(".").pop();
-    const path = `group-chat/${groupId}/${Date.now()}-${file.name}`;
-    const { error: uploadErr } = await supabase.storage.from("user-files").upload(path, file);
-    if (uploadErr) { toast.error("Upload failed"); return; }
-    const { data: urlData } = supabase.storage.from("user-files").getPublicUrl(path);
-    const isImage = file.type.startsWith("image/");
-    sendMutation.mutate({
-      content: isImage ? `📷 ${file.name}` : `📎 ${file.name}`,
-      attachmentUrl: urlData.publicUrl,
-      attachmentType: isImage ? "image" : "file",
-    });
-  }, [groupId, sendMutation]);
 
   const handleSend = () => {
     if (!message.trim()) return;
@@ -408,42 +392,6 @@ export function GroupChat({ groupId }: GroupChatProps) {
 
       {/* Input area */}
       <div className={`flex items-center gap-2 ${replyTo ? "" : "mt-3"}`}>
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/*,.pdf,.doc,.docx,.txt,.zip"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFileUpload(file);
-            e.target.value = "";
-          }}
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl shrink-0">
-              <Paperclip className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start">
-            <DropdownMenuItem onClick={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.accept = "image/*";
-                fileInputRef.current.click();
-              }
-            }}>
-              <ImageIcon className="h-4 w-4 mr-2" /> Photo
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.accept = ".pdf,.doc,.docx,.txt,.zip,.xlsx,.csv";
-                fileInputRef.current.click();
-              }
-            }}>
-              <FileText className="h-4 w-4 mr-2" /> Document
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
         <Input
           placeholder="Type a message..."
           value={message}

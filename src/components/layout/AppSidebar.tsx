@@ -1,10 +1,11 @@
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, HelpCircle } from "lucide-react";
+import { useState } from "react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, CalendarDays } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Sidebar,
   SidebarContent,
@@ -33,10 +34,18 @@ const bottomNav = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { state, toggleSidebar } = useSidebar();
-  const { user } = useAuth();
   const collapsed = state === "collapsed";
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      navigate(`/notes?date=${date.toISOString().split("T")[0]}`);
+    }
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -96,6 +105,45 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-3 pb-3 space-y-0.5">
+        {/* Mini Calendar */}
+        {!collapsed ? (
+          <div className="mb-2">
+            <button
+              onClick={() => setCalendarOpen(!calendarOpen)}
+              className="flex items-center gap-2 w-full px-3 py-2 text-[12px] text-muted-foreground hover:text-foreground rounded-xl hover:bg-secondary transition-all"
+            >
+              <CalendarDays className="h-4 w-4 shrink-0" />
+              <span className="truncate">
+                {selectedDate
+                  ? selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                  : new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              </span>
+            </button>
+            {calendarOpen && (
+              <div className="mt-1 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  className="p-2 pointer-events-auto text-[11px] [&_.rdp-day]:h-7 [&_.rdp-day]:w-7 [&_.rdp-head_cell]:w-7 [&_.rdp-cell]:p-0"
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setCalendarOpen(!calendarOpen)}
+                className="flex items-center justify-center w-full p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-secondary transition-all mb-1"
+              >
+                <CalendarDays className="h-[18px] w-[18px]" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="text-xs">Calendar</TooltipContent>
+          </Tooltip>
+        )}
+
         {!collapsed && (
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold px-3 pt-2 pb-1">
             Settings & Help
