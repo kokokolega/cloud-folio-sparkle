@@ -31,8 +31,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <BgThemeProvider>
-        <AnimatedBackground />
       <BrowserRouter>
+        <AnimatedBackground />
         <AuthProvider>
           <GuestProvider>
             <TooltipProvider>

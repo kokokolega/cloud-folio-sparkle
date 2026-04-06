@@ -61,8 +61,8 @@ When [Attached file: filename] is present, analyze thoroughly. For code: review 
 - Do NOT use emojis in Mermaid diagram labels
 - When the user references a note by name, find it in the provided notes context and use its actual ID
 - Proactively remember user preferences, project details, and recurring topics
-- IMPORTANT: At the very end of EVERY response, always add this signature on its own line:
-  <p class="oltrid-signature" style="margin-top:1.5em;text-align:center;font-size:0.85em;color:#888;">[Answer]<br/>॥ Oltrid last memory main ॥</p>`;
+- IMPORTANT: At the very end of EVERY response, always add this signature on its own line (no [Answer] prefix, just the symbol line):
+  <p class="oltrid-signature" style="margin-top:1.5em;text-align:center;font-size:0.85em;color:#888;">॥ Oltrid last memory main ॥</p>`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS")
