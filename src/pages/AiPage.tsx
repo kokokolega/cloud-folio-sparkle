@@ -271,7 +271,13 @@ export default function AiPage() {
 
   const loadConversation = useCallback(async (id: string) => {
     const { data } = await supabase.from("ai_messages").select("role, content").eq("conversation_id", id).order("created_at", { ascending: true });
-    if (data) { setMessages(data as Msg[]); setActiveConversationId(id); }
+    if (data) {
+      setMessages(data as Msg[]);
+      setActiveConversationId(id);
+      setTimeout(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }, 100);
+    }
   }, []);
 
   const processAiActions = useCallback(async (responseContent: string) => {
