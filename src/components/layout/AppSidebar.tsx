@@ -1,10 +1,11 @@
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, HelpCircle } from "lucide-react";
+import { useState } from "react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, CalendarDays } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Sidebar,
   SidebarContent,
