@@ -200,6 +200,11 @@ export default function AiPage() {
     }
   }, [input]);
 
+  // Autofocus textarea on mount
+  useEffect(() => {
+    if (textareaRef.current) textareaRef.current.focus();
+  }, []);
+
   const handleInputChange = (value: string) => {
     setInput(value);
     const atIndex = value.lastIndexOf("@");

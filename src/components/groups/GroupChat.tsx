@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Send, Loader2, Smile, Trash2, Reply, X, Paperclip, Image as ImageIcon,
+  Send, Loader2, Smile, Trash2, Reply, X,
   FileText, Download, CornerDownRight, Mail
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";

@@ -75,8 +75,8 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
 
       {fullscreen && (
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-8" onClick={() => setFullscreen(false)}>
-          <div className="max-w-[90vw] max-h-[90vh] overflow-auto bg-card rounded-2xl border border-border p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div dangerouslySetInnerHTML={{ __html: svg }} className="[&>svg]:max-w-full [&>svg]:h-auto" />
+          <div className="w-[95vw] h-[90vh] overflow-auto bg-card rounded-2xl border border-border p-8 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex-1 flex items-center justify-center overflow-auto [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-h-[75vh]" dangerouslySetInnerHTML={{ __html: svg }} />
             <div className="flex justify-center mt-4 gap-2">
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="h-3.5 w-3.5 mr-1.5" /> Download SVG
