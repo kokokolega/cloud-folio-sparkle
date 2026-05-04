@@ -633,9 +633,14 @@ export default function AiPage() {
                           </Button>
                         )}
                         {presentationMarker && (
-                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => saveAsPdf(msg.content)}>
-                            <FileDown className="h-3 w-3" /> Save PDF
-                          </Button>
+                          <>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => setEditingPresentation({ idx: i, content: stripMarkers(msg.content) })}>
+                              <Pencil className="h-3 w-3" /> Edit
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => saveAsPdf(msg.content)}>
+                              <FileDown className="h-3 w-3" /> Save PDF
+                            </Button>
+                          </>
                         )}
                         {isAuthenticated && (
                           <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-xl text-muted-foreground" onClick={() => saveResponseAsFile(msg.content)}>
