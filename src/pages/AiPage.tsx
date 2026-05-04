@@ -164,6 +164,7 @@ export default function AiPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingPresentation, setEditingPresentation] = useState<{ idx: number; content: string } | null>(null);
 
   const isAuthenticated = !!user;
 
