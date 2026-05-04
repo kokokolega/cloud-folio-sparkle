@@ -838,6 +838,16 @@ export default function AiPage() {
           </div>
         )}
       </div>
+      <PresentationEditor
+        open={!!editingPresentation}
+        onOpenChange={(o) => !o && setEditingPresentation(null)}
+        initialContent={editingPresentation?.content || ""}
+        onSave={(newContent) => {
+          if (editingPresentation == null) return;
+          setMessages((prev) => prev.map((m, i) => i === editingPresentation.idx ? { ...m, content: newContent + "\n<!--OLTRID_PRESENTATION:{\"title\":\"Edited Presentation\"}-->" } : m));
+          toast.success("Presentation updated");
+        }}
+      />
     </DashboardLayout>
   );
 }
