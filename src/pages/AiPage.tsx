@@ -24,6 +24,7 @@ import { NoteMentionDropdown } from "@/components/ai/NoteMentionDropdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
+import { PresentationEditor } from "@/components/ai/PresentationEditor";
 import {
   ResizablePanelGroup,
   ResizablePanel,
