@@ -110,12 +110,12 @@ export default function DashboardPage() {
   }, [user]);
 
   const statCards = stats ? [
-    { icon: StickyNote, label: "Notes", value: stats.totalNotes, color: "from-amber-500/15 to-amber-500/5" },
-    { icon: Files, label: "Files", value: stats.totalFiles, color: "from-blue-500/15 to-blue-500/5" },
-    { icon: Users, label: "Groups", value: stats.totalGroups, color: "from-green-500/15 to-green-500/5" },
-    { icon: Bot, label: "AI Chats", value: stats.totalConversations, color: "from-purple-500/15 to-purple-500/5" },
-    { icon: Brain, label: "Memories", value: stats.totalMemories, color: "from-pink-500/15 to-pink-500/5" },
-    { icon: FolderOpen, label: "Folders", value: stats.totalFolders, color: "from-cyan-500/15 to-cyan-500/5" },
+    { icon: StickyNote, label: "Notes", value: stats.totalNotes, color: "from-amber-500/15 to-amber-500/5", onClick: () => {} },
+    { icon: Files, label: "Files", value: stats.totalFiles, color: "from-blue-500/15 to-blue-500/5", onClick: () => {} },
+    { icon: Users, label: "Groups", value: stats.totalGroups, color: "from-green-500/15 to-green-500/5", onClick: () => {} },
+    { icon: Bot, label: "AI Chats", value: stats.totalConversations, color: "from-purple-500/15 to-purple-500/5", onClick: () => {} },
+    { icon: Brain, label: "Memories", value: stats.totalMemories, color: "from-pink-500/15 to-pink-500/5", onClick: () => setMemoryOpen(true) },
+    { icon: FolderOpen, label: "Folders", value: stats.totalFolders, color: "from-cyan-500/15 to-cyan-500/5", onClick: () => {} },
   ] : [];
 
   if (loading) {
