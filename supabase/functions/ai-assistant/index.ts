@@ -77,8 +77,11 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY)
       throw new Error("LOVABLE_API_KEY is not configured");
 
+    const now = new Date();
+    const humanNow = now.toUTCString();
     const systemMessages = [
       { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: `## CURRENT REAL-TIME CONTEXT\nThe current date and time (UTC) is: **${humanNow}**. The current year is ${now.getUTCFullYear()}. Use this as the source of truth for any time-relative questions.` },
     ];
 
     if (memoryContext && memoryContext.length > 0) {
