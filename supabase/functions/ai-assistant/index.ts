@@ -113,9 +113,28 @@ serve(async (req) => {
     }
 
     if (webSearch) {
+      const lastUser = [...messages].reverse().find((m: any) => m.role === "user");
+      const query = (lastUser?.content || "").replace(/\[Web Search Mode\]/g, "").trim().slice(0, 200);
+      let snippets = "";
+      if (query) {
+        try {
+          const ddg = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
+          if (ddg.ok) {
+            const data = await ddg.json();
+            const results: string[] = [];
+            if (data.AbstractText) results.push(`Summary: ${data.AbstractText} (source: ${data.AbstractURL || data.AbstractSource || "web"})`);
+            if (Array.isArray(data.RelatedTopics)) {
+              for (const t of data.RelatedTopics.slice(0, 6)) {
+                if (t.Text) results.push(`- ${t.Text}${t.FirstURL ? ` (${t.FirstURL})` : ""}`);
+              }
+            }
+            snippets = results.join("\n");
+          }
+        } catch (e) { console.error("web search failed", e); }
+      }
       systemMessages.push({
         role: "system",
-        content: "The user has enabled web search mode. Provide the most comprehensive and up-to-date information possible. If you're unsure about recent events, clearly state your knowledge cutoff date.",
+        content: `## WEB SEARCH MODE ENABLED\nThe user wants up-to-date info from the live web. Today is ${humanNow}.\n${snippets ? `Live search results for "${query}":\n${snippets}\n\nUse these results to answer accurately.` : "Use your most current knowledge and clearly cite when info may be outdated."}`,
       });
     }
 
