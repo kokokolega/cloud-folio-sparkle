@@ -42,6 +42,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [memoryOpen, setMemoryOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
