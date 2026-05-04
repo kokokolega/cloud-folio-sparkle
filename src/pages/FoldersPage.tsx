@@ -66,6 +66,22 @@ export default function FoldersPage() {
     },
   });
 
+  const deleteFolder = useMutation({
+    mutationFn: async (folderId: string) => {
+      // Move files in folder out
+      await supabase.from("files").update({ folder_id: null }).eq("folder_id", folderId);
+      await supabase.from("notes").update({ folder_id: null }).eq("folder_id", folderId);
+      const { error } = await supabase.from("folders").delete().eq("id", folderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      setDeleteId(null);
+      toast.success("Folder deleted");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const handleDrop = (e: React.DragEvent, folderId: string) => {
     e.preventDefault();
     setDragOverId(null);
