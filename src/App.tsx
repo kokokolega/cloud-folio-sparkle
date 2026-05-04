@@ -24,6 +24,7 @@ import CodrixPage from "./pages/CodrixPage";
 import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/DashboardPage";
 import FoldersPage from "./pages/FoldersPage";
+import NoteFoldersPage from "./pages/NoteFoldersPage";
 
 const queryClient = new QueryClient();
 
