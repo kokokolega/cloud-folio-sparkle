@@ -260,6 +260,7 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </div>
+      <MemoryGraph open={memoryOpen} onOpenChange={setMemoryOpen} />
     </DashboardLayout>
   );
 }
