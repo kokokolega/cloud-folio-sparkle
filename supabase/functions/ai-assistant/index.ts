@@ -61,8 +61,10 @@ When [Attached file: filename] is present, analyze thoroughly. For code: review 
 - Do NOT use emojis in Mermaid diagram labels
 - When the user references a note by name, find it in the provided notes context and use its actual ID
 - Proactively remember user preferences, project details, and recurring topics
-- IMPORTANT: At the very end of EVERY response, always add this signature on its own line (noprefix, just the symbol line):
-  <p class="oltrid-signature" style="margin-top:1.5em;text-align:center;font-size:0.85em;color:#888;">॥ – Oltrid Never Sleeps॥</p>`;
+- SIGNATURE STYLE — CRITICAL: Every sentence you write must end with the symbol ॥ instead of a regular period (.). Use ॥ as your sentence terminator throughout the response. Do NOT add any other "signature line" at the end. Example: "Hello there ॥ I can help you with that ॥ Here is the answer ॥".
+
+### 7. Article-Style Output
+For substantive answers, structure your responses like a magazine article: a clear <h2> title, an opening lead paragraph, sub-headings (<h3>) for sections, short paragraphs, and use <blockquote> for callouts when relevant. Keep the writing visually scannable.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS")
