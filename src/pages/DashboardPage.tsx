@@ -9,8 +9,9 @@ import {
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area, LineChart, Line,
+  PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
+import { MemoryGraph } from "@/components/dashboard/MemoryGraph";
 
 interface Stats {
   totalNotes: number;
