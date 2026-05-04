@@ -141,17 +141,19 @@ export default function DashboardPage() {
         {/* Stat Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {statCards.map((card, i) => (
-            <motion.div
+            <motion.button
               key={card.label}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`rounded-2xl border border-border/50 bg-gradient-to-br ${card.color} p-4 hover:shadow-md transition-all`}
+              onClick={card.onClick}
+              className={`text-left rounded-2xl border border-border/50 bg-gradient-to-br ${card.color} p-4 hover:shadow-md transition-all ${card.label === "Memories" ? "ring-1 ring-primary/20 hover:ring-primary/50 cursor-pointer" : ""}`}
             >
               <card.icon className="h-5 w-5 text-foreground/60 mb-2" />
               <p className="text-2xl font-bold text-foreground">{card.value}</p>
               <p className="text-xs text-muted-foreground">{card.label}</p>
-            </motion.div>
+              {card.label === "Memories" && <p className="text-[10px] text-primary mt-1">Click to view graph →</p>}
+            </motion.button>
           ))}
         </div>
 
