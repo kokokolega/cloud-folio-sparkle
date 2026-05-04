@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 import { Button } from "@/components/ui/button";
-import { Download, Maximize2 } from "lucide-react";
+import { Download, Maximize2, Pencil } from "lucide-react";
+import { FlowchartEditor } from "./FlowchartEditor";
 
 mermaid.initialize({
   startOnLoad: false,
