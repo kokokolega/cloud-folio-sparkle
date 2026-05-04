@@ -7,7 +7,8 @@ import { FileGrid } from "@/components/files/FileGrid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FolderPlus, FolderOpen, ArrowLeft } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { FolderPlus, FolderOpen, ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -19,6 +20,7 @@ export default function FoldersPage() {
   const [folderName, setFolderName] = useState("");
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: folders = [] } = useQuery({
     queryKey: ["folders", user?.id],
@@ -62,6 +64,22 @@ export default function FoldersPage() {
       queryClient.invalidateQueries({ queryKey: ["files"] });
       toast.success("File moved to folder");
     },
+  });
+
+  const deleteFolder = useMutation({
+    mutationFn: async (folderId: string) => {
+      // Move files in folder out
+      await supabase.from("files").update({ folder_id: null }).eq("folder_id", folderId);
+      await supabase.from("notes").update({ folder_id: null }).eq("folder_id", folderId);
+      const { error } = await supabase.from("folders").delete().eq("id", folderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      setDeleteId(null);
+      toast.success("Folder deleted");
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const handleDrop = (e: React.DragEvent, folderId: string) => {
@@ -111,7 +129,7 @@ export default function FoldersPage() {
               key={folder.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`glass-card p-5 hover-scale cursor-pointer flex flex-col items-center gap-3 transition-all ${
+              className={`glass-card p-5 hover-scale cursor-pointer flex flex-col items-center gap-3 transition-all relative group ${
                 dragOverId === folder.id ? "ring-2 ring-primary/40 bg-primary/5" : ""
               }`}
               onClick={() => setActiveFolderId(folder.id)}
@@ -119,6 +137,14 @@ export default function FoldersPage() {
               onDragOver={(e) => handleDragOver(e, folder.id)}
               onDragLeave={() => setDragOverId(null)}
             >
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute top-1.5 right-1.5 h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                onClick={(e) => { e.stopPropagation(); setDeleteId(folder.id); }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
               <FolderOpen className="h-9 w-9 text-primary/60" />
               <p className="text-[13px] font-medium text-foreground text-center truncate w-full">{folder.name}</p>
             </motion.div>
@@ -158,6 +184,23 @@ export default function FoldersPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this folder?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Files and notes inside will be moved out of the folder, not deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteId && deleteFolder.mutate(deleteId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

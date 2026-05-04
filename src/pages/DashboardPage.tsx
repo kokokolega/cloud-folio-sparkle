@@ -9,8 +9,9 @@ import {
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area, LineChart, Line,
+  PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
+import { MemoryGraph } from "@/components/dashboard/MemoryGraph";
 
 interface Stats {
   totalNotes: number;
@@ -41,6 +42,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [memoryOpen, setMemoryOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -108,12 +110,12 @@ export default function DashboardPage() {
   }, [user]);
 
   const statCards = stats ? [
-    { icon: StickyNote, label: "Notes", value: stats.totalNotes, color: "from-amber-500/15 to-amber-500/5" },
-    { icon: Files, label: "Files", value: stats.totalFiles, color: "from-blue-500/15 to-blue-500/5" },
-    { icon: Users, label: "Groups", value: stats.totalGroups, color: "from-green-500/15 to-green-500/5" },
-    { icon: Bot, label: "AI Chats", value: stats.totalConversations, color: "from-purple-500/15 to-purple-500/5" },
-    { icon: Brain, label: "Memories", value: stats.totalMemories, color: "from-pink-500/15 to-pink-500/5" },
-    { icon: FolderOpen, label: "Folders", value: stats.totalFolders, color: "from-cyan-500/15 to-cyan-500/5" },
+    { icon: StickyNote, label: "Notes", value: stats.totalNotes, color: "from-amber-500/15 to-amber-500/5", onClick: () => {} },
+    { icon: Files, label: "Files", value: stats.totalFiles, color: "from-blue-500/15 to-blue-500/5", onClick: () => {} },
+    { icon: Users, label: "Groups", value: stats.totalGroups, color: "from-green-500/15 to-green-500/5", onClick: () => {} },
+    { icon: Bot, label: "AI Chats", value: stats.totalConversations, color: "from-purple-500/15 to-purple-500/5", onClick: () => {} },
+    { icon: Brain, label: "Memories", value: stats.totalMemories, color: "from-pink-500/15 to-pink-500/5", onClick: () => setMemoryOpen(true) },
+    { icon: FolderOpen, label: "Folders", value: stats.totalFolders, color: "from-cyan-500/15 to-cyan-500/5", onClick: () => {} },
   ] : [];
 
   if (loading) {
@@ -139,17 +141,19 @@ export default function DashboardPage() {
         {/* Stat Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {statCards.map((card, i) => (
-            <motion.div
+            <motion.button
               key={card.label}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`rounded-2xl border border-border/50 bg-gradient-to-br ${card.color} p-4 hover:shadow-md transition-all`}
+              onClick={card.onClick}
+              className={`text-left rounded-2xl border border-border/50 bg-gradient-to-br ${card.color} p-4 hover:shadow-md transition-all ${card.label === "Memories" ? "ring-1 ring-primary/20 hover:ring-primary/50 cursor-pointer" : ""}`}
             >
               <card.icon className="h-5 w-5 text-foreground/60 mb-2" />
               <p className="text-2xl font-bold text-foreground">{card.value}</p>
               <p className="text-xs text-muted-foreground">{card.label}</p>
-            </motion.div>
+              {card.label === "Memories" && <p className="text-[10px] text-primary mt-1">Click to view graph →</p>}
+            </motion.button>
           ))}
         </div>
 
@@ -256,6 +260,7 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </div>
+      <MemoryGraph open={memoryOpen} onOpenChange={setMemoryOpen} />
     </DashboardLayout>
   );
 }

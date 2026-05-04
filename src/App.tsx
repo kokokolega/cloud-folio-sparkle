@@ -24,6 +24,7 @@ import CodrixPage from "./pages/CodrixPage";
 import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/DashboardPage";
 import FoldersPage from "./pages/FoldersPage";
+import NoteFoldersPage from "./pages/NoteFoldersPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/files" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/folders" element={<ProtectedRoute><FoldersPage /></ProtectedRoute>} />
               <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
+              <Route path="/note-folders" element={<ProtectedRoute><NoteFoldersPage /></ProtectedRoute>} />
               <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
               <Route path="/join/:inviteCode" element={<ProtectedRoute><JoinGroupPage /></ProtectedRoute>} />
               <Route path="/ai" element={<ProtectedRoute allowGuest><AiPage /></ProtectedRoute>} />

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 import { Button } from "@/components/ui/button";
-import { Download, Maximize2 } from "lucide-react";
+import { Download, Maximize2, Pencil } from "lucide-react";
+import { FlowchartEditor } from "./FlowchartEditor";
 
 mermaid.initialize({
   startOnLoad: false,
@@ -13,12 +14,16 @@ interface MermaidDiagramProps {
   chart: string;
 }
 
-export function MermaidDiagram({ chart }: MermaidDiagramProps) {
+export function MermaidDiagram({ chart: initialChart }: MermaidDiagramProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [chart, setChart] = useState(initialChart);
   const [svg, setSvg] = useState("");
   const [error, setError] = useState("");
   const [fullscreen, setFullscreen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const id = useRef(`mermaid-${Math.random().toString(36).slice(2)}`);
+
+  useEffect(() => { setChart(initialChart); }, [initialChart]);
 
   useEffect(() => {
     const render = async () => {
@@ -57,13 +62,16 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
 
   return (
     <>
-      <div className="my-3 rounded-xl border border-border bg-background p-4 relative group">
+      <div className="my-3 rounded-xl border border-border bg-background p-4 relative group cursor-zoom-in" onClick={() => setFullscreen(true)}>
         <div
           ref={containerRef}
           className="overflow-x-auto [&>svg]:max-w-full [&>svg]:h-auto"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
-        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={() => setEditing(true)} title="Edit">
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
           <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={handleDownload} title="Download SVG">
             <Download className="h-3.5 w-3.5" />
           </Button>
@@ -78,16 +86,19 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
           <div className="w-[95vw] h-[90vh] overflow-auto bg-card rounded-2xl border border-border p-8 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex-1 flex items-center justify-center overflow-auto [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-h-[75vh]" dangerouslySetInnerHTML={{ __html: svg }} />
             <div className="flex justify-center mt-4 gap-2">
+              <Button variant="outline" size="sm" onClick={() => { setFullscreen(false); setEditing(true); }}>
+                <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
+              </Button>
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="h-3.5 w-3.5 mr-1.5" /> Download SVG
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setFullscreen(false)}>
-                Close
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setFullscreen(false)}>Close</Button>
             </div>
           </div>
         </div>
       )}
+
+      <FlowchartEditor open={editing} onOpenChange={setEditing} initialChart={chart} onSave={(c) => setChart(c)} />
     </>
   );
 }

@@ -24,6 +24,7 @@ import { NoteMentionDropdown } from "@/components/ai/NoteMentionDropdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
+import { PresentationEditor } from "@/components/ai/PresentationEditor";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -163,6 +164,7 @@ export default function AiPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingPresentation, setEditingPresentation] = useState<{ idx: number; content: string } | null>(null);
 
   const isAuthenticated = !!user;
 
@@ -631,9 +633,14 @@ export default function AiPage() {
                           </Button>
                         )}
                         {presentationMarker && (
-                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => saveAsPdf(msg.content)}>
-                            <FileDown className="h-3 w-3" /> Save PDF
-                          </Button>
+                          <>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => setEditingPresentation({ idx: i, content: stripMarkers(msg.content) })}>
+                              <Pencil className="h-3 w-3" /> Edit
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 rounded-xl border-border/60" onClick={() => saveAsPdf(msg.content)}>
+                              <FileDown className="h-3 w-3" /> Save PDF
+                            </Button>
+                          </>
                         )}
                         {isAuthenticated && (
                           <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 rounded-xl text-muted-foreground" onClick={() => saveResponseAsFile(msg.content)}>
@@ -831,6 +838,16 @@ export default function AiPage() {
           </div>
         )}
       </div>
+      <PresentationEditor
+        open={!!editingPresentation}
+        onOpenChange={(o) => !o && setEditingPresentation(null)}
+        initialContent={editingPresentation?.content || ""}
+        onSave={(newContent) => {
+          if (editingPresentation == null) return;
+          setMessages((prev) => prev.map((m, i) => i === editingPresentation.idx ? { ...m, content: newContent + "\n<!--OLTRID_PRESENTATION:{\"title\":\"Edited Presentation\"}-->" } : m));
+          toast.success("Presentation updated");
+        }}
+      />
     </DashboardLayout>
   );
 }

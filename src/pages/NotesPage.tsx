@@ -8,7 +8,8 @@ import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, StickyNote, Search, Wifi, WifiOff } from "lucide-react";
+import { Plus, StickyNote, Search, Wifi, WifiOff, ListChecks } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -76,6 +77,9 @@ export default function NotesPage() {
                 className="pl-9 h-9 rounded-xl bg-secondary/50 border border-border text-sm"
               />
             </div>
+            <Button asChild variant="outline" size="sm" className="h-9 rounded-xl gap-1.5">
+              <Link to="/note-folders"><ListChecks className="h-3.5 w-3.5" /> Task Folders</Link>
+            </Button>
             <Button onClick={() => setIsCreating(true)} size="sm" className="h-9 rounded-xl gap-1.5">
               <Plus className="h-3.5 w-3.5" /> New
             </Button>

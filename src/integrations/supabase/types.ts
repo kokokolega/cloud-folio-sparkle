@@ -358,6 +358,7 @@ export type Database = {
           content: string
           created_at: string
           deleted_at: string | null
+          folder_id: string | null
           group_id: string | null
           id: string
           pinned: boolean
@@ -370,6 +371,7 @@ export type Database = {
           content?: string
           created_at?: string
           deleted_at?: string | null
+          folder_id?: string | null
           group_id?: string | null
           id?: string
           pinned?: boolean
@@ -382,6 +384,7 @@ export type Database = {
           content?: string
           created_at?: string
           deleted_at?: string | null
+          folder_id?: string | null
           group_id?: string | null
           id?: string
           pinned?: boolean
@@ -430,24 +433,33 @@ export type Database = {
         Row: {
           completed: boolean
           created_at: string
-          date: string
+          date: string | null
+          folder_id: string | null
           id: string
+          parent_id: string | null
+          priority: string
           title: string
           user_id: string
         }
         Insert: {
           completed?: boolean
           created_at?: string
-          date: string
+          date?: string | null
+          folder_id?: string | null
           id?: string
+          parent_id?: string | null
+          priority?: string
           title: string
           user_id: string
         }
         Update: {
           completed?: boolean
           created_at?: string
-          date?: string
+          date?: string | null
+          folder_id?: string | null
           id?: string
+          parent_id?: string | null
+          priority?: string
           title?: string
           user_id?: string
         }

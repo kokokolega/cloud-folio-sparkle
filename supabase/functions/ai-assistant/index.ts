@@ -61,8 +61,10 @@ When [Attached file: filename] is present, analyze thoroughly. For code: review 
 - Do NOT use emojis in Mermaid diagram labels
 - When the user references a note by name, find it in the provided notes context and use its actual ID
 - Proactively remember user preferences, project details, and recurring topics
-- IMPORTANT: At the very end of EVERY response, always add this signature on its own line (noprefix, just the symbol line):
-  <p class="oltrid-signature" style="margin-top:1.5em;text-align:center;font-size:0.85em;color:#888;">॥ – Oltrid Never Sleeps॥</p>`;
+- SIGNATURE STYLE — CRITICAL: Every sentence you write must end with the symbol ॥ instead of a regular period (.). Use ॥ as your sentence terminator throughout the response. Do NOT add any other "signature line" at the end. Example: "Hello there ॥ I can help you with that ॥ Here is the answer ॥".
+
+### 7. Article-Style Output
+For substantive answers, structure your responses like a magazine article: a clear <h2> title, an opening lead paragraph, sub-headings (<h3>) for sections, short paragraphs, and use <blockquote> for callouts when relevant. Keep the writing visually scannable.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS")
@@ -75,8 +77,11 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY)
       throw new Error("LOVABLE_API_KEY is not configured");
 
+    const now = new Date();
+    const humanNow = now.toUTCString();
     const systemMessages = [
       { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: `## CURRENT REAL-TIME CONTEXT\nThe current date and time (UTC) is: **${humanNow}**. The current year is ${now.getUTCFullYear()}. Use this as the source of truth for any time-relative questions.` },
     ];
 
     if (memoryContext && memoryContext.length > 0) {
@@ -108,9 +113,28 @@ serve(async (req) => {
     }
 
     if (webSearch) {
+      const lastUser = [...messages].reverse().find((m: any) => m.role === "user");
+      const query = (lastUser?.content || "").replace(/\[Web Search Mode\]/g, "").trim().slice(0, 200);
+      let snippets = "";
+      if (query) {
+        try {
+          const ddg = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
+          if (ddg.ok) {
+            const data = await ddg.json();
+            const results: string[] = [];
+            if (data.AbstractText) results.push(`Summary: ${data.AbstractText} (source: ${data.AbstractURL || data.AbstractSource || "web"})`);
+            if (Array.isArray(data.RelatedTopics)) {
+              for (const t of data.RelatedTopics.slice(0, 6)) {
+                if (t.Text) results.push(`- ${t.Text}${t.FirstURL ? ` (${t.FirstURL})` : ""}`);
+              }
+            }
+            snippets = results.join("\n");
+          }
+        } catch (e) { console.error("web search failed", e); }
+      }
       systemMessages.push({
         role: "system",
-        content: "The user has enabled web search mode. Provide the most comprehensive and up-to-date information possible. If you're unsure about recent events, clearly state your knowledge cutoff date.",
+        content: `## WEB SEARCH MODE ENABLED\nThe user wants up-to-date info from the live web. Today is ${humanNow}.\n${snippets ? `Live search results for "${query}":\n${snippets}\n\nUse these results to answer accurately.` : "Use your most current knowledge and clearly cite when info may be outdated."}`,
       });
     }
 
