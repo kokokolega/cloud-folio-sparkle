@@ -129,7 +129,7 @@ export default function FoldersPage() {
               key={folder.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`glass-card p-5 hover-scale cursor-pointer flex flex-col items-center gap-3 transition-all ${
+              className={`glass-card p-5 hover-scale cursor-pointer flex flex-col items-center gap-3 transition-all relative group ${
                 dragOverId === folder.id ? "ring-2 ring-primary/40 bg-primary/5" : ""
               }`}
               onClick={() => setActiveFolderId(folder.id)}
@@ -137,6 +137,14 @@ export default function FoldersPage() {
               onDragOver={(e) => handleDragOver(e, folder.id)}
               onDragLeave={() => setDragOverId(null)}
             >
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute top-1.5 right-1.5 h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                onClick={(e) => { e.stopPropagation(); setDeleteId(folder.id); }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
               <FolderOpen className="h-9 w-9 text-primary/60" />
               <p className="text-[13px] font-medium text-foreground text-center truncate w-full">{folder.name}</p>
             </motion.div>
