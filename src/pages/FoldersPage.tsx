@@ -20,6 +20,7 @@ export default function FoldersPage() {
   const [folderName, setFolderName] = useState("");
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: folders = [] } = useQuery({
     queryKey: ["folders", user?.id],
