@@ -14,12 +14,16 @@ interface MermaidDiagramProps {
   chart: string;
 }
 
-export function MermaidDiagram({ chart }: MermaidDiagramProps) {
+export function MermaidDiagram({ chart: initialChart }: MermaidDiagramProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [chart, setChart] = useState(initialChart);
   const [svg, setSvg] = useState("");
   const [error, setError] = useState("");
   const [fullscreen, setFullscreen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const id = useRef(`mermaid-${Math.random().toString(36).slice(2)}`);
+
+  useEffect(() => { setChart(initialChart); }, [initialChart]);
 
   useEffect(() => {
     const render = async () => {
