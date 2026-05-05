@@ -13,7 +13,7 @@ import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
   X, Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
   List, ListOrdered, ListChecks, Heading2, Quote, Code, Minus, Undo, Redo, Check, Loader2,
-  ImagePlus, Maximize2, Minimize2, History,
+  ImagePlus, Maximize2, Minimize2, History, PenTool,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
