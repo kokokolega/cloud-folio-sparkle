@@ -280,7 +280,7 @@ export function AppSidebar() {
               </div>
             )}
           </div>
-        ) : (
+        ) : features.calendar ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -293,7 +293,7 @@ export function AppSidebar() {
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs">Calendar</TooltipContent>
           </Tooltip>
-        )}
+        ) : null}
 
         {!collapsed && (
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold px-3 pt-2 pb-1">
