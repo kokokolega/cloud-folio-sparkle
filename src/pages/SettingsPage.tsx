@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert, User, Camera, Pencil } from "lucide-react";
+import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert, User, Camera, Pencil, Files, Users, Code2, CalendarDays, Layers } from "lucide-react";
 import { toast } from "sonner";
+import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
 
 const BG_THEMES: { id: BgTheme; name: string; description: string; preview: string }[] = [
   { id: "none", name: "None", description: "Clean solid background", preview: "bg-muted/40" },
