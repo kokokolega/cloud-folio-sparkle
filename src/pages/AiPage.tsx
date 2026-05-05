@@ -397,6 +397,10 @@ export default function AiPage() {
       fullContent = `${fileContext}\n\n${msg}`;
     }
     if (webSearchEnabled) fullContent = `[Web Search Mode] ${fullContent}`;
+    const styleObj = RESPONSE_STYLES.find(s => s.id === selectedStyle);
+    if (styleObj && styleObj.instruction) {
+      fullContent = `[Response Style: ${styleObj.label}] ${styleObj.instruction}\n\n${fullContent}`;
+    }
     const userMsg: Msg = { role: "user", content: fullContent, attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
