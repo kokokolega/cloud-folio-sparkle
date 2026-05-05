@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DrawingPad } from "@/components/notes/DrawingPad";
 
 interface NoteEditorProps {
   note?: { id?: string; title: string; content: string; color: string } | null;
