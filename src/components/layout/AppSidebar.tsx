@@ -20,15 +20,18 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
 
-const mainNav = [
+const baseNav = [
   { title: "Oltrid AI", url: "/", icon: Bot },
   { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
   { title: "Notes", url: "/notes", icon: StickyNote },
-  { title: "All Files", url: "/files", icon: Files },
-  { title: "Groups", url: "/groups", icon: Users },
-  { title: "Codrix", url: "/codrix", icon: Code2 },
 ];
+const optionalNav = {
+  files: { title: "All Files", url: "/files", icon: Files },
+  groups: { title: "Groups", url: "/groups", icon: Users },
+  codrix: { title: "Codrix", url: "/codrix", icon: Code2 },
+};
 
 const bottomNav = [
   { title: "Trash", url: "/trash", icon: Trash2 },
