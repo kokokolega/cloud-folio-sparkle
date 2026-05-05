@@ -78,10 +78,15 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
 
     const now = new Date();
-    const humanNow = now.toUTCString();
+    const kolkataTime = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "full",
+      timeStyle: "long",
+    }).format(now);
+    const kolkataYear = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric" }).format(now);
     const systemMessages = [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "system", content: `## CURRENT REAL-TIME CONTEXT\nThe current date and time (UTC) is: **${humanNow}**. The current year is ${now.getUTCFullYear()}. Use this as the source of truth for any time-relative questions.` },
+      { role: "system", content: `## CURRENT REAL-TIME CONTEXT\nThe current date and time in **Asia/Kolkata (IST)** is: **${kolkataTime}**. The current year is ${kolkataYear}. Use IST as the source of truth for any time-relative questions.` },
     ];
 
     if (memoryContext && memoryContext.length > 0) {
