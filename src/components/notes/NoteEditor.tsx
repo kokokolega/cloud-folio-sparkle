@@ -282,6 +282,11 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
       </div>
 
       {/* Version History Dialog */}
+      <DrawingPad
+        open={drawingOpen}
+        onOpenChange={setDrawingOpen}
+        onInsert={(html) => editor.chain().focus().insertContent(html).run()}
+      />
       <Dialog open={showVersions} onOpenChange={setShowVersions}>
         <DialogContent className="sm:max-w-md max-h-[70vh]">
           <VisuallyHidden>
