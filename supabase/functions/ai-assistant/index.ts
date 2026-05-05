@@ -123,19 +123,41 @@ serve(async (req) => {
       let snippets = "";
       if (query) {
         try {
-          const ddg = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
-          if (ddg.ok) {
-            const data = await ddg.json();
+          // Scrape Google search results
+          const googleRes = await fetch(`https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en&gl=in&num=10`, {
+            headers: {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+              "Accept-Language": "en-US,en;q=0.9",
+            },
+          });
+          if (googleRes.ok) {
+            const html = await googleRes.text();
             const results: string[] = [];
-            if (data.AbstractText) results.push(`Summary: ${data.AbstractText} (source: ${data.AbstractURL || data.AbstractSource || "web"})`);
-            if (Array.isArray(data.RelatedTopics)) {
-              for (const t of data.RelatedTopics.slice(0, 6)) {
-                if (t.Text) results.push(`- ${t.Text}${t.FirstURL ? ` (${t.FirstURL})` : ""}`);
+            // Match result blocks with title and snippet
+            const blockRegex = /<h3[^>]*>([^<]+)<\/h3>[\s\S]{0,500}?<div[^>]*>([^<]{30,300})<\/div>/g;
+            let m: RegExpExecArray | null;
+            let count = 0;
+            while ((m = blockRegex.exec(html)) !== null && count < 8) {
+              const title = m[1].replace(/<[^>]+>/g, "").trim();
+              const snippet = m[2].replace(/<[^>]+>/g, "").trim();
+              if (title && snippet) {
+                results.push(`- **${title}**: ${snippet}`);
+                count++;
+              }
+            }
+            // Fallback: extract any visible text snippets
+            if (results.length === 0) {
+              const snipRegex = /<span[^>]*>([^<]{60,250})<\/span>/g;
+              let s: RegExpExecArray | null;
+              let c2 = 0;
+              while ((s = snipRegex.exec(html)) !== null && c2 < 6) {
+                const t = s[1].replace(/&[a-z]+;/g, " ").trim();
+                if (t.length > 50) { results.push(`- ${t}`); c2++; }
               }
             }
             snippets = results.join("\n");
           }
-        } catch (e) { console.error("web search failed", e); }
+        } catch (e) { console.error("google search failed", e); }
       }
       systemMessages.push({
         role: "system",
