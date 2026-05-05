@@ -179,7 +179,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-3 pb-3 space-y-0.5">
-        {!collapsed ? (
+        {features.calendar && !collapsed ? (
           <div className="mb-2">
             <button
               onClick={() => setCalendarOpen(!calendarOpen)}
