@@ -233,6 +233,11 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
           label="Add image"
           active={uploadingImage}
         />
+        <ToolbarButton
+          onClick={() => setDrawingOpen(true)}
+          icon={PenTool}
+          label="Draw / handwrite (converts to text)"
+        />
         <Separator orientation="vertical" className="h-4 mx-1" />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} label="Undo" />
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} label="Redo" />
