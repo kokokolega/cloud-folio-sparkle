@@ -172,6 +172,7 @@ export default function AiPage() {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [selectedFeature, setSelectedFeature] = useState("General");
+  const [selectedStyle, setSelectedStyle] = useState("default");
   const [userNotes, setUserNotes] = useState<NoteData[]>([]);
   const [userMemory, setUserMemory] = useState<MemoryData[]>([]);
   const [conversationHistory, setConversationHistory] = useState<{ title: string; messages: { role: string; content: string }[] }[]>([]);
