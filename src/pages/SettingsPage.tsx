@@ -35,6 +35,7 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const { features, setFeature } = useSidebarFeatures();
   const [editingName, setEditingName] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
