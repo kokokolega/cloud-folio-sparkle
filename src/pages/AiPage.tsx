@@ -75,6 +75,20 @@ const QUICK_PROMPTS = [
   { icon: <Brain className="h-5 w-5" />, text: "Summarize", prompt: "Summarize my notes", color: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300" },
 ];
 
+const RESPONSE_STYLES = [
+  { id: "default", label: "Default", instruction: "" },
+  { id: "article", label: "Article", instruction: "Format the entire response as a long-form magazine article with an <h2> title, a lead paragraph in <em>, <h3> section headings, multiple short body paragraphs, and a closing reflection." },
+  { id: "newspaper", label: "Newspaper", instruction: "Format the response as a newspaper front page: an all-caps masthead-style <h2> title, a bold one-line subhead, a dateline, and 2-3 column-style sections with <h3> bylines and tight punchy paragraphs." },
+  { id: "blog", label: "Blog Post", instruction: "Format as a friendly conversational blog post with an engaging <h2> title, a hook intro, <h3> sections, bullet lists where useful, and a takeaway conclusion." },
+  { id: "academic", label: "Academic Paper", instruction: "Format as an academic paper with: <h2> title, an <h3>Abstract</h3>, <h3>Introduction</h3>, <h3>Discussion</h3>, <h3>Conclusion</h3>, formal tone, and <blockquote> for key claims." },
+  { id: "report", label: "Executive Report", instruction: "Format as a business executive report: <h2> title, <h3>Summary</h3>, <h3>Key Findings</h3> with bullet list, <h3>Recommendations</h3> with numbered list, concise and decisive tone." },
+  { id: "story", label: "Story / Narrative", instruction: "Format as a narrative short story with vivid scene-setting, characters, dialogue in <em>, and a satisfying arc. No headings — use paragraphs and pacing." },
+  { id: "tutorial", label: "Step-by-Step Tutorial", instruction: "Format as a numbered step-by-step tutorial with <h2> title, <h3>What you'll need</h3>, then <h3>Step 1</h3>, <h3>Step 2</h3>… each with code blocks or images placeholders, and a <h3>Wrap up</h3>." },
+  { id: "qa", label: "Q&A Interview", instruction: "Format as a Q&A interview: bold the questions and use plain paragraphs for the answers, with an <h2> title and a short <em>intro</em>." },
+  { id: "letter", label: "Personal Letter", instruction: "Format as a personal letter with a date, salutation, warm flowing paragraphs, and a sign-off — no headings." },
+  { id: "bullet", label: "Bullet Brief", instruction: "Format as a tight bullet brief: <h2> title and a single nested bullet list — no paragraphs, no fluff." },
+];
+
 function parseNoteMarker(content: string) {
   const match = content.match(/<!--OLTRID_NOTE:(.*?)-->/);
   if (!match) {
