@@ -161,7 +161,7 @@ serve(async (req) => {
       }
       systemMessages.push({
         role: "system",
-        content: `## WEB SEARCH MODE ENABLED\nThe user wants up-to-date info from the live web. Today is ${humanNow}.\n${snippets ? `Live search results for "${query}":\n${snippets}\n\nUse these results to answer accurately.` : "Use your most current knowledge and clearly cite when info may be outdated."}`,
+        content: `## WEB SEARCH MODE ENABLED\nThe user wants up-to-date info from the live web (Google search). Today (IST) is ${kolkataTime}.\n${snippets ? `Live Google search results for "${query}":\n${snippets}\n\nUse these results to answer accurately and cite sources naturally.` : "Use your most current knowledge and clearly cite when info may be outdated."}`,
       });
     }
 
