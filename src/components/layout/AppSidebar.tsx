@@ -53,6 +53,13 @@ export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const { user } = useAuth();
   const collapsed = state === "collapsed";
+  const { features } = useSidebarFeatures();
+  const mainNav = [
+    ...baseNav,
+    ...(features.files ? [optionalNav.files] : []),
+    ...(features.groups ? [optionalNav.groups] : []),
+    ...(features.codrix ? [optionalNav.codrix] : []),
+  ];
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [calendarColorIndex, setCalendarColorIndex] = useState(0);
