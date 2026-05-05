@@ -214,6 +214,31 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* Sidebar Features */}
+          <div className="glass-card p-5 space-y-3">
+            <div className="flex items-center gap-3">
+              <Layers className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Sidebar Features</h3>
+                <p className="text-[11px] text-muted-foreground">Show or hide features in the sidebar</p>
+              </div>
+            </div>
+            {([
+              { key: "files", icon: Files, label: "All Files" },
+              { key: "groups", icon: Users, label: "Groups" },
+              { key: "codrix", icon: Code2, label: "Codrix" },
+              { key: "calendar", icon: CalendarDays, label: "Calendar" },
+            ] as const).map(({ key, icon: Icon, label }) => (
+              <div key={key} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm">{label}</Label>
+                </div>
+                <Switch checked={features[key]} onCheckedChange={(v) => setFeature(key, v)} />
+              </div>
+            ))}
+          </div>
+
           {/* Background Theme */}
           <div className="glass-card p-5 space-y-4">
             <div className="flex items-center gap-3">
