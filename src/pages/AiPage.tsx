@@ -10,7 +10,7 @@ import {
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
   X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
   NotebookPen, MessageCircle, Workflow, Globe2, ChevronDown, Sparkles,
-  FileText, Image, Code, ListChecks,
+  FileText, Image, Code, ListChecks, Check,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -73,6 +73,20 @@ const QUICK_PROMPTS = [
   { icon: <Globe2 className="h-5 w-5" />, text: "Search web", prompt: "Search the web", color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" },
   { icon: <Workflow className="h-5 w-5" />, text: "Flowchart", prompt: "Draw a flowchart", color: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300" },
   { icon: <Brain className="h-5 w-5" />, text: "Summarize", prompt: "Summarize my notes", color: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300" },
+];
+
+const RESPONSE_STYLES = [
+  { id: "default", label: "Default", instruction: "" },
+  { id: "article", label: "Article", instruction: "Format the entire response as a long-form magazine article with an <h2> title, a lead paragraph in <em>, <h3> section headings, multiple short body paragraphs, and a closing reflection." },
+  { id: "newspaper", label: "Newspaper", instruction: "Format the response as a newspaper front page: an all-caps masthead-style <h2> title, a bold one-line subhead, a dateline, and 2-3 column-style sections with <h3> bylines and tight punchy paragraphs." },
+  { id: "blog", label: "Blog Post", instruction: "Format as a friendly conversational blog post with an engaging <h2> title, a hook intro, <h3> sections, bullet lists where useful, and a takeaway conclusion." },
+  { id: "academic", label: "Academic Paper", instruction: "Format as an academic paper with: <h2> title, an <h3>Abstract</h3>, <h3>Introduction</h3>, <h3>Discussion</h3>, <h3>Conclusion</h3>, formal tone, and <blockquote> for key claims." },
+  { id: "report", label: "Executive Report", instruction: "Format as a business executive report: <h2> title, <h3>Summary</h3>, <h3>Key Findings</h3> with bullet list, <h3>Recommendations</h3> with numbered list, concise and decisive tone." },
+  { id: "story", label: "Story / Narrative", instruction: "Format as a narrative short story with vivid scene-setting, characters, dialogue in <em>, and a satisfying arc. No headings — use paragraphs and pacing." },
+  { id: "tutorial", label: "Step-by-Step Tutorial", instruction: "Format as a numbered step-by-step tutorial with <h2> title, <h3>What you'll need</h3>, then <h3>Step 1</h3>, <h3>Step 2</h3>… each with code blocks or images placeholders, and a <h3>Wrap up</h3>." },
+  { id: "qa", label: "Q&A Interview", instruction: "Format as a Q&A interview: bold the questions and use plain paragraphs for the answers, with an <h2> title and a short <em>intro</em>." },
+  { id: "letter", label: "Personal Letter", instruction: "Format as a personal letter with a date, salutation, warm flowing paragraphs, and a sign-off — no headings." },
+  { id: "bullet", label: "Bullet Brief", instruction: "Format as a tight bullet brief: <h2> title and a single nested bullet list — no paragraphs, no fluff." },
 ];
 
 function parseNoteMarker(content: string) {
@@ -158,6 +172,7 @@ export default function AiPage() {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [selectedFeature, setSelectedFeature] = useState("General");
+  const [selectedStyle, setSelectedStyle] = useState("default");
   const [userNotes, setUserNotes] = useState<NoteData[]>([]);
   const [userMemory, setUserMemory] = useState<MemoryData[]>([]);
   const [conversationHistory, setConversationHistory] = useState<{ title: string; messages: { role: string; content: string }[] }[]>([]);
@@ -382,6 +397,10 @@ export default function AiPage() {
       fullContent = `${fileContext}\n\n${msg}`;
     }
     if (webSearchEnabled) fullContent = `[Web Search Mode] ${fullContent}`;
+    const styleObj = RESPONSE_STYLES.find(s => s.id === selectedStyle);
+    if (styleObj && styleObj.instruction) {
+      fullContent = `[Response Style: ${styleObj.label}] ${styleObj.instruction}\n\n${fullContent}`;
+    }
     const userMsg: Msg = { role: "user", content: fullContent, attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -734,6 +753,27 @@ export default function AiPage() {
             </div>
 
             <div className="flex items-center gap-1.5">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[12px] text-muted-foreground/60 hover:text-foreground gap-1 px-2" title="Response style">
+                    <FileText className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{RESPONSE_STYLES.find(s => s.id === selectedStyle)?.label}</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 max-h-80 overflow-y-auto">
+                  {RESPONSE_STYLES.map((style) => (
+                    <DropdownMenuItem
+                      key={style.id}
+                      onClick={() => setSelectedStyle(style.id)}
+                      className="gap-2 text-[13px]"
+                    >
+                      {selectedStyle === style.id ? <Check className="h-3.5 w-3.5 text-primary" /> : <span className="w-3.5" />}
+                      <span>{style.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[12px] text-muted-foreground/60 hover:text-foreground gap-1 px-2">

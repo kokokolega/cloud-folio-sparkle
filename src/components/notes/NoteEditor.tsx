@@ -13,7 +13,7 @@ import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
   X, Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
   List, ListOrdered, ListChecks, Heading2, Quote, Code, Minus, Undo, Redo, Check, Loader2,
-  ImagePlus, Maximize2, Minimize2, History,
+  ImagePlus, Maximize2, Minimize2, History, PenTool,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DrawingPad } from "@/components/notes/DrawingPad";
 
 interface NoteEditorProps {
   note?: { id?: string; title: string; content: string; color: string } | null;
@@ -64,6 +65,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
   const [versions, setVersions] = useState<VersionEntry[]>([]);
   const [showVersions, setShowVersions] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [drawingOpen, setDrawingOpen] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -231,6 +233,11 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
           label="Add image"
           active={uploadingImage}
         />
+        <ToolbarButton
+          onClick={() => setDrawingOpen(true)}
+          icon={PenTool}
+          label="Draw / handwrite (converts to text)"
+        />
         <Separator orientation="vertical" className="h-4 mx-1" />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} label="Undo" />
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} label="Redo" />
@@ -275,6 +282,11 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
       </div>
 
       {/* Version History Dialog */}
+      <DrawingPad
+        open={drawingOpen}
+        onOpenChange={setDrawingOpen}
+        onInsert={(html) => editor.chain().focus().insertContent(html).run()}
+      />
       <Dialog open={showVersions} onOpenChange={setShowVersions}>
         <DialogContent className="sm:max-w-md max-h-[70vh]">
           <VisuallyHidden>

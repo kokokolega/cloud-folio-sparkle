@@ -20,15 +20,18 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
 
-const mainNav = [
+const baseNav = [
   { title: "Oltrid AI", url: "/", icon: Bot },
   { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
   { title: "Notes", url: "/notes", icon: StickyNote },
-  { title: "All Files", url: "/files", icon: Files },
-  { title: "Groups", url: "/groups", icon: Users },
-  { title: "Codrix", url: "/codrix", icon: Code2 },
 ];
+const optionalNav = {
+  files: { title: "All Files", url: "/files", icon: Files },
+  groups: { title: "Groups", url: "/groups", icon: Users },
+  codrix: { title: "Codrix", url: "/codrix", icon: Code2 },
+};
 
 const bottomNav = [
   { title: "Trash", url: "/trash", icon: Trash2 },
@@ -50,6 +53,13 @@ export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const { user } = useAuth();
   const collapsed = state === "collapsed";
+  const { features } = useSidebarFeatures();
+  const mainNav = [
+    ...baseNav,
+    ...(features.files ? [optionalNav.files] : []),
+    ...(features.groups ? [optionalNav.groups] : []),
+    ...(features.codrix ? [optionalNav.codrix] : []),
+  ];
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [calendarColorIndex, setCalendarColorIndex] = useState(0);
@@ -169,7 +179,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-3 pb-3 space-y-0.5">
-        {!collapsed ? (
+        {features.calendar && !collapsed ? (
           <div className="mb-2">
             <button
               onClick={() => setCalendarOpen(!calendarOpen)}
@@ -270,7 +280,7 @@ export function AppSidebar() {
               </div>
             )}
           </div>
-        ) : (
+        ) : features.calendar ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -283,7 +293,7 @@ export function AppSidebar() {
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs">Calendar</TooltipContent>
           </Tooltip>
-        )}
+        ) : null}
 
         {!collapsed && (
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold px-3 pt-2 pb-1">
