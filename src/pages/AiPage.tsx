@@ -10,7 +10,7 @@ import {
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
   X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
   NotebookPen, MessageCircle, Workflow, Globe2, ChevronDown, Sparkles,
-  FileText, Image, Code, ListChecks,
+  FileText, Image, Code, ListChecks, Check,
 } from "lucide-react";
 import {
   DropdownMenu,
