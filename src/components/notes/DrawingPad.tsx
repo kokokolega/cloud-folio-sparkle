@@ -115,8 +115,12 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted }: Props)
       if (!resp.ok) throw new Error("Transcription failed");
       const { html } = await resp.json();
       if (!html) throw new Error("No text recognized");
-      onInsert(html);
-      toast.success("Drawing converted to text ॥");
+      if (onConverted) {
+        onConverted({ html, imageDataUrl: dataUrl });
+      } else {
+        onInsert(html);
+      }
+      toast.success("Drawing converted ॥");
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message || "Could not transcribe");
