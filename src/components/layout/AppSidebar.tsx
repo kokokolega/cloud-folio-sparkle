@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, CalendarDays, Plus, Check, X } from "lucide-react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, CalendarDays, Plus, Check, X, FileEdit } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
@@ -31,6 +31,7 @@ const optionalNav = {
   files: { title: "All Files", url: "/files", icon: Files },
   groups: { title: "Groups", url: "/groups", icon: Users },
   codrix: { title: "Codrix", url: "/codrix", icon: Code2 },
+  pdfEditor: { title: "PDF Editor", url: "/pdf-editor", icon: FileEdit },
 };
 
 const bottomNav = [
@@ -59,6 +60,7 @@ export function AppSidebar() {
     ...(features.files ? [optionalNav.files] : []),
     ...(features.groups ? [optionalNav.groups] : []),
     ...(features.codrix ? [optionalNav.codrix] : []),
+    ...(features.pdfEditor ? [optionalNav.pdfEditor] : []),
   ];
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
