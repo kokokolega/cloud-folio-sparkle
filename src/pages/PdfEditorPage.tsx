@@ -75,7 +75,7 @@ export default function PdfEditorPage() {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         const ctx = canvas.getContext("2d")!;
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        await page.render({ canvas, canvasContext: ctx, viewport } as any).promise;
         newImages.push(canvas.toDataURL("image/png"));
         const baseVp = page.getViewport({ scale: 1 });
         newPages.push({ width: baseVp.width, height: baseVp.height, rotation: page.rotate || 0 });
@@ -172,7 +172,7 @@ export default function PdfEditorPage() {
       }
 
       const out = await doc.save();
-      const blob = new Blob([out], { type: "application/pdf" });
+      const blob = new Blob([out as BlobPart], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url; a.download = pdfName.replace(/\.pdf$/i, "") + "-edited.pdf";
@@ -195,7 +195,7 @@ export default function PdfEditorPage() {
     const out = await doc.save();
     setPdfBytes(out);
     // re-render
-    const file = new File([out], pdfName, { type: "application/pdf" });
+    const file = new File([out as BlobPart], pdfName, { type: "application/pdf" });
     await loadPdf(file);
   };
 
