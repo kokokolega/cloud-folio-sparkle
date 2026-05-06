@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DrawingPad } from "@/components/notes/DrawingPad";
+import { DrawingReviewDialog } from "@/components/notes/DrawingReviewDialog";
 
 interface NoteEditorProps {
   note?: { id?: string; title: string; content: string; color: string } | null;
@@ -66,6 +67,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
   const [showVersions, setShowVersions] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [drawingOpen, setDrawingOpen] = useState(false);
+  const [reviewState, setReviewState] = useState<{ html: string; imageDataUrl: string } | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -286,6 +288,15 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         open={drawingOpen}
         onOpenChange={setDrawingOpen}
         onInsert={(html) => editor.chain().focus().insertContent(html).run()}
+        onConverted={(payload) => setReviewState(payload)}
+      />
+      <DrawingReviewDialog
+        open={!!reviewState}
+        onOpenChange={(o) => !o && setReviewState(null)}
+        imageDataUrl={reviewState?.imageDataUrl || ""}
+        initialHtml={reviewState?.html || ""}
+        onInsertText={(html) => editor.chain().focus().insertContent(html).run()}
+        onInsertImage={(dataUrl) => editor.chain().focus().insertContent(`<img src="${dataUrl}" />`).run()}
       />
       <Dialog open={showVersions} onOpenChange={setShowVersions}>
         <DialogContent className="sm:max-w-md max-h-[70vh]">
