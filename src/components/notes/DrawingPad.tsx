@@ -18,7 +18,7 @@ interface Props {
   onConverted?: (payload: { html: string; imageDataUrl: string }) => void;
 }
 
-export function DrawingPad({ open, onOpenChange, onInsert }: Props) {
+export function DrawingPad({ open, onOpenChange, onInsert, onConverted }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [color, setColor] = useState(COLORS[0]);
   const [size, setSize] = useState(3);
