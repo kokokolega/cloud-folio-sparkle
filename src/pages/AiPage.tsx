@@ -837,36 +837,31 @@ export default function AiPage() {
         <ResizablePanelGroup direction="horizontal" className="flex-1">
           <ResizablePanel defaultSize={historySidebarOpen && isAuthenticated ? 75 : 100} minSize={50}>
             <div className="h-full flex flex-col min-w-0 relative">
-              {/* Top bar */}
-              <div className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-border/40 shrink-0 bg-background/80 backdrop-blur-sm">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[15px] font-semibold text-foreground tracking-tight">Oltrid AI</span>
-                  {isGuest && !user && (
-                    <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">Guest · {guestMinutesLeft}m</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  {messages.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl">
-                      <Plus className="h-3.5 w-3.5" /> New
-                    </Button>
-                  )}
-                  {isAuthenticated && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground" onClick={() => setHistorySidebarOpen(!historySidebarOpen)} title="Chat history">
-                      {historySidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
-                    </Button>
-                  )}
-                </div>
+              {/* Floating top-right controls (no header bar) */}
+              <div className="absolute top-3 right-3 z-30 flex items-center gap-1">
+                {isGuest && !user && (
+                  <span className="text-[10px] text-muted-foreground bg-secondary/80 backdrop-blur-sm px-2 py-1 rounded-full font-medium">
+                    Guest · {guestMinutesLeft}m
+                  </span>
+                )}
+                {messages.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl bg-background/60 backdrop-blur-sm">
+                    <Plus className="h-3.5 w-3.5" /> New
+                  </Button>
+                )}
+                {isAuthenticated && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground bg-background/60 backdrop-blur-sm" onClick={() => setHistorySidebarOpen(!historySidebarOpen)} title="Chat history">
+                    {historySidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+                  </Button>
+                )}
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-40">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
-                <div className="pointer-events-auto bg-gradient-to-t from-background via-background/95 to-transparent pt-8">
-                  {renderInputArea()}
-                </div>
+              <div className="sticky bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pt-8">
+                {renderInputArea()}
               </div>
             </div>
           </ResizablePanel>
