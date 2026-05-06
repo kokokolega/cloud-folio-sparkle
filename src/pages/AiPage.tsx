@@ -892,6 +892,7 @@ export default function AiPage() {
           toast.success("Presentation updated");
         }}
       />
+      <ImageStudio open={imageStudioOpen} onOpenChange={setImageStudioOpen} />
     </DashboardLayout>
   );
 }
