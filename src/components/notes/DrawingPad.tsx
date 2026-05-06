@@ -15,9 +15,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInsert: (html: string) => void;
+  onConverted?: (payload: { html: string; imageDataUrl: string }) => void;
 }
 
-export function DrawingPad({ open, onOpenChange, onInsert }: Props) {
+export function DrawingPad({ open, onOpenChange, onInsert, onConverted }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [color, setColor] = useState(COLORS[0]);
   const [size, setSize] = useState(3);
@@ -114,8 +115,12 @@ export function DrawingPad({ open, onOpenChange, onInsert }: Props) {
       if (!resp.ok) throw new Error("Transcription failed");
       const { html } = await resp.json();
       if (!html) throw new Error("No text recognized");
-      onInsert(html);
-      toast.success("Drawing converted to text ॥");
+      if (onConverted) {
+        onConverted({ html, imageDataUrl: dataUrl });
+      } else {
+        onInsert(html);
+      }
+      toast.success("Drawing converted ॥");
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message || "Could not transcribe");

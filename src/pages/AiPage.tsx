@@ -10,7 +10,7 @@ import {
   PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
   X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
   NotebookPen, MessageCircle, Workflow, Globe2, ChevronDown, Sparkles,
-  FileText, Image, Code, ListChecks, Check,
+  FileText, Image as ImageIcon, Code, ListChecks, Check, ImagePlus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
 import { PresentationEditor } from "@/components/ai/PresentationEditor";
+import { ImageStudio } from "@/components/ai/ImageStudio";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -78,7 +79,7 @@ const QUICK_PROMPTS = [
 const RESPONSE_STYLES = [
   { id: "default", label: "Default", instruction: "" },
   { id: "article", label: "Article", instruction: "Format the entire response as a long-form magazine article with an <h2> title, a lead paragraph in <em>, <h3> section headings, multiple short body paragraphs, and a closing reflection." },
-  { id: "newspaper", label: "Newspaper", instruction: "Format the response as a newspaper front page: an all-caps masthead-style <h2> title, a bold one-line subhead, a dateline, and 2-3 column-style sections with <h3> bylines and tight punchy paragraphs." },
+  { id: "newspaper", label: "Newspaper", instruction: "Format as a newspaper front page: an all-caps masthead-style <h2> title, a bold one-line subhead, a dateline, and 2-3 column-style sections with <h3> bylines and tight punchy paragraphs." },
   { id: "blog", label: "Blog Post", instruction: "Format as a friendly conversational blog post with an engaging <h2> title, a hook intro, <h3> sections, bullet lists where useful, and a takeaway conclusion." },
   { id: "academic", label: "Academic Paper", instruction: "Format as an academic paper with: <h2> title, an <h3>Abstract</h3>, <h3>Introduction</h3>, <h3>Discussion</h3>, <h3>Conclusion</h3>, formal tone, and <blockquote> for key claims." },
   { id: "report", label: "Executive Report", instruction: "Format as a business executive report: <h2> title, <h3>Summary</h3>, <h3>Key Findings</h3> with bullet list, <h3>Recommendations</h3> with numbered list, concise and decisive tone." },
@@ -87,6 +88,13 @@ const RESPONSE_STYLES = [
   { id: "qa", label: "Q&A Interview", instruction: "Format as a Q&A interview: bold the questions and use plain paragraphs for the answers, with an <h2> title and a short <em>intro</em>." },
   { id: "letter", label: "Personal Letter", instruction: "Format as a personal letter with a date, salutation, warm flowing paragraphs, and a sign-off — no headings." },
   { id: "bullet", label: "Bullet Brief", instruction: "Format as a tight bullet brief: <h2> title and a single nested bullet list — no paragraphs, no fluff." },
+  { id: "listicle", label: "Listicle", instruction: "Format as a viral listicle: catchy <h2> title with a number, a punchy intro, then numbered <h3>1.</h3>, <h3>2.</h3>… each with a 1-2 sentence payoff." },
+  { id: "tweet", label: "Twitter Thread", instruction: "Format as a Twitter/X thread: 6-12 numbered tweets (1/, 2/, …) each ≤ 280 chars, in <p> tags, hook first, payoff last." },
+  { id: "casual", label: "Casual DM", instruction: "Reply like a smart friend texting back: short paragraphs, lowercase mostly, emojis sparingly, no headings." },
+  { id: "spec", label: "Technical Spec", instruction: "Format as a technical spec: <h2> title, <h3>Overview</h3>, <h3>Requirements</h3>, <h3>Architecture</h3>, <h3>API</h3> with code blocks, <h3>Edge Cases</h3>." },
+  { id: "poem", label: "Poetry", instruction: "Respond as a poem: 4-8 stanzas in <p> tags with line breaks (<br>), evocative imagery, no headings." },
+  { id: "exec", label: "Executive Brief", instruction: "Format as a 1-screen executive brief: <h2> title, then <strong>TL;DR:</strong> one sentence, then 3 bullets — Why, What, Next." },
+  { id: "code", label: "Code Walkthrough", instruction: "Format as a step-by-step code walkthrough: <h2> title, <h3>Goal</h3>, then alternating <h3>Step N</h3> + brief explanation + code block." },
 ];
 
 function parseNoteMarker(content: string) {
@@ -180,6 +188,7 @@ export default function AiPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingPresentation, setEditingPresentation] = useState<{ idx: number; content: string } | null>(null);
+  const [imageStudioOpen, setImageStudioOpen] = useState(false);
 
   const isAuthenticated = !!user;
 
@@ -750,6 +759,15 @@ export default function AiPage() {
               >
                 <Globe className="h-4 w-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground/50 hover:text-foreground"
+                onClick={() => setImageStudioOpen(true)}
+                title="Image Studio — generate & edit images"
+              >
+                <ImagePlus className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="flex items-center gap-1.5">
@@ -828,36 +846,31 @@ export default function AiPage() {
         <ResizablePanelGroup direction="horizontal" className="flex-1">
           <ResizablePanel defaultSize={historySidebarOpen && isAuthenticated ? 75 : 100} minSize={50}>
             <div className="h-full flex flex-col min-w-0 relative">
-              {/* Top bar */}
-              <div className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-border/40 shrink-0 bg-background/80 backdrop-blur-sm">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[15px] font-semibold text-foreground tracking-tight">Oltrid AI</span>
-                  {isGuest && !user && (
-                    <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">Guest · {guestMinutesLeft}m</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  {messages.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl">
-                      <Plus className="h-3.5 w-3.5" /> New
-                    </Button>
-                  )}
-                  {isAuthenticated && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground" onClick={() => setHistorySidebarOpen(!historySidebarOpen)} title="Chat history">
-                      {historySidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
-                    </Button>
-                  )}
-                </div>
+              {/* Floating top-right controls (no header bar) */}
+              <div className="absolute top-3 right-3 z-30 flex items-center gap-1">
+                {isGuest && !user && (
+                  <span className="text-[10px] text-muted-foreground bg-secondary/80 backdrop-blur-sm px-2 py-1 rounded-full font-medium">
+                    Guest · {guestMinutesLeft}m
+                  </span>
+                )}
+                {messages.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearChat} className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl bg-background/60 backdrop-blur-sm">
+                    <Plus className="h-3.5 w-3.5" /> New
+                  </Button>
+                )}
+                {isAuthenticated && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground bg-background/60 backdrop-blur-sm" onClick={() => setHistorySidebarOpen(!historySidebarOpen)} title="Chat history">
+                    {historySidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+                  </Button>
+                )}
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-40">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
-                <div className="pointer-events-auto bg-gradient-to-t from-background via-background/95 to-transparent pt-8">
-                  {renderInputArea()}
-                </div>
+              <div className="sticky bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pt-8">
+                {renderInputArea()}
               </div>
             </div>
           </ResizablePanel>
@@ -888,6 +901,7 @@ export default function AiPage() {
           toast.success("Presentation updated");
         }}
       />
+      <ImageStudio open={imageStudioOpen} onOpenChange={setImageStudioOpen} />
     </DashboardLayout>
   );
 }
