@@ -759,6 +759,15 @@ export default function AiPage() {
               >
                 <Globe className="h-4 w-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground/50 hover:text-foreground"
+                onClick={() => setImageStudioOpen(true)}
+                title="Image Studio — generate & edit images"
+              >
+                <ImagePlus className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="flex items-center gap-1.5">
