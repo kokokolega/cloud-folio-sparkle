@@ -96,7 +96,7 @@ export function ImageStudio({ open, onOpenChange }: Props) {
         </div>
 
         <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-[300px_1fr]">
-          <div className="border-r border-border/50 p-4 space-y-3 overflow-y-auto">
+          <div className="md:border-r border-b md:border-b-0 border-border/50 p-4 space-y-3 overflow-y-auto">
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Prompt</label>
               <Textarea
