@@ -865,7 +865,7 @@ export default function AiPage() {
                 )}
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44 flex flex-col">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 
