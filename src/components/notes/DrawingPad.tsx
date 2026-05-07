@@ -130,49 +130,80 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
     }
   };
 
+  const saveDrawing = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL("image/png");
+    if (onInsertImage) {
+      onInsertImage(dataUrl);
+      toast.success("Drawing added to note");
+    } else {
+      onInsert(`<img src="${dataUrl}" />`);
+    }
+    onOpenChange(false);
+  };
+
+  const downloadDrawing = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = `drawing-${Date.now()}.png`;
+    a.click();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl p-0 overflow-hidden">
+      <DialogContent className="p-0 overflow-hidden flex flex-col w-[98vw] sm:w-[95vw] max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh]">
         <VisuallyHidden>
           <DialogTitle>Drawing Pad</DialogTitle>
           <DialogDescription>Write or sketch. Convert your handwriting into typed text.</DialogDescription>
         </VisuallyHidden>
-        <div className="p-3 border-b border-border/50 flex items-center gap-2 flex-wrap">
-          <p className="text-sm font-semibold mr-2">Notepad — write by drawing</p>
+        <div className="p-2 sm:p-3 border-b border-border/50 flex items-center gap-1.5 flex-wrap">
+          <p className="text-[13px] sm:text-sm font-semibold mr-1 sm:mr-2">Notepad</p>
           <div className="flex items-center gap-1">
             {COLORS.map(c => (
               <button
                 key={c}
                 onClick={() => { setColor(c); setErasing(false); }}
-                className={`h-6 w-6 rounded-full border-2 transition-all ${color === c && !erasing ? "ring-2 ring-primary ring-offset-1 scale-110" : "border-border"}`}
+                className={`h-5 w-5 sm:h-6 sm:w-6 rounded-full border-2 transition-all ${color === c && !erasing ? "ring-2 ring-primary ring-offset-1 scale-110" : "border-border"}`}
                 style={{ backgroundColor: c }}
                 aria-label={`Color ${c}`}
               />
             ))}
           </div>
-          <div className="flex items-center gap-2 ml-2">
+          <div className="hidden sm:flex items-center gap-2 ml-2">
             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-            <Slider value={[size]} min={1} max={10} step={1} onValueChange={(v) => setSize(v[0])} className="w-24" />
+            <Slider value={[size]} min={1} max={10} step={1} onValueChange={(v) => setSize(v[0])} className="w-20" />
           </div>
-          <Button size="sm" variant={erasing ? "secondary" : "ghost"} className="h-7 gap-1.5 text-xs" onClick={() => setErasing(!erasing)}>
-            <Eraser className="h-3.5 w-3.5" /> Erase
+          <Button size="sm" variant={erasing ? "secondary" : "ghost"} className="h-7 gap-1 text-xs px-2" onClick={() => setErasing(!erasing)}>
+            <Eraser className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Erase</span>
           </Button>
-          <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-xs" onClick={undo}>
-            <Undo2 className="h-3.5 w-3.5" /> Undo
+          <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs px-2" onClick={undo}>
+            <Undo2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Undo</span>
           </Button>
-          <Button size="sm" variant="ghost" className="h-7 gap-1.5 text-xs text-destructive" onClick={clear}>
-            <Trash2 className="h-3.5 w-3.5" /> Clear
+          <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs px-2 text-destructive" onClick={clear}>
+            <Trash2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Clear</span>
           </Button>
           <div className="flex-1" />
-          <Button size="sm" className="h-7 gap-1.5 text-xs" onClick={convert} disabled={converting}>
+          <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs px-2" onClick={downloadDrawing} title="Download">
+            <Download className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 gap-1 text-xs px-2" onClick={saveDrawing} title="Insert drawing as image">
+            <ImagePlus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Save</span>
+          </Button>
+          <Button size="sm" className="h-7 gap-1 text-xs px-2" onClick={convert} disabled={converting}>
             {converting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
-            {converting ? "Reading…" : "Convert to text"}
+            <span className="hidden sm:inline">{converting ? "Reading…" : "To text"}</span>
+          </Button>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onOpenChange(false)} title="Close">
+            <X className="h-3.5 w-3.5" />
           </Button>
         </div>
-        <div className="bg-white">
+        <div className="bg-white flex-1 min-h-0">
           <canvas
             ref={canvasRef}
-            className="w-full h-[480px] touch-none cursor-crosshair"
+            className="w-full h-full min-h-[320px] sm:min-h-[480px] touch-none cursor-crosshair block"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
