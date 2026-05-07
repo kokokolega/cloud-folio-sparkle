@@ -524,7 +524,7 @@ export default function AiPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="grid grid-cols-2 gap-3 max-w-lg mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto w-full"
         >
           {QUICK_PROMPTS.map((p, i) => (
             <motion.button
