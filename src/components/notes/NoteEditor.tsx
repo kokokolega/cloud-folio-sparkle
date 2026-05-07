@@ -288,6 +288,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         open={drawingOpen}
         onOpenChange={setDrawingOpen}
         onInsert={(html) => editor.chain().focus().insertContent(html).run()}
+        onInsertImage={(dataUrl) => editor.chain().focus().insertContent(`<img src="${dataUrl}" />`).run()}
         onConverted={(payload) => setReviewState(payload)}
       />
       <DrawingReviewDialog

@@ -70,7 +70,7 @@ export function useOfflineNotes(options: UseOfflineNotesOptions = {}) {
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: async (note: { title: string; content: string; color: string }) => {
+    mutationFn: async (note: { title: string; content: string; color: string; folder_id?: string | null }) => {
       if (!user) throw new Error('User not authenticated');
       
       const noteData = {

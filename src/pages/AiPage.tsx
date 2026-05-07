@@ -496,7 +496,7 @@ export default function AiPage() {
   }
 
   const renderWelcome = () => (
-    <div className="h-full flex flex-col items-center justify-center px-4">
+    <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 text-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -524,7 +524,7 @@ export default function AiPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="grid grid-cols-2 gap-3 max-w-lg mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto w-full"
         >
           {QUICK_PROMPTS.map((p, i) => (
             <motion.button
@@ -865,7 +865,7 @@ export default function AiPage() {
                 )}
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44 flex flex-col">
                 {messages.length === 0 ? renderWelcome() : renderMessages()}
               </div>
 

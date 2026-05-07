@@ -84,19 +84,19 @@ export function ImageStudio({ open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[85vh] p-0 overflow-hidden flex flex-col">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] p-0 overflow-hidden flex flex-col">
         <VisuallyHidden>
           <DialogTitle>Image Studio</DialogTitle>
           <DialogDescription>Generate and edit images with AI</DialogDescription>
         </VisuallyHidden>
-        <div className="px-5 py-3 border-b border-border/50 flex items-center gap-2">
+        <div className="px-4 sm:px-5 py-3 border-b border-border/50 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
           <p className="text-sm font-semibold">Image Studio</p>
-          <span className="text-[11px] text-muted-foreground ml-1">Generate · Edit · Download</span>
+          <span className="text-[11px] text-muted-foreground ml-1 hidden sm:inline">Generate · Edit · Download</span>
         </div>
 
-        <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-[320px_1fr]">
-          <div className="border-r border-border/50 p-4 space-y-3 overflow-y-auto">
+        <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-[300px_1fr]">
+          <div className="md:border-r border-b md:border-b-0 border-border/50 p-4 space-y-3 overflow-y-auto">
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Prompt</label>
               <Textarea
