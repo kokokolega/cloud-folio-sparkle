@@ -16,6 +16,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   onInsert: (html: string) => void;
   onConverted?: (payload: { html: string; imageDataUrl: string }) => void;
+  onInsertImage?: (dataUrl: string) => void;
 }
 
 export function DrawingPad({ open, onOpenChange, onInsert, onConverted }: Props) {
