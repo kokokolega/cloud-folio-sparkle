@@ -19,7 +19,7 @@ interface Props {
   onInsertImage?: (dataUrl: string) => void;
 }
 
-export function DrawingPad({ open, onOpenChange, onInsert, onConverted }: Props) {
+export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsertImage }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [color, setColor] = useState(COLORS[0]);
   const [size, setSize] = useState(3);
