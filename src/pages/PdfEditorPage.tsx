@@ -371,7 +371,7 @@ export default function PdfEditorPage() {
                       })
                     }
                     bounds="parent"
-                    style={{ border: `1.5px ${o.type === "text" ? "dashed" : "solid"} ${o.color}`, borderRadius: o.type === "ellipse" ? "50%" : 4 }}
+                    style={{ border: o.type === "image" ? "1.5px dashed rgba(0,0,0,0.2)" : `1.5px ${o.type === "text" ? "dashed" : "solid"} ${o.color}`, borderRadius: o.type === "ellipse" ? "50%" : 4 }}
                   >
                     <div className="relative w-full h-full group">
                       {o.type === "text" ? (
@@ -382,6 +382,8 @@ export default function PdfEditorPage() {
                           className="w-full h-full bg-transparent outline-none resize-none p-1"
                           style={{ color: o.color, fontSize: o.fontSize * zoom, lineHeight: 1.2 }}
                         />
+                      ) : o.type === "image" && o.imageData ? (
+                        <img src={o.imageData} alt="" draggable={false} className="w-full h-full object-contain pointer-events-none select-none" />
                       ) : null}
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteOverlay(o.id); }}
