@@ -277,6 +277,16 @@ export default function PdfEditorPage() {
                 <Button size="sm" variant={tool === "ellipse" ? "secondary" : "ghost"} className="h-8 gap-1.5 text-xs" onClick={() => setTool("ellipse")}>
                   <CircleIcon className="h-3.5 w-3.5" /> Ellipse
                 </Button>
+                <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs" onClick={() => imageRef.current?.click()}>
+                  <ImageIcon className="h-3.5 w-3.5" /> Image
+                </Button>
+                <input
+                  ref={imageRef}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  onChange={(e) => { onPickImage(e.target.files?.[0]); if (e.target) e.target.value = ""; }}
+                />
               </div>
               <div className="h-5 w-px bg-border mx-1" />
               <div className="flex items-center gap-1">
