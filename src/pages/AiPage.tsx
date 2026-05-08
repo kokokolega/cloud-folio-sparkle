@@ -875,7 +875,7 @@ export default function AiPage() {
                 </div>
               )}
 
-              <div className="absolute bottom-0 left-0 right-0 z-[999] bg-gradient-to-t from-background via-background/95 to-transparent pt-6">
+              <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-background via-background/95 to-transparent pt-6">
                 {renderInputArea()}
               </div>
             </div>
