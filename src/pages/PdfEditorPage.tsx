@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Rnd } from "react-rnd";
 import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 import { toast } from "sonner";
-import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
+import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw, Image as ImageIcon } from "lucide-react";
 
 // pdfjs setup
 import * as pdfjsLib from "pdfjs-dist";
@@ -13,7 +13,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-type OverlayType = "text" | "rect" | "ellipse";
+type OverlayType = "text" | "rect" | "ellipse" | "image";
 
 interface Overlay {
   id: string;
@@ -26,6 +26,7 @@ interface Overlay {
   text?: string;
   color: string; // hex
   fontSize: number;
+  imageData?: string; // dataURL for image overlays
 }
 
 interface PageInfo {
