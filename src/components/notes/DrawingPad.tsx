@@ -28,6 +28,7 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
   const strokes = useRef<ImageData[]>([]);
   const [converting, setConverting] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const setupCanvas = () => {
     const canvas = canvasRef.current;
