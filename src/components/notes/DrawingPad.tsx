@@ -49,7 +49,7 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
 
   useEffect(() => {
     if (open) setTimeout(setupCanvas, 50);
-  }, [open]);
+  }, [open, expanded]);
 
   const getPoint = (e: React.PointerEvent) => {
     const canvas = canvasRef.current!;
