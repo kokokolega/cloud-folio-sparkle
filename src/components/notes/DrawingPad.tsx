@@ -197,6 +197,9 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
             {converting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
             <span className="hidden sm:inline">{converting ? "Reading…" : "To text"}</span>
           </Button>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setExpanded(!expanded)} title={expanded ? "Restore" : "Expand"}>
+            {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </Button>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onOpenChange(false)} title="Close">
             <X className="h-3.5 w-3.5" />
           </Button>
