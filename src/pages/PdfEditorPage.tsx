@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Rnd } from "react-rnd";
 import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 import { toast } from "sonner";
-import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
+import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw, Image as ImageIcon } from "lucide-react";
 
 // pdfjs setup
 import * as pdfjsLib from "pdfjs-dist";
@@ -13,7 +13,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-type OverlayType = "text" | "rect" | "ellipse";
+type OverlayType = "text" | "rect" | "ellipse" | "image";
 
 interface Overlay {
   id: string;
@@ -26,6 +26,7 @@ interface Overlay {
   text?: string;
   color: string; // hex
   fontSize: number;
+  imageData?: string; // dataURL for image overlays
 }
 
 interface PageInfo {
@@ -52,6 +53,7 @@ export default function PdfEditorPage() {
   const [exporting, setExporting] = useState(false);
   const [zoom, setZoom] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
 
   const renderScale = 1.5; // canvas resolution multiplier
@@ -92,10 +94,10 @@ export default function PdfEditorPage() {
 
   const onCanvasClick = (e: React.MouseEvent) => {
     if (!canvasWrapRef.current) return;
+    if (tool === "image") return; // images added via file picker
     const rect = canvasWrapRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / zoom;
     const y = (e.clientY - rect.top) / zoom;
-    // Don't drop overlay if clicked on existing one (handled by Rnd capture)
     if ((e.target as HTMLElement).closest(".overlay-item")) return;
     const def: Overlay = {
       id: uid(),
@@ -109,6 +111,33 @@ export default function PdfEditorPage() {
       fontSize,
     };
     setOverlays((p) => [...p, def]);
+  };
+
+  const onPickImage = (file?: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 220;
+        const ratio = img.height / img.width;
+        const w = Math.min(maxW, img.width);
+        const h = w * ratio;
+        setOverlays((p) => [...p, {
+          id: uid(),
+          page: currentPage,
+          type: "image",
+          x: 40, y: 40, w, h,
+          color: "#000000",
+          fontSize: 12,
+          imageData: dataUrl,
+        }]);
+        toast.success("Image added — drag to position");
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
   };
 
   const updateOverlay = (id: string, patch: Partial<Overlay>) => {
@@ -168,6 +197,12 @@ export default function PdfEditorPage() {
             borderColor: colorObj,
             borderWidth: 1.5,
           });
+        } else if (ov.type === "image" && ov.imageData) {
+          const isPng = ov.imageData.startsWith("data:image/png");
+          const b64 = ov.imageData.split(",")[1] || "";
+          const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+          const embedded = isPng ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+          pdfPage.drawImage(embedded, { x: xPdf, y: yPdfBottom, width: wPdf, height: hPdf });
         }
       }
 
@@ -242,6 +277,16 @@ export default function PdfEditorPage() {
                 <Button size="sm" variant={tool === "ellipse" ? "secondary" : "ghost"} className="h-8 gap-1.5 text-xs" onClick={() => setTool("ellipse")}>
                   <CircleIcon className="h-3.5 w-3.5" /> Ellipse
                 </Button>
+                <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs" onClick={() => imageRef.current?.click()}>
+                  <ImageIcon className="h-3.5 w-3.5" /> Image
+                </Button>
+                <input
+                  ref={imageRef}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  onChange={(e) => { onPickImage(e.target.files?.[0]); if (e.target) e.target.value = ""; }}
+                />
               </div>
               <div className="h-5 w-px bg-border mx-1" />
               <div className="flex items-center gap-1">
@@ -326,7 +371,7 @@ export default function PdfEditorPage() {
                       })
                     }
                     bounds="parent"
-                    style={{ border: `1.5px ${o.type === "text" ? "dashed" : "solid"} ${o.color}`, borderRadius: o.type === "ellipse" ? "50%" : 4 }}
+                    style={{ border: o.type === "image" ? "1.5px dashed rgba(0,0,0,0.2)" : `1.5px ${o.type === "text" ? "dashed" : "solid"} ${o.color}`, borderRadius: o.type === "ellipse" ? "50%" : 4 }}
                   >
                     <div className="relative w-full h-full group">
                       {o.type === "text" ? (
@@ -337,6 +382,8 @@ export default function PdfEditorPage() {
                           className="w-full h-full bg-transparent outline-none resize-none p-1"
                           style={{ color: o.color, fontSize: o.fontSize * zoom, lineHeight: 1.2 }}
                         />
+                      ) : o.type === "image" && o.imageData ? (
+                        <img src={o.imageData} alt="" draggable={false} className="w-full h-full object-contain pointer-events-none select-none" />
                       ) : null}
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteOverlay(o.id); }}
