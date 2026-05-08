@@ -197,6 +197,12 @@ export default function PdfEditorPage() {
             borderColor: colorObj,
             borderWidth: 1.5,
           });
+        } else if (ov.type === "image" && ov.imageData) {
+          const isPng = ov.imageData.startsWith("data:image/png");
+          const b64 = ov.imageData.split(",")[1] || "";
+          const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+          const embedded = isPng ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+          pdfPage.drawImage(embedded, { x: xPdf, y: yPdfBottom, width: wPdf, height: hPdf });
         }
       }
 
