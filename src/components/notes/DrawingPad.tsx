@@ -155,7 +155,7 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 overflow-hidden flex flex-col w-[98vw] sm:w-[95vw] max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh]">
+      <DialogContent className={`p-0 overflow-hidden flex flex-col ${expanded ? "w-screen h-screen max-w-none sm:max-w-none rounded-none" : "w-[98vw] sm:w-[95vw] max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh]"}`}>
         <VisuallyHidden>
           <DialogTitle>Drawing Pad</DialogTitle>
           <DialogDescription>Write or sketch. Convert your handwriting into typed text.</DialogDescription>
