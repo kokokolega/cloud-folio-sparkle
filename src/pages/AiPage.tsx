@@ -496,7 +496,7 @@ export default function AiPage() {
   }
 
   const renderWelcome = () => (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 text-center">
+    <div className="flex-1 flex flex-col items-center justify-center px-4 text-center min-h-0">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -842,12 +842,12 @@ export default function AiPage() {
 
   return (
     <DashboardLayout noPadding>
-      <div className="h-full flex">
+      <div className="h-screen flex overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="flex-1">
           <ResizablePanel defaultSize={historySidebarOpen && isAuthenticated ? 75 : 100} minSize={50}>
-            <div className="h-full flex flex-col min-w-0 relative">
+            <div className="h-full flex flex-col min-w-0 relative overflow-hidden">
               {/* Floating top-right controls (no header bar) */}
-              <div className="absolute top-3 right-3 z-30 flex items-center gap-1">
+              <div className="absolute top-3 right-3 z-40 flex items-center gap-1">
                 {isGuest && !user && (
                   <span className="text-[10px] text-muted-foreground bg-secondary/80 backdrop-blur-sm px-2 py-1 rounded-full font-medium">
                     Guest · {guestMinutesLeft}m
@@ -865,11 +865,17 @@ export default function AiPage() {
                 )}
               </div>
 
-              <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44 flex flex-col">
-                {messages.length === 0 ? renderWelcome() : renderMessages()}
-              </div>
+              {messages.length === 0 ? (
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                  {renderWelcome()}
+                </div>
+              ) : (
+                <div ref={scrollRef} className="flex-1 overflow-y-auto" style={{ paddingBottom: 120 }}>
+                  {renderMessages()}
+                </div>
+              )}
 
-              <div className="sticky bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pt-8">
+              <div className="absolute bottom-0 left-0 right-0 z-[999] bg-gradient-to-t from-background via-background/95 to-transparent pt-6">
                 {renderInputArea()}
               </div>
             </div>

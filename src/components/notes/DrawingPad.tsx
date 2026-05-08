@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Eraser, Pencil, Trash2, Loader2, Wand2, Undo2, Download, ImagePlus, X } from "lucide-react";
+import { Eraser, Pencil, Trash2, Loader2, Wand2, Undo2, Download, ImagePlus, X, Maximize2, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -28,6 +28,7 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
   const strokes = useRef<ImageData[]>([]);
   const [converting, setConverting] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const setupCanvas = () => {
     const canvas = canvasRef.current;
@@ -48,7 +49,7 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
 
   useEffect(() => {
     if (open) setTimeout(setupCanvas, 50);
-  }, [open]);
+  }, [open, expanded]);
 
   const getPoint = (e: React.PointerEvent) => {
     const canvas = canvasRef.current!;
@@ -154,7 +155,7 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 overflow-hidden flex flex-col w-[98vw] sm:w-[95vw] max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh]">
+      <DialogContent className={`p-0 overflow-hidden flex flex-col ${expanded ? "w-screen h-screen max-w-none sm:max-w-none rounded-none" : "w-[98vw] sm:w-[95vw] max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh]"}`}>
         <VisuallyHidden>
           <DialogTitle>Drawing Pad</DialogTitle>
           <DialogDescription>Write or sketch. Convert your handwriting into typed text.</DialogDescription>
@@ -195,6 +196,9 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
           <Button size="sm" className="h-7 gap-1 text-xs px-2" onClick={convert} disabled={converting}>
             {converting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
             <span className="hidden sm:inline">{converting ? "Reading…" : "To text"}</span>
+          </Button>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setExpanded(!expanded)} title={expanded ? "Restore" : "Expand"}>
+            {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
           </Button>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onOpenChange(false)} title="Close">
             <X className="h-3.5 w-3.5" />
