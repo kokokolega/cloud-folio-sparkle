@@ -94,10 +94,10 @@ export default function PdfEditorPage() {
 
   const onCanvasClick = (e: React.MouseEvent) => {
     if (!canvasWrapRef.current) return;
+    if (tool === "image") return; // images added via file picker
     const rect = canvasWrapRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / zoom;
     const y = (e.clientY - rect.top) / zoom;
-    // Don't drop overlay if clicked on existing one (handled by Rnd capture)
     if ((e.target as HTMLElement).closest(".overlay-item")) return;
     const def: Overlay = {
       id: uid(),
@@ -111,6 +111,33 @@ export default function PdfEditorPage() {
       fontSize,
     };
     setOverlays((p) => [...p, def]);
+  };
+
+  const onPickImage = (file?: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 220;
+        const ratio = img.height / img.width;
+        const w = Math.min(maxW, img.width);
+        const h = w * ratio;
+        setOverlays((p) => [...p, {
+          id: uid(),
+          page: currentPage,
+          type: "image",
+          x: 40, y: 40, w, h,
+          color: "#000000",
+          fontSize: 12,
+          imageData: dataUrl,
+        }]);
+        toast.success("Image added — drag to position");
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
   };
 
   const updateOverlay = (id: string, patch: Partial<Overlay>) => {
