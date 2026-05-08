@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Eraser, Pencil, Trash2, Loader2, Wand2, Undo2, Download, ImagePlus, X } from "lucide-react";
+import { Eraser, Pencil, Trash2, Loader2, Wand2, Undo2, Download, ImagePlus, X, Maximize2, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
