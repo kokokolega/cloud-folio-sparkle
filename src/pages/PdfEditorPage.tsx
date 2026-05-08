@@ -53,6 +53,7 @@ export default function PdfEditorPage() {
   const [exporting, setExporting] = useState(false);
   const [zoom, setZoom] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
 
   const renderScale = 1.5; // canvas resolution multiplier
