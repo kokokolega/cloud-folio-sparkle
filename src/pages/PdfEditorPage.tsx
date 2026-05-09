@@ -42,6 +42,7 @@ const COLORS = ["#000000", "#dc2626", "#2563eb", "#16a34a", "#f59e0b", "#9333ea"
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
 export default function PdfEditorPage() {
+  const { user } = useAuth();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [pdfName, setPdfName] = useState("document.pdf");
   const [pages, setPages] = useState<PageInfo[]>([]);
@@ -53,7 +54,9 @@ export default function PdfEditorPage() {
   const [fontSize, setFontSize] = useState(16);
   const [rendering, setRendering] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [savingToFiles, setSavingToFiles] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [presenting, setPresenting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
