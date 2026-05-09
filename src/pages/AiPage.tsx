@@ -496,7 +496,7 @@ export default function AiPage() {
   }
 
   const renderWelcome = () => (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 text-center min-h-0">
+    <div className="flex-1 flex flex-col items-center justify-center px-4 text-center min-h-0 py-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -507,7 +507,7 @@ export default function AiPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight leading-[1.1]"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-3 sm:mb-4 tracking-tight leading-[1.1]"
         >
           Welcome to Oltrid
         </motion.h1>
@@ -515,7 +515,7 @@ export default function AiPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.25 }}
-          className="text-base text-muted-foreground mb-10 max-w-md mx-auto leading-relaxed"
+          className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-10 max-w-md mx-auto leading-relaxed px-2"
         >
           Get started by sending a task and Chat can do the rest. Not sure where to start?
         </motion.p>
@@ -524,7 +524,7 @@ export default function AiPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto w-full"
+          className="grid grid-cols-2 gap-2.5 sm:gap-3 max-w-lg mx-auto w-full"
         >
           {QUICK_PROMPTS.map((p, i) => (
             <motion.button
