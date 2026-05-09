@@ -187,6 +187,7 @@ export default function PdfEditorPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [presenting, pages.length]);
 
+  const onCanvasClick = (e: React.MouseEvent) => {
     if (!canvasWrapRef.current) return;
     if (tool === "image") return; // images added via file picker
     const rect = canvasWrapRef.current.getBoundingClientRect();
