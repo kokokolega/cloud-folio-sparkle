@@ -3,9 +3,11 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Rnd } from "react-rnd";
-import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, degrees, PageSizes } from "pdf-lib";
 import { toast } from "sonner";
-import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw, Image as ImageIcon } from "lucide-react";
+import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw, Image as ImageIcon, FilePlus, Save, Play, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // pdfjs setup
 import * as pdfjsLib from "pdfjs-dist";
