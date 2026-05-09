@@ -97,7 +97,96 @@ export default function PdfEditorPage() {
     }
   };
 
-  const onCanvasClick = (e: React.MouseEvent) => {
+  const createBlank = async (kind: "pdf" | "slide" = "pdf") => {
+    const doc = await PDFDocument.create();
+    if (kind === "slide") doc.addPage([960, 540]); else doc.addPage(PageSizes.A4);
+    const out = await doc.save();
+    const file = new File([out as BlobPart], kind === "slide" ? "presentation.pdf" : "untitled.pdf", { type: "application/pdf" });
+    await loadPdf(file);
+  };
+
+  const addPage = async () => {
+    if (!pdfBytes) return;
+    const doc = await PDFDocument.load(pdfBytes);
+    const docPages = doc.getPages();
+    const last = docPages[docPages.length - 1];
+    const size: [number, number] = last ? [last.getWidth(), last.getHeight()] : PageSizes.A4;
+    doc.addPage(size);
+    const out = await doc.save();
+    const file = new File([out as BlobPart], pdfName, { type: "application/pdf" });
+    await loadPdf(file);
+    toast.success("Page added");
+  };
+
+  const buildExportedPdf = async (): Promise<Uint8Array> => {
+    if (!pdfBytes) throw new Error("No document");
+    const doc = await PDFDocument.load(pdfBytes);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const docPages = doc.getPages();
+    for (const ov of overlays) {
+      const pdfPage = docPages[ov.page];
+      if (!pdfPage) continue;
+      const info = pages[ov.page];
+      const scaleX = 1 / renderScale;
+      const scaleY = 1 / renderScale;
+      const xPdf = ov.x * scaleX;
+      const yPdfTop = ov.y * scaleY;
+      const wPdf = ov.w * scaleX;
+      const hPdf = ov.h * scaleY;
+      const yPdfBottom = info.height - yPdfTop - hPdf;
+      const c = hexToRgb(ov.color);
+      const colorObj = rgb(c.r / 255, c.g / 255, c.b / 255);
+      if (ov.type === "text" && ov.text) {
+        const size = ov.fontSize * scaleX;
+        pdfPage.drawText(ov.text, { x: xPdf, y: info.height - yPdfTop - size, size, font, color: colorObj });
+      } else if (ov.type === "rect") {
+        pdfPage.drawRectangle({ x: xPdf, y: yPdfBottom, width: wPdf, height: hPdf, borderColor: colorObj, borderWidth: 1.5 });
+      } else if (ov.type === "ellipse") {
+        pdfPage.drawEllipse({ x: xPdf + wPdf / 2, y: yPdfBottom + hPdf / 2, xScale: wPdf / 2, yScale: hPdf / 2, borderColor: colorObj, borderWidth: 1.5 });
+      } else if (ov.type === "image" && ov.imageData) {
+        const isPng = ov.imageData.startsWith("data:image/png");
+        const b64 = ov.imageData.split(",")[1] || "";
+        const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        const embedded = isPng ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+        pdfPage.drawImage(embedded, { x: xPdf, y: yPdfBottom, width: wPdf, height: hPdf });
+      }
+    }
+    return await doc.save();
+  };
+
+  const saveToFiles = async () => {
+    if (!pdfBytes || !user) { toast.error("Sign in to save to All Files"); return; }
+    setSavingToFiles(true);
+    try {
+      const out = await buildExportedPdf();
+      const cleanName = (pdfName.replace(/\.pdf$/i, "") || "document") + ".pdf";
+      const path = `${user.id}/pdf-${Date.now()}-${cleanName}`;
+      const blob = new Blob([out as BlobPart], { type: "application/pdf" });
+      const { error: upErr } = await supabase.storage.from("user-files").upload(path, blob, { contentType: "application/pdf" });
+      if (upErr) throw upErr;
+      const { error: rowErr } = await supabase.from("files").insert({
+        user_id: user.id, name: cleanName, type: "application/pdf", size: blob.size, storage_path: path,
+      });
+      if (rowErr) throw rowErr;
+      toast.success("Saved to All Files");
+    } catch (e: any) {
+      toast.error(e.message || "Save failed");
+    } finally {
+      setSavingToFiles(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!presenting) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPresenting(false);
+      else if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") setCurrentPage((p) => Math.min(pages.length - 1, p + 1));
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") setCurrentPage((p) => Math.max(0, p - 1));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [presenting, pages.length]);
+
     if (!canvasWrapRef.current) return;
     if (tool === "image") return; // images added via file picker
     const rect = canvasWrapRef.current.getBoundingClientRect();
