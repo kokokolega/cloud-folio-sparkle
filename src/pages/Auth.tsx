@@ -332,23 +332,6 @@ export default function Auth() {
                         </Button>
                       </motion.div>
 
-                      <div className="relative my-2">
-                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/50" /></div>
-                        <div className="relative flex justify-center text-[10px]"><span className="bg-card px-3 text-muted-foreground">or</span></div>
-                      </div>
-
-                      <motion.div whileTap={{ scale: 0.97 }}>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleGuestAccess}
-                          className="w-full h-12 rounded-2xl text-sm gap-2 border-border/60"
-                        >
-                          <Sparkles className="h-4 w-4" />
-                          Try as Guest
-                        </Button>
-                      </motion.div>
-
                       {mode === "forgot" && (
                         <button
                           type="button"
@@ -566,26 +549,6 @@ export default function Auth() {
               </Button>
             </motion.div>
           </form>
-
-          {/* Divider + Guest */}
-          <div className="mt-7">
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-background px-3 text-muted-foreground">or</span>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={handleGuestAccess}
-              className="w-full h-12 rounded-xl text-sm gap-2 border-border hover:bg-secondary/50 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-            >
-              <Sparkles className="h-4 w-4" />
-              Try as Guest
-            </Button>
-          </div>
 
           {/* Mode switching */}
           <div className="mt-8 text-center text-sm text-muted-foreground">

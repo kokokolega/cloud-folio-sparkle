@@ -3,9 +3,11 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Rnd } from "react-rnd";
-import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, degrees, PageSizes } from "pdf-lib";
 import { toast } from "sonner";
-import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw, Image as ImageIcon } from "lucide-react";
+import { Upload, Download, Type, Square, Circle as CircleIcon, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, RotateCw, Image as ImageIcon, FilePlus, Save, Play, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // pdfjs setup
 import * as pdfjsLib from "pdfjs-dist";
@@ -40,6 +42,7 @@ const COLORS = ["#000000", "#dc2626", "#2563eb", "#16a34a", "#f59e0b", "#9333ea"
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
 export default function PdfEditorPage() {
+  const { user } = useAuth();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [pdfName, setPdfName] = useState("document.pdf");
   const [pages, setPages] = useState<PageInfo[]>([]);
@@ -51,7 +54,9 @@ export default function PdfEditorPage() {
   const [fontSize, setFontSize] = useState(16);
   const [rendering, setRendering] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [savingToFiles, setSavingToFiles] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [presenting, setPresenting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
@@ -91,6 +96,96 @@ export default function PdfEditorPage() {
       setRendering(false);
     }
   };
+
+  const createBlank = async (kind: "pdf" | "slide" = "pdf") => {
+    const doc = await PDFDocument.create();
+    if (kind === "slide") doc.addPage([960, 540]); else doc.addPage(PageSizes.A4);
+    const out = await doc.save();
+    const file = new File([out as BlobPart], kind === "slide" ? "presentation.pdf" : "untitled.pdf", { type: "application/pdf" });
+    await loadPdf(file);
+  };
+
+  const addPage = async () => {
+    if (!pdfBytes) return;
+    const doc = await PDFDocument.load(pdfBytes);
+    const docPages = doc.getPages();
+    const last = docPages[docPages.length - 1];
+    const size: [number, number] = last ? [last.getWidth(), last.getHeight()] : PageSizes.A4;
+    doc.addPage(size);
+    const out = await doc.save();
+    const file = new File([out as BlobPart], pdfName, { type: "application/pdf" });
+    await loadPdf(file);
+    toast.success("Page added");
+  };
+
+  const buildExportedPdf = async (): Promise<Uint8Array> => {
+    if (!pdfBytes) throw new Error("No document");
+    const doc = await PDFDocument.load(pdfBytes);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const docPages = doc.getPages();
+    for (const ov of overlays) {
+      const pdfPage = docPages[ov.page];
+      if (!pdfPage) continue;
+      const info = pages[ov.page];
+      const scaleX = 1 / renderScale;
+      const scaleY = 1 / renderScale;
+      const xPdf = ov.x * scaleX;
+      const yPdfTop = ov.y * scaleY;
+      const wPdf = ov.w * scaleX;
+      const hPdf = ov.h * scaleY;
+      const yPdfBottom = info.height - yPdfTop - hPdf;
+      const c = hexToRgb(ov.color);
+      const colorObj = rgb(c.r / 255, c.g / 255, c.b / 255);
+      if (ov.type === "text" && ov.text) {
+        const size = ov.fontSize * scaleX;
+        pdfPage.drawText(ov.text, { x: xPdf, y: info.height - yPdfTop - size, size, font, color: colorObj });
+      } else if (ov.type === "rect") {
+        pdfPage.drawRectangle({ x: xPdf, y: yPdfBottom, width: wPdf, height: hPdf, borderColor: colorObj, borderWidth: 1.5 });
+      } else if (ov.type === "ellipse") {
+        pdfPage.drawEllipse({ x: xPdf + wPdf / 2, y: yPdfBottom + hPdf / 2, xScale: wPdf / 2, yScale: hPdf / 2, borderColor: colorObj, borderWidth: 1.5 });
+      } else if (ov.type === "image" && ov.imageData) {
+        const isPng = ov.imageData.startsWith("data:image/png");
+        const b64 = ov.imageData.split(",")[1] || "";
+        const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        const embedded = isPng ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+        pdfPage.drawImage(embedded, { x: xPdf, y: yPdfBottom, width: wPdf, height: hPdf });
+      }
+    }
+    return await doc.save();
+  };
+
+  const saveToFiles = async () => {
+    if (!pdfBytes || !user) { toast.error("Sign in to save to All Files"); return; }
+    setSavingToFiles(true);
+    try {
+      const out = await buildExportedPdf();
+      const cleanName = (pdfName.replace(/\.pdf$/i, "") || "document") + ".pdf";
+      const path = `${user.id}/pdf-${Date.now()}-${cleanName}`;
+      const blob = new Blob([out as BlobPart], { type: "application/pdf" });
+      const { error: upErr } = await supabase.storage.from("user-files").upload(path, blob, { contentType: "application/pdf" });
+      if (upErr) throw upErr;
+      const { error: rowErr } = await supabase.from("files").insert({
+        user_id: user.id, name: cleanName, type: "application/pdf", size: blob.size, storage_path: path,
+      });
+      if (rowErr) throw rowErr;
+      toast.success("Saved to All Files");
+    } catch (e: any) {
+      toast.error(e.message || "Save failed");
+    } finally {
+      setSavingToFiles(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!presenting) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPresenting(false);
+      else if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") setCurrentPage((p) => Math.min(pages.length - 1, p + 1));
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") setCurrentPage((p) => Math.max(0, p - 1));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [presenting, pages.length]);
 
   const onCanvasClick = (e: React.MouseEvent) => {
     if (!canvasWrapRef.current) return;
@@ -245,9 +340,15 @@ export default function PdfEditorPage() {
       <div className="h-full flex flex-col">
         {/* Toolbar */}
         <div className="border-b border-border/50 px-4 py-2.5 flex items-center gap-2 flex-wrap bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => createBlank("pdf")}>
+              <FilePlus className="h-3.5 w-3.5" /> New PDF
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => createBlank("slide")}>
+              <FilePlus className="h-3.5 w-3.5" /> New Slides
+            </Button>
             <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => fileRef.current?.click()}>
-              <Upload className="h-3.5 w-3.5" /> Open PDF
+              <Upload className="h-3.5 w-3.5" /> Open
             </Button>
             <input
               ref={fileRef}
@@ -257,10 +358,22 @@ export default function PdfEditorPage() {
               onChange={(e) => e.target.files?.[0] && loadPdf(e.target.files[0])}
             />
             {pdfBytes && (
-              <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={exportPdf} disabled={exporting}>
-                {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                Export
-              </Button>
+              <>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={addPage}>
+                  <Plus className="h-3.5 w-3.5" /> Page
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => setPresenting(true)}>
+                  <Play className="h-3.5 w-3.5" /> Present
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={saveToFiles} disabled={savingToFiles}>
+                  {savingToFiles ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  Save to Files
+                </Button>
+                <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={exportPdf} disabled={exporting}>
+                  {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  Export
+                </Button>
+              </>
             )}
           </div>
 
@@ -413,6 +526,39 @@ export default function PdfEditorPage() {
           </div>
         )}
       </div>
+
+      {presenting && pageImages.length > 0 && (
+        <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center select-none">
+          <button
+            onClick={() => setPresenting(false)}
+            className="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            title="Exit (Esc)"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <img
+            src={pageImages[currentPage]}
+            alt={`slide ${currentPage + 1}`}
+            className="max-w-full max-h-full object-contain shadow-2xl"
+            draggable={false}
+          />
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(pages.length - 1, p + 1))}
+            className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/70 text-xs px-3 py-1.5 rounded-full bg-white/10 backdrop-blur">
+            {currentPage + 1} / {pages.length} · Esc to exit
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
