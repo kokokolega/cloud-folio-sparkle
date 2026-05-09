@@ -526,6 +526,39 @@ export default function PdfEditorPage() {
           </div>
         )}
       </div>
+
+      {presenting && pageImages.length > 0 && (
+        <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center select-none">
+          <button
+            onClick={() => setPresenting(false)}
+            className="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            title="Exit (Esc)"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <img
+            src={pageImages[currentPage]}
+            alt={`slide ${currentPage + 1}`}
+            className="max-w-full max-h-full object-contain shadow-2xl"
+            draggable={false}
+          />
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(pages.length - 1, p + 1))}
+            className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/70 text-xs px-3 py-1.5 rounded-full bg-white/10 backdrop-blur">
+            {currentPage + 1} / {pages.length} · Esc to exit
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
