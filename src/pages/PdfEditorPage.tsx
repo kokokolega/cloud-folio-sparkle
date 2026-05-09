@@ -340,9 +340,15 @@ export default function PdfEditorPage() {
       <div className="h-full flex flex-col">
         {/* Toolbar */}
         <div className="border-b border-border/50 px-4 py-2.5 flex items-center gap-2 flex-wrap bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => createBlank("pdf")}>
+              <FilePlus className="h-3.5 w-3.5" /> New PDF
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => createBlank("slide")}>
+              <FilePlus className="h-3.5 w-3.5" /> New Slides
+            </Button>
             <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => fileRef.current?.click()}>
-              <Upload className="h-3.5 w-3.5" /> Open PDF
+              <Upload className="h-3.5 w-3.5" /> Open
             </Button>
             <input
               ref={fileRef}
@@ -352,10 +358,22 @@ export default function PdfEditorPage() {
               onChange={(e) => e.target.files?.[0] && loadPdf(e.target.files[0])}
             />
             {pdfBytes && (
-              <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={exportPdf} disabled={exporting}>
-                {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                Export
-              </Button>
+              <>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={addPage}>
+                  <Plus className="h-3.5 w-3.5" /> Page
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => setPresenting(true)}>
+                  <Play className="h-3.5 w-3.5" /> Present
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={saveToFiles} disabled={savingToFiles}>
+                  {savingToFiles ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  Save to Files
+                </Button>
+                <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={exportPdf} disabled={exporting}>
+                  {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  Export
+                </Button>
+              </>
             )}
           </div>
 
