@@ -552,10 +552,6 @@ export default function Auth() {
 
           {/* Divider + Guest */}
           <div className="mt-7">
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-          </div>
 
           {/* Mode switching */}
           <div className="mt-8 text-center text-sm text-muted-foreground">
