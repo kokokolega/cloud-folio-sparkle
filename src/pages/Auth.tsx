@@ -550,9 +550,6 @@ export default function Auth() {
             </motion.div>
           </form>
 
-          {/* Divider + Guest */}
-          <div className="mt-7">
-
           {/* Mode switching */}
           <div className="mt-8 text-center text-sm text-muted-foreground">
             {mode === "forgot" && (
