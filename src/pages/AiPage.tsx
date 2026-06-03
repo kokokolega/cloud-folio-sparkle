@@ -947,6 +947,25 @@ export default function AiPage() {
         }}
       />
       <ImageStudio open={imageStudioOpen} onOpenChange={setImageStudioOpen} />
+      <FlowchartEditor
+        open={flowchartOpen}
+        onOpenChange={setFlowchartOpen}
+        initialChart={"graph TD\n  A[Start] --> B[Step]\n  B --> C[End]"}
+        onSave={(chart) => {
+          setMessages((prev) => [...prev, { role: "assistant", content: "```mermaid\n" + chart + "\n```" }]);
+          toast.success("Flowchart added to chat");
+        }}
+      />
+      <PresentationEditor
+        open={presentationOpen}
+        onOpenChange={setPresentationOpen}
+        initialContent={'<div class="slide"><h1>New Presentation</h1><p>Start editing…</p></div>'}
+        title="New Presentation"
+        onSave={(newContent) => {
+          setMessages((prev) => [...prev, { role: "assistant", content: newContent + "\n<!--OLTRID_PRESENTATION:{\"title\":\"New Presentation\"}-->" }]);
+          toast.success("Presentation added to chat");
+        }}
+      />
     </DashboardLayout>
   );
 }
