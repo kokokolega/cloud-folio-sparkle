@@ -747,27 +747,51 @@ export default function AiPage() {
           {/* Bottom toolbar inside the card */}
           <div className="flex items-center justify-between px-3 pb-2.5">
             <div className="flex items-center gap-0.5">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground/50 hover:text-foreground" onClick={() => fileInputRef.current?.click()} title="Attach file">
-                <Plus className="h-4.5 w-4.5" />
-              </Button>
-              <Button
-                variant={webSearchEnabled ? "secondary" : "ghost"}
-                size="icon"
-                className={`h-8 w-8 rounded-lg ${webSearchEnabled ? "text-foreground" : "text-muted-foreground/50 hover:text-foreground"}`}
-                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                title="Browse Web"
-              >
-                <Globe className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-lg text-muted-foreground/50 hover:text-foreground"
-                onClick={() => setImageStudioOpen(true)}
-                title="Image Studio — generate & edit images"
-              >
-                <ImagePlus className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg text-muted-foreground/50 hover:text-foreground"
+                    title="Add tools & attachments"
+                  >
+                    <Plus className="h-4.5 w-4.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="top" className="w-56">
+                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2">
+                    <Paperclip className="h-4 w-4" /> Attach file
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setWebSearchEnabled(!webSearchEnabled)} className="gap-2">
+                    <Globe className="h-4 w-4" />
+                    <span className="flex-1">Search the web</span>
+                    {webSearchEnabled && <Check className="h-3.5 w-3.5" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setImageStudioOpen(true)} className="gap-2">
+                    <ImagePlus className="h-4 w-4" /> AI image generator
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Draw a flowchart for "); textareaRef.current?.focus(); }} className="gap-2">
+                    <Workflow className="h-4 w-4" /> Flowchart
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a new note about "); textareaRef.current?.focus(); }} className="gap-2">
+                    <NotebookPen className="h-4 w-4" /> Create note
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Summarize my notes"); textareaRef.current?.focus(); }} className="gap-2">
+                    <Brain className="h-4 w-4" /> Summarize
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Help me write code for "); textareaRef.current?.focus(); }} className="gap-2">
+                    <Code className="h-4 w-4" /> Code help
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a checklist for "); textareaRef.current?.focus(); }} className="gap-2">
+                    <ListChecks className="h-4 w-4" /> To-do list
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {webSearchEnabled && (
+                <span className="text-[11px] text-foreground/70 px-1.5 py-0.5 rounded bg-secondary/60 flex items-center gap-1">
+                  <Globe className="h-3 w-3" /> Web
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-1.5">
