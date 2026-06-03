@@ -773,8 +773,20 @@ export default function AiPage() {
                   <DropdownMenuItem onClick={() => setImageStudioOpen(true)} className="gap-2">
                     <ImagePlus className="h-4 w-4" /> AI image generator
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Draw a flowchart for "); textareaRef.current?.focus(); }} className="gap-2">
-                    <Workflow className="h-4 w-4" /> Flowchart
+                  <DropdownMenuItem onClick={() => setFlowchartOpen(true)} className="gap-2">
+                    <Workflow className="h-4 w-4" /> Flowchart editor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPresentationOpen(true)} className="gap-2">
+                    <FileText className="h-4 w-4" /> Presentation editor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/pdf-editor")} className="gap-2">
+                    <FileDown className="h-4 w-4" /> PDF / Slide editor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/whiteboard")} className="gap-2">
+                    <Pencil className="h-4 w-4" /> Whiteboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/codrix")} className="gap-2">
+                    <Code className="h-4 w-4" /> Codrix code editor
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a new note about "); textareaRef.current?.focus(); }} className="gap-2">
                     <NotebookPen className="h-4 w-4" /> Create note
