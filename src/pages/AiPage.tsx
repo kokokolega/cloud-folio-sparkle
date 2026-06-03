@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
 import { PresentationEditor } from "@/components/ai/PresentationEditor";
 import { ImageStudio } from "@/components/ai/ImageStudio";
+import { FlowchartEditor } from "@/components/ai/FlowchartEditor";
 import {
   ResizablePanelGroup,
   ResizablePanel,
