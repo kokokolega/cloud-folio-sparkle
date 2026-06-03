@@ -782,7 +782,7 @@ export default function AiPage() {
                       <Sparkles className="h-4 w-4" />
                       <span className="flex-1">Mode: {selectedFeature}</span>
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-48">
+                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(13rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
                       {AI_FEATURES.map((feature) => (
                         <DropdownMenuItem
                           key={feature.label}
