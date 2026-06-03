@@ -765,7 +765,7 @@ export default function AiPage() {
                     <Plus className="h-4.5 w-4.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="top" className="w-56">
+                <DropdownMenuContent align="start" side="top" sideOffset={8} collisionPadding={12} className="w-[min(15rem,calc(100vw-1.5rem))]">
                   <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2">
                     <Paperclip className="h-4 w-4" /> Attach file
                   </DropdownMenuItem>
