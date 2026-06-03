@@ -805,7 +805,7 @@ export default function AiPage() {
                       <FileText className="h-4 w-4" />
                       <span className="flex-1">Style: {RESPONSE_STYLES.find(s => s.id === selectedStyle)?.label}</span>
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-52 max-h-80 overflow-y-auto">
+                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(14rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
                       {RESPONSE_STYLES.map((style) => (
                         <DropdownMenuItem
                           key={style.id}
