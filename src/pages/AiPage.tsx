@@ -190,6 +190,8 @@ export default function AiPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingPresentation, setEditingPresentation] = useState<{ idx: number; content: string } | null>(null);
   const [imageStudioOpen, setImageStudioOpen] = useState(false);
+  const [flowchartOpen, setFlowchartOpen] = useState(false);
+  const [presentationOpen, setPresentationOpen] = useState(false);
 
   const isAuthenticated = !!user;
 
