@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
 import { PresentationEditor } from "@/components/ai/PresentationEditor";
 import { ImageStudio } from "@/components/ai/ImageStudio";
+import { FlowchartEditor } from "@/components/ai/FlowchartEditor";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -189,6 +190,8 @@ export default function AiPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingPresentation, setEditingPresentation] = useState<{ idx: number; content: string } | null>(null);
   const [imageStudioOpen, setImageStudioOpen] = useState(false);
+  const [flowchartOpen, setFlowchartOpen] = useState(false);
+  const [presentationOpen, setPresentationOpen] = useState(false);
 
   const isAuthenticated = !!user;
 
@@ -770,8 +773,20 @@ export default function AiPage() {
                   <DropdownMenuItem onClick={() => setImageStudioOpen(true)} className="gap-2">
                     <ImagePlus className="h-4 w-4" /> AI image generator
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Draw a flowchart for "); textareaRef.current?.focus(); }} className="gap-2">
-                    <Workflow className="h-4 w-4" /> Flowchart
+                  <DropdownMenuItem onClick={() => setFlowchartOpen(true)} className="gap-2">
+                    <Workflow className="h-4 w-4" /> Flowchart editor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPresentationOpen(true)} className="gap-2">
+                    <FileText className="h-4 w-4" /> Presentation editor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/pdf-editor")} className="gap-2">
+                    <FileDown className="h-4 w-4" /> PDF / Slide editor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/whiteboard")} className="gap-2">
+                    <Pencil className="h-4 w-4" /> Whiteboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/codrix")} className="gap-2">
+                    <Code className="h-4 w-4" /> Codrix code editor
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a new note about "); textareaRef.current?.focus(); }} className="gap-2">
                     <NotebookPen className="h-4 w-4" /> Create note
@@ -932,6 +947,25 @@ export default function AiPage() {
         }}
       />
       <ImageStudio open={imageStudioOpen} onOpenChange={setImageStudioOpen} />
+      <FlowchartEditor
+        open={flowchartOpen}
+        onOpenChange={setFlowchartOpen}
+        initialChart={"graph TD\n  A[Start] --> B[Step]\n  B --> C[End]"}
+        onSave={(chart) => {
+          setMessages((prev) => [...prev, { role: "assistant", content: "```mermaid\n" + chart + "\n```" }]);
+          toast.success("Flowchart added to chat");
+        }}
+      />
+      <PresentationEditor
+        open={presentationOpen}
+        onOpenChange={setPresentationOpen}
+        initialContent={'<div class="slide"><h1>New Presentation</h1><p>Start editing…</p></div>'}
+        title="New Presentation"
+        onSave={(newContent) => {
+          setMessages((prev) => [...prev, { role: "assistant", content: newContent + "\n<!--OLTRID_PRESENTATION:{\"title\":\"New Presentation\"}-->" }]);
+          toast.success("Presentation added to chat");
+        }}
+      />
     </DashboardLayout>
   );
 }
