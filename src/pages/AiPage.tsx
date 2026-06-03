@@ -765,7 +765,7 @@ export default function AiPage() {
                     <Plus className="h-4.5 w-4.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="top" className="w-56">
+                <DropdownMenuContent align="start" side="top" sideOffset={8} collisionPadding={12} className="w-[min(15rem,calc(100vw-1.5rem))]">
                   <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2">
                     <Paperclip className="h-4 w-4" /> Attach file
                   </DropdownMenuItem>
@@ -782,7 +782,7 @@ export default function AiPage() {
                       <Sparkles className="h-4 w-4" />
                       <span className="flex-1">Mode: {selectedFeature}</span>
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-48">
+                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(13rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
                       {AI_FEATURES.map((feature) => (
                         <DropdownMenuItem
                           key={feature.label}
@@ -805,7 +805,7 @@ export default function AiPage() {
                       <FileText className="h-4 w-4" />
                       <span className="flex-1">Style: {RESPONSE_STYLES.find(s => s.id === selectedStyle)?.label}</span>
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-52 max-h-80 overflow-y-auto">
+                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(14rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
                       {RESPONSE_STYLES.map((style) => (
                         <DropdownMenuItem
                           key={style.id}
