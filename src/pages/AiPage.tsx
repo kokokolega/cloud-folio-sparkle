@@ -856,58 +856,6 @@ export default function AiPage() {
             </div>
 
             <div className="flex items-center gap-1.5">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[12px] text-muted-foreground/60 hover:text-foreground gap-1 px-2" title="Response style">
-                    <FileText className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{RESPONSE_STYLES.find(s => s.id === selectedStyle)?.label}</span>
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52 max-h-80 overflow-y-auto">
-                  {RESPONSE_STYLES.map((style) => (
-                    <DropdownMenuItem
-                      key={style.id}
-                      onClick={() => setSelectedStyle(style.id)}
-                      className="gap-2 text-[13px]"
-                    >
-                      {selectedStyle === style.id ? <Check className="h-3.5 w-3.5 text-primary" /> : <span className="w-3.5" />}
-                      <span>{style.label}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[12px] text-muted-foreground/60 hover:text-foreground gap-1 px-2">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{selectedFeature}</span>
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {AI_FEATURES.map((feature) => (
-                    <DropdownMenuItem
-                      key={feature.label}
-                      onClick={() => {
-                        setSelectedFeature(feature.label);
-                        if (feature.prefill) {
-                          setInput(feature.prefill);
-                        }
-                        if (feature.label === "Web Search") {
-                          setWebSearchEnabled(true);
-                        } else {
-                          setWebSearchEnabled(false);
-                        }
-                      }}
-                      className="gap-2 text-[13px]"
-                    >
-                      {feature.icon}
-                      {feature.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
               <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
               {(input.trim() || attachedFiles.length > 0) && (
                 <motion.div whileTap={{ scale: 0.9 }} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
