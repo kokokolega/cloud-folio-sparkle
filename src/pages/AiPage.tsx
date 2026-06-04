@@ -11,6 +11,7 @@ import {
   X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
   NotebookPen, MessageCircle, Workflow, Globe2, ChevronDown, Sparkles,
   FileText, Image as ImageIcon, Code, ListChecks, Check, ImagePlus,
+  Lightbulb, Telescope, MoreHorizontal, FolderOpen, FileClock,
 } from "lucide-react";
 import {
   DropdownMenu,
