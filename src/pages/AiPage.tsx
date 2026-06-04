@@ -766,22 +766,49 @@ export default function AiPage() {
                     <Plus className="h-4.5 w-4.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="top" sideOffset={8} collisionPadding={12} className="w-[min(15rem,calc(100vw-1.5rem))]">
-                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2">
-                    <Paperclip className="h-4 w-4" /> Attach file
+                <DropdownMenuContent align="start" side="top" sideOffset={8} collisionPadding={12} className="w-[min(16rem,calc(100vw-1.5rem))] p-1.5">
+                  {/* Add photos & files */}
+                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2.5 py-2 text-[13px]">
+                    <Paperclip className="h-4 w-4 text-muted-foreground" />
+                    <span className="flex-1">Add photos & files</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setWebSearchEnabled(!webSearchEnabled)} className="gap-2">
-                    <Globe className="h-4 w-4" />
-                    <span className="flex-1">Search the web</span>
-                    {webSearchEnabled && <Check className="h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setImageStudioOpen(true)} className="gap-2">
-                    <ImagePlus className="h-4 w-4" /> Image Studio
-                  </DropdownMenuItem>
+
+                  {/* Recent files */}
                   <DropdownMenuSub>
-                    <DropdownMenuSubTrigger className="gap-2">
-                      <Sparkles className="h-4 w-4" />
-                      <span className="flex-1">Mode: {selectedFeature}</span>
+                    <DropdownMenuSubTrigger className="gap-2.5 py-2 text-[13px]">
+                      <FileClock className="h-4 w-4 text-muted-foreground" />
+                      <span className="flex-1">Recent files</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(14rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
+                      <DropdownMenuItem onClick={() => navigate("/files")} className="gap-2 text-[13px]">
+                        <FolderOpen className="h-4 w-4" /> Open All Files
+                      </DropdownMenuItem>
+                      {attachedFiles.length === 0 ? (
+                        <DropdownMenuItem disabled className="text-[12px] text-muted-foreground">No recent attachments</DropdownMenuItem>
+                      ) : (
+                        attachedFiles.slice(0, 5).map((f, i) => (
+                          <DropdownMenuItem key={i} className="gap-2 text-[12px]">
+                            <Paperclip className="h-3.5 w-3.5" />
+                            <span className="truncate">{f.name}</span>
+                          </DropdownMenuItem>
+                        ))
+                      )}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+
+                  <DropdownMenuSeparator />
+
+                  {/* Create image */}
+                  <DropdownMenuItem onClick={() => setImageStudioOpen(true)} className="gap-2.5 py-2 text-[13px]">
+                    <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                    <span className="flex-1">Create image</span>
+                  </DropdownMenuItem>
+
+                  {/* Thinking (Mode) */}
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="gap-2.5 py-2 text-[13px]">
+                      <Lightbulb className="h-4 w-4 text-muted-foreground" />
+                      <span className="flex-1">Thinking</span>
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(13rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
                       {AI_FEATURES.map((feature) => (
@@ -801,52 +828,99 @@ export default function AiPage() {
                       ))}
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
+
+                  {/* Deep research */}
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setWebSearchEnabled(true);
+                      setSelectedFeature("Web Search");
+                      setInput((p) => (p ? p + " " : "") + "Do deep research on: ");
+                      textareaRef.current?.focus();
+                    }}
+                    className="gap-2.5 py-2 text-[13px]"
+                  >
+                    <Telescope className="h-4 w-4 text-muted-foreground" />
+                    <span className="flex-1">Deep research</span>
+                  </DropdownMenuItem>
+
+                  {/* Web search */}
+                  <DropdownMenuItem onClick={() => setWebSearchEnabled(!webSearchEnabled)} className="gap-2.5 py-2 text-[13px]">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span className="flex-1">Web search</span>
+                    {webSearchEnabled && <Check className="h-3.5 w-3.5 text-primary" />}
+                  </DropdownMenuItem>
+
+                  {/* More */}
                   <DropdownMenuSub>
-                    <DropdownMenuSubTrigger className="gap-2">
-                      <FileText className="h-4 w-4" />
-                      <span className="flex-1">Style: {RESPONSE_STYLES.find(s => s.id === selectedStyle)?.label}</span>
+                    <DropdownMenuSubTrigger className="gap-2.5 py-2 text-[13px]">
+                      <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                      <span className="flex-1">More</span>
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(14rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
-                      {RESPONSE_STYLES.map((style) => (
-                        <DropdownMenuItem
-                          key={style.id}
-                          onClick={() => setSelectedStyle(style.id)}
-                          className="gap-2 text-[13px]"
-                        >
-                          {selectedStyle === style.id ? <Check className="h-3.5 w-3.5 text-primary" /> : <span className="w-3.5" />}
-                          <span>{style.label}</span>
-                        </DropdownMenuItem>
-                      ))}
+                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(15rem,calc(100vw-1.5rem))] max-h-[70vh] overflow-y-auto">
+                      <DropdownMenuItem onClick={() => setFlowchartOpen(true)} className="gap-2 text-[13px]">
+                        <Workflow className="h-4 w-4" /> Flowchart editor
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setPresentationOpen(true)} className="gap-2 text-[13px]">
+                        <FileText className="h-4 w-4" /> Presentation editor
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/pdf-editor")} className="gap-2 text-[13px]">
+                        <FileDown className="h-4 w-4" /> PDF / Slide editor
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/whiteboard")} className="gap-2 text-[13px]">
+                        <Pencil className="h-4 w-4" /> Whiteboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/codrix")} className="gap-2 text-[13px]">
+                        <Code className="h-4 w-4" /> Codrix code editor
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a new note about "); textareaRef.current?.focus(); }} className="gap-2 text-[13px]">
+                        <NotebookPen className="h-4 w-4" /> Create note
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Summarize my notes"); textareaRef.current?.focus(); }} className="gap-2 text-[13px]">
+                        <Brain className="h-4 w-4" /> Summarize
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Help me write code for "); textareaRef.current?.focus(); }} className="gap-2 text-[13px]">
+                        <Code className="h-4 w-4" /> Code help
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a checklist for "); textareaRef.current?.focus(); }} className="gap-2 text-[13px]">
+                        <ListChecks className="h-4 w-4" /> To-do list
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger className="gap-2 text-[13px]">
+                          <FileText className="h-4 w-4" />
+                          <span className="flex-1">Response style</span>
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(14rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
+                          {RESPONSE_STYLES.map((style) => (
+                            <DropdownMenuItem key={style.id} onClick={() => setSelectedStyle(style.id)} className="gap-2 text-[13px]">
+                              {selectedStyle === style.id ? <Check className="h-3.5 w-3.5 text-primary" /> : <span className="w-3.5" />}
+                              <span>{style.label}</span>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setFlowchartOpen(true)} className="gap-2">
-                    <Workflow className="h-4 w-4" /> Flowchart editor
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setPresentationOpen(true)} className="gap-2">
-                    <FileText className="h-4 w-4" /> Presentation editor
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/pdf-editor")} className="gap-2">
-                    <FileDown className="h-4 w-4" /> PDF / Slide editor
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/whiteboard")} className="gap-2">
-                    <Pencil className="h-4 w-4" /> Whiteboard
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/codrix")} className="gap-2">
-                    <Code className="h-4 w-4" /> Codrix code editor
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a new note about "); textareaRef.current?.focus(); }} className="gap-2">
-                    <NotebookPen className="h-4 w-4" /> Create note
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Summarize my notes"); textareaRef.current?.focus(); }} className="gap-2">
-                    <Brain className="h-4 w-4" /> Summarize
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Help me write code for "); textareaRef.current?.focus(); }} className="gap-2">
-                    <Code className="h-4 w-4" /> Code help
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setInput((p) => p + (p ? " " : "") + "Create a checklist for "); textareaRef.current?.focus(); }} className="gap-2">
-                    <ListChecks className="h-4 w-4" /> To-do list
-                  </DropdownMenuItem>
+
+                  {/* Projects */}
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="gap-2.5 py-2 text-[13px]">
+                      <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                      <span className="flex-1">Projects</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent sideOffset={6} alignOffset={-4} collisionPadding={12} className="w-[min(14rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto">
+                      <DropdownMenuItem onClick={() => navigate("/folders")} className="gap-2 text-[13px]">
+                        <FolderOpen className="h-4 w-4" /> Folders
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/notes")} className="gap-2 text-[13px]">
+                        <NotebookPen className="h-4 w-4" /> Notes
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/groups")} className="gap-2 text-[13px]">
+                        <MessageCircle className="h-4 w-4" /> Groups
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
                 </DropdownMenuContent>
               </DropdownMenu>
               {webSearchEnabled && (
@@ -855,6 +929,7 @@ export default function AiPage() {
                 </span>
               )}
             </div>
+
 
             <div className="flex items-center gap-1.5">
               <VoiceInput onTranscript={(text) => { setInput(text); setTimeout(() => send(text), 100); }} disabled={isLoading} />
