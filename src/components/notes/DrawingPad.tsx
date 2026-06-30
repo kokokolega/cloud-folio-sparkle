@@ -3,11 +3,8 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Eraser, Pencil, Trash2, Loader2, Wand2, Undo2, Download, ImagePlus, X, Maximize2, Minimize2 } from "lucide-react";
+import { Eraser, Pencil, Trash2, Undo2, Download, ImagePlus, X, Maximize2, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const COLORS = ["#0f172a", "#007AFF", "#dc2626", "#16a34a", "#f59e0b", "#9333ea"];
 
@@ -15,11 +12,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInsert: (html: string) => void;
-  onConverted?: (payload: { html: string; imageDataUrl: string }) => void;
   onInsertImage?: (dataUrl: string) => void;
 }
 
-export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsertImage }: Props) {
+export function DrawingPad({ open, onOpenChange, onInsert, onInsertImage }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [color, setColor] = useState(COLORS[0]);
   const [size, setSize] = useState(3);
@@ -27,7 +23,6 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
   const drawing = useRef(false);
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
   const strokes = useRef<ImageData[]>([]);
-  const [converting, setConverting] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const setupCanvas = () => {
@@ -102,35 +97,6 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
 
   const clear = () => setupCanvas();
 
-  const convert = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    setConverting(true);
-    try {
-      const dataUrl = canvas.toDataURL("image/png");
-      const base64 = dataUrl.split(",")[1];
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/notes-drawing-to-text`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_KEY}` },
-        body: JSON.stringify({ imageBase64: base64, mode: "handwriting" }),
-      });
-      if (!resp.ok) throw new Error("Transcription failed");
-      const { html } = await resp.json();
-      if (!html) throw new Error("No text recognized");
-      if (onConverted) {
-        onConverted({ html, imageDataUrl: dataUrl });
-      } else {
-        onInsert(html);
-      }
-      toast.success("Drawing converted ॥");
-      onOpenChange(false);
-    } catch (e: any) {
-      toast.error(e.message || "Could not transcribe");
-    } finally {
-      setConverting(false);
-    }
-  };
-
   const saveDrawing = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -158,7 +124,7 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
       <DialogContent className={`p-0 overflow-hidden flex flex-col ${expanded ? "w-screen h-screen max-w-none sm:max-w-none rounded-none" : "w-[98vw] sm:w-[95vw] max-w-3xl h-[90vh] sm:h-auto sm:max-h-[90vh]"}`}>
         <VisuallyHidden>
           <DialogTitle>Drawing Pad</DialogTitle>
-          <DialogDescription>Write or sketch. Convert your handwriting into typed text.</DialogDescription>
+          <DialogDescription>Sketch or draw and insert as an image.</DialogDescription>
         </VisuallyHidden>
         <div className="p-2 sm:p-3 border-b border-border/50 flex items-center gap-1.5 flex-wrap">
           <p className="text-[13px] sm:text-sm font-semibold mr-1 sm:mr-2">Notepad</p>
@@ -190,12 +156,8 @@ export function DrawingPad({ open, onOpenChange, onInsert, onConverted, onInsert
           <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs px-2" onClick={downloadDrawing} title="Download">
             <Download className="h-3.5 w-3.5" />
           </Button>
-          <Button size="sm" variant="outline" className="h-7 gap-1 text-xs px-2" onClick={saveDrawing} title="Insert drawing as image">
+          <Button size="sm" className="h-7 gap-1 text-xs px-2" onClick={saveDrawing} title="Insert drawing as image">
             <ImagePlus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Save</span>
-          </Button>
-          <Button size="sm" className="h-7 gap-1 text-xs px-2" onClick={convert} disabled={converting}>
-            {converting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline">{converting ? "Reading…" : "To text"}</span>
           </Button>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setExpanded(!expanded)} title={expanded ? "Restore" : "Expand"}>
             {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}

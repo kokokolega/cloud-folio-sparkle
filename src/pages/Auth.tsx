@@ -22,7 +22,7 @@ export default function Auth() {
   const { startGuestSession } = useGuestMode();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<"login" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -51,13 +51,14 @@ export default function Auth() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        toast.success("Check your email for a reset link");
-        setMode("login");
+        toast.success("Account created! Signing you in…");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -248,10 +249,10 @@ export default function Auth() {
                       transition={{ duration: 0.2 }}
                     >
                       <h2 className="text-xl font-bold text-foreground text-center mb-1">
-                        {mode === "login" ? "Welcome to\nOltrid, login now!" : "Reset your\npassword"}
+                        {mode === "login" ? "Welcome to\nOltrid, login now!" : "Create your\nOltrid account"}
                       </h2>
                       <p className="text-muted-foreground text-xs text-center mb-6">
-                        {mode === "login" ? "Sign in to access your workspace" : "We'll send you a reset link"}
+                        {mode === "login" ? "Sign in to access your workspace" : "Sign up to get started"}
                       </p>
                     </motion.div>
                   </AnimatePresence>
@@ -271,50 +272,28 @@ export default function Auth() {
                         />
                       </div>
 
-                      <AnimatePresence mode="wait">
-                        {mode !== "forgot" && (
-                          <motion.div
-                            key="pw"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <label className="text-xs font-medium text-foreground mb-1.5 block">Password</label>
-                            <div className="relative">
-                              <Input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                minLength={6}
-                                autoComplete="current-password"
-                                className="h-12 rounded-xl bg-secondary/30 border-border/60 text-sm placeholder:text-muted-foreground/40 pr-11"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                              >
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </button>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {mode === "login" && (
-                        <div className="flex items-center justify-end">
+                      <div>
+                        <label className="text-xs font-medium text-foreground mb-1.5 block">Password</label>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={6}
+                            autoComplete={mode === "login" ? "current-password" : "new-password"}
+                            className="h-12 rounded-xl bg-secondary/30 border-border/60 text-sm placeholder:text-muted-foreground/40 pr-11"
+                          />
                           <button
                             type="button"
-                            onClick={() => setMode("forgot")}
-                            className="text-xs text-primary font-medium"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                           >
-                            Forgot password?
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     <div className="mt-auto space-y-3 pt-4">
@@ -327,20 +306,18 @@ export default function Auth() {
                           {submitting ? (
                             <Loader2 className="h-5 w-5 animate-spin" />
                           ) : (
-                            mode === "login" ? "Login" : "Send reset link"
+                            mode === "login" ? "Login" : "Create account"
                           )}
                         </Button>
                       </motion.div>
 
-                      {mode === "forgot" && (
-                        <button
-                          type="button"
-                          onClick={() => setMode("login")}
-                          className="w-full text-center text-sm text-foreground font-medium mt-2"
-                        >
-                          Back to sign in
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                        className="w-full text-center text-sm text-foreground font-medium mt-2"
+                      >
+                        {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
+                      </button>
                     </div>
                   </form>
                 </motion.div>
@@ -456,12 +433,10 @@ export default function Auth() {
               transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
               <h2 className="text-2xl font-semibold text-foreground tracking-tight mb-1.5">
-                {mode === "login" && "Welcome back"}
-                {mode === "forgot" && "Reset password"}
+                {mode === "login" ? "Welcome back" : "Create your account"}
               </h2>
               <p className="text-muted-foreground text-sm mb-8">
-                {mode === "login" && "Sign in to continue to Oltrid"}
-                {mode === "forgot" && "Enter your email to receive a reset link"}
+                {mode === "login" ? "Sign in to continue to Oltrid" : "Sign up to get started with Oltrid"}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -483,49 +458,25 @@ export default function Auth() {
               />
             </motion.div>
 
-            <AnimatePresence mode="wait">
-              {mode !== "forgot" && (
-                <motion.div
-                  key="password"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      autoComplete={mode === "login" ? "current-password" : "new-password"}
-                      className="h-12 rounded-xl bg-secondary/50 border border-border text-sm placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 pr-11"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {mode === "login" && (
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setMode("forgot")}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Forgot password?
-                </button>
-              </div>
-            )}
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                className="h-12 rounded-xl bg-secondary/50 border border-border text-sm placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
 
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -541,8 +492,7 @@ export default function Auth() {
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <span className="flex items-center gap-2">
-                    {mode === "login" && "Continue"}
-                    {mode === "forgot" && "Send reset link"}
+                    {mode === "login" ? "Continue" : "Create account"}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>
                 )}
@@ -552,10 +502,20 @@ export default function Auth() {
 
           {/* Mode switching */}
           <div className="mt-8 text-center text-sm text-muted-foreground">
-            {mode === "forgot" && (
-              <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
-                Back to sign in
-              </button>
+            {mode === "login" ? (
+              <>
+                New here?{" "}
+                <button onClick={() => setMode("signup")} className="text-foreground font-medium hover:underline underline-offset-4">
+                  Create an account
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{" "}
+                <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
+                  Sign in
+                </button>
+              </>
             )}
           </div>
         </motion.div>
