@@ -22,7 +22,7 @@ export default function Auth() {
   const { startGuestSession } = useGuestMode();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<"login" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
