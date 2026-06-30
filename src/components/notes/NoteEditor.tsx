@@ -289,15 +289,6 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         onOpenChange={setDrawingOpen}
         onInsert={(html) => editor.chain().focus().insertContent(html).run()}
         onInsertImage={(dataUrl) => editor.chain().focus().insertContent(`<img src="${dataUrl}" />`).run()}
-        onConverted={(payload) => setReviewState(payload)}
-      />
-      <DrawingReviewDialog
-        open={!!reviewState}
-        onOpenChange={(o) => !o && setReviewState(null)}
-        imageDataUrl={reviewState?.imageDataUrl || ""}
-        initialHtml={reviewState?.html || ""}
-        onInsertText={(html) => editor.chain().focus().insertContent(html).run()}
-        onInsertImage={(dataUrl) => editor.chain().focus().insertContent(`<img src="${dataUrl}" />`).run()}
       />
       <Dialog open={showVersions} onOpenChange={setShowVersions}>
         <DialogContent className="sm:max-w-md max-h-[70vh]">
