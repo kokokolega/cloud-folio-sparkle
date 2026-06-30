@@ -25,7 +25,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DrawingPad } from "@/components/notes/DrawingPad";
-import { DrawingReviewDialog } from "@/components/notes/DrawingReviewDialog";
+
 
 interface NoteEditorProps {
   note?: { id?: string; title: string; content: string; color: string } | null;
