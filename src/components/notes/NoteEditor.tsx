@@ -67,7 +67,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
   const [showVersions, setShowVersions] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [drawingOpen, setDrawingOpen] = useState(false);
-  const [reviewState, setReviewState] = useState<{ html: string; imageDataUrl: string } | null>(null);
+  
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
