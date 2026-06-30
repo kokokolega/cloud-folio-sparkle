@@ -249,10 +249,10 @@ export default function Auth() {
                       transition={{ duration: 0.2 }}
                     >
                       <h2 className="text-xl font-bold text-foreground text-center mb-1">
-                        {mode === "login" ? "Welcome to\nOltrid, login now!" : "Reset your\npassword"}
+                        {mode === "login" ? "Welcome to\nOltrid, login now!" : "Create your\nOltrid account"}
                       </h2>
                       <p className="text-muted-foreground text-xs text-center mb-6">
-                        {mode === "login" ? "Sign in to access your workspace" : "We'll send you a reset link"}
+                        {mode === "login" ? "Sign in to access your workspace" : "Sign up to get started"}
                       </p>
                     </motion.div>
                   </AnimatePresence>
