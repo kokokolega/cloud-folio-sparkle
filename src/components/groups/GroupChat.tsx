@@ -190,8 +190,8 @@ export function GroupChat({ groupId }: GroupChatProps) {
     sendMutation.mutate({ content: message.trim() });
   };
 
-  const getDisplayName = (email: string, name?: string | null) => name || email.split("@")[0];
-  const getInitial = (email: string, name?: string | null) => (name?.[0] || email?.[0] || "U").toUpperCase();
+  const getDisplayName = (_email: string | undefined, name?: string | null) => name || "Member";
+  const getInitial = (_email: string | undefined, name?: string | null) => (name?.[0] || "M").toUpperCase();
 
   const renderAttachment = (msg: any) => {
     if (!msg.attachment_url) return null;
