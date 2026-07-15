@@ -16,32 +16,19 @@ export default function JoinGroupPage() {
 
     const join = async () => {
       try {
-        const { data: group, error: gErr } = await supabase
-          .from("groups")
-          .select("id, name")
-          .eq("invite_code", inviteCode)
-          .single();
-
-        if (gErr || !group) {
+        const { data, error } = await supabase.rpc("join_group_by_invite_code", { _invite_code: inviteCode });
+        if (error) throw error;
+        const row = (data as any[])?.[0];
+        if (!row) {
           toast.error("Invalid invite link");
           setStatus("error");
           return;
         }
-
-        const { error } = await supabase.from("group_members").insert({
-          group_id: group.id,
-          user_id: user.id,
-          role: "member",
-        });
-
-        if (error && error.code === "23505") {
+        if (row.already_member) {
           toast.info("You're already in this group");
-        } else if (error) {
-          throw error;
         } else {
-          toast.success(`Joined "${group.name}"!`);
+          toast.success(`Joined "${row.group_name}"!`);
         }
-
         navigate("/groups");
       } catch (e: any) {
         toast.error(e.message || "Failed to join group");

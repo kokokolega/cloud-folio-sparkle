@@ -45,16 +45,12 @@ export function GroupChat({ groupId }: GroupChatProps) {
         .order("created_at", { ascending: true });
       if (error) throw error;
 
-      // Fetch profiles for all user_ids
-      const userIds = [...new Set(data.map((m: any) => m.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, email, display_name, avatar_url")
-        .in("user_id", userIds);
+      // Fetch co-member profiles via RPC (no email exposure)
+      const { data: profiles } = await supabase.rpc("get_group_member_profiles", { _group_id: groupId });
 
-      const profileMap: Record<string, { email: string; display_name: string | null; avatar_url: string | null }> = {};
-      profiles?.forEach((p: any) => {
-        profileMap[p.user_id] = { email: p.email || "Unknown", display_name: p.display_name, avatar_url: p.avatar_url };
+      const profileMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      (profiles as any[])?.forEach((p: any) => {
+        profileMap[p.user_id] = { display_name: p.display_name, avatar_url: p.avatar_url };
       });
 
       // Fetch reply-to messages
@@ -67,7 +63,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
           .in("id", replyIds);
         replies?.forEach((r: any) => {
           const p = profileMap[r.user_id];
-          replyMap[r.id] = { ...r, email: p?.email || "Unknown", display_name: p?.display_name };
+          replyMap[r.id] = { ...r, display_name: p?.display_name || null };
         });
       }
 
@@ -75,7 +71,6 @@ export function GroupChat({ groupId }: GroupChatProps) {
         const p = profileMap[m.user_id];
         return {
           ...m,
-          email: p?.email || "Unknown",
           display_name: p?.display_name || null,
           avatar_url: p?.avatar_url || null,
           replyMessage: m.reply_to ? replyMap[m.reply_to] : null,
@@ -195,8 +190,8 @@ export function GroupChat({ groupId }: GroupChatProps) {
     sendMutation.mutate({ content: message.trim() });
   };
 
-  const getDisplayName = (email: string, name?: string | null) => name || email.split("@")[0];
-  const getInitial = (email: string, name?: string | null) => (name?.[0] || email?.[0] || "U").toUpperCase();
+  const getDisplayName = (_email: string | undefined, name?: string | null) => name || "Member";
+  const getInitial = (_email: string | undefined, name?: string | null) => (name?.[0] || "M").toUpperCase();
 
   const renderAttachment = (msg: any) => {
     if (!msg.attachment_url) return null;
@@ -425,10 +420,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
               </Avatar>
               <div className="text-center">
                 <p className="font-semibold text-foreground">
-                  {profileView.display_name || profileView.email?.split("@")[0]}
-                </p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1 justify-center mt-1">
-                  <Mail className="h-3 w-3" /> {profileView.email}
+                  {profileView.display_name || "Member"}
                 </p>
               </div>
             </div>

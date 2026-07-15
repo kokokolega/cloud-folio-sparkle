@@ -41,7 +41,7 @@ export function GroupDetail({ groupId, onBack }: GroupDetailProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("group_members")
-        .select("*, profiles:user_id(email)")
+        .select("id, user_id, role")
         .eq("group_id", groupId);
       if (error) throw error;
       return data;

@@ -12,14 +12,9 @@ export default function PublicFile() {
   const { data: file, isLoading } = useQuery({
     queryKey: ["public-file", publicId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("files")
-        .select("*")
-        .eq("public_id", publicId)
-        .is("deleted_at", null)
-        .single();
+      const { data, error } = await supabase.rpc("get_file_by_public_id", { _public_id: publicId! });
       if (error) throw error;
-      return data;
+      return (data as any[])?.[0] ?? null;
     },
     enabled: !!publicId,
   });
