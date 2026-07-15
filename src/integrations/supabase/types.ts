@@ -508,9 +508,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_group_member: {
-        Args: { _group_id: string; _user_id: string }
-        Returns: boolean
+      get_file_by_public_id: {
+        Args: { _public_id: string }
+        Returns: {
+          id: string
+          name: string
+          public_id: string
+          size: number
+          storage_path: string
+          type: string
+        }[]
+      }
+      get_group_member_profiles: {
+        Args: { _group_id: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          user_id: string
+        }[]
+      }
+      join_group_by_invite_code: {
+        Args: { _invite_code: string }
+        Returns: {
+          already_member: boolean
+          group_id: string
+          group_name: string
+        }[]
       }
     }
     Enums: {
