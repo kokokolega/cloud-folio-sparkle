@@ -420,10 +420,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
               </Avatar>
               <div className="text-center">
                 <p className="font-semibold text-foreground">
-                  {profileView.display_name || profileView.email?.split("@")[0]}
-                </p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1 justify-center mt-1">
-                  <Mail className="h-3 w-3" /> {profileView.email}
+                  {profileView.display_name || "Member"}
                 </p>
               </div>
             </div>
