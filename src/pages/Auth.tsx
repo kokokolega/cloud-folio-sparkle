@@ -483,24 +483,6 @@ export default function Auth() {
             </motion.div>
           </form>
 
-          {/* Mode switching */}
-          <div className="mt-8 text-center text-sm text-muted-foreground">
-            {mode === "login" ? (
-              <>
-                New here?{" "}
-                <button onClick={() => setMode("signup")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Create an account
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
         </motion.div>
       </div>
     </div>
