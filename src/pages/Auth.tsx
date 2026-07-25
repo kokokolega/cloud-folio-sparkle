@@ -51,8 +51,18 @@ export default function Auth() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/` },
+        });
+        if (error) throw error;
+        toast.success("Account created");
+      }
     } catch (err: any) {
       toast.error(err.message);
     } finally {
