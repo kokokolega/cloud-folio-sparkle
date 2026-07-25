@@ -22,7 +22,7 @@ export default function Auth() {
   const { startGuestSession } = useGuestMode();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const mode = "login" as const;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -51,18 +51,8 @@ export default function Auth() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/` },
-        });
-        if (error) throw error;
-        toast.success("Account created! Signing you in…");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -311,13 +301,6 @@ export default function Auth() {
                         </Button>
                       </motion.div>
 
-                      <button
-                        type="button"
-                        onClick={() => setMode(mode === "login" ? "signup" : "login")}
-                        className="w-full text-center text-sm text-foreground font-medium mt-2"
-                      >
-                        {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
-                      </button>
                     </div>
                   </form>
                 </motion.div>
@@ -500,24 +483,6 @@ export default function Auth() {
             </motion.div>
           </form>
 
-          {/* Mode switching */}
-          <div className="mt-8 text-center text-sm text-muted-foreground">
-            {mode === "login" ? (
-              <>
-                New here?{" "}
-                <button onClick={() => setMode("signup")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Create an account
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline underline-offset-4">
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
         </motion.div>
       </div>
     </div>
