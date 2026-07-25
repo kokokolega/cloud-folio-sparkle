@@ -310,6 +310,13 @@ export default function Auth() {
                           )}
                         </Button>
                       </motion.div>
+                      <button
+                        type="button"
+                        onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                        className="w-full text-center text-sm text-foreground font-medium mt-2"
+                      >
+                        {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
+                      </button>
 
                     </div>
                   </form>
