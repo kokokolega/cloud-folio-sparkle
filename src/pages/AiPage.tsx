@@ -687,7 +687,8 @@ export default function AiPage() {
                           <Download className="h-3 w-3" /> Download
                         </Button>
                       </motion.div>
-                    </>
+                    </div>
+
                   )}
                 </div>
               </div>
