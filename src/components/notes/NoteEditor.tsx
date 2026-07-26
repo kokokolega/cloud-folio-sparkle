@@ -238,7 +238,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         <ToolbarButton
           onClick={() => setDrawingOpen(true)}
           icon={PenTool}
-          label="Draw / handwrite (converts to text)"
+          label="Sketch / draw"
         />
         <Separator orientation="vertical" className="h-4 mx-1" />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} label="Undo" />
