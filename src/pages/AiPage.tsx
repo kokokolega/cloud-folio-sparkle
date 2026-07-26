@@ -738,7 +738,7 @@ export default function AiPage() {
 
         <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
 
-        <div className="rounded-2xl border border-border/60 bg-card shadow-[0_1px_8px_-2px_hsl(0_0%_0%/0.06)] focus-within:border-foreground/15 focus-within:shadow-[0_2px_16px_-4px_hsl(0_0%_0%/0.1)] transition-all duration-200">
+        <div className="glow-border rounded-2xl border border-border/60 bg-card shadow-[0_1px_8px_-2px_hsl(0_0%_0%/0.06)] focus-within:border-foreground/15 focus-within:shadow-[0_2px_16px_-4px_hsl(0_0%_0%/0.1)] transition-all duration-200">
           {/* Textarea row */}
           <div className="px-4 pt-3 pb-2">
             <textarea
