@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=VT323&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -360,3 +360,76 @@
 /* No scrollbar utility */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ==== AI chat: VT323 response font ==== */
+.ai-response, .ai-response .prose-editor, .ai-response p, .ai-response li, .ai-response h1, .ai-response h2, .ai-response h3, .ai-response blockquote {
+  font-family: 'VT323', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
+}
+.ai-response code, .ai-response pre { font-family: 'VT323', ui-monospace, monospace; }
+
+/* ==== Animated glowing border (ChatGPT/Vercel-style) ==== */
+@property --glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes glow-spin {
+  to { --glow-angle: 360deg; }
+}
+.glow-border {
+  position: relative;
+  isolation: isolate;
+  border-radius: 1rem;
+}
+.glow-border::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--glow-angle, 0deg),
+    transparent 0deg,
+    hsl(var(--primary) / 0.9) 60deg,
+    #60a5fa 120deg,
+    #a855f7 180deg,
+    #ec4899 240deg,
+    hsl(var(--primary) / 0.9) 300deg,
+    transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: glow-spin 4s linear infinite;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+  z-index: 0;
+}
+.glow-border::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--glow-angle, 0deg),
+    transparent 0deg,
+    hsl(var(--primary) / 0.35) 60deg,
+    #60a5fa66 120deg,
+    #a855f766 180deg,
+    #ec489966 240deg,
+    hsl(var(--primary) / 0.35) 300deg,
+    transparent 360deg);
+  filter: blur(14px);
+  animation: glow-spin 4s linear infinite;
+  pointer-events: none;
+  opacity: 0.55;
+  transition: opacity 0.25s ease;
+  z-index: -1;
+}
+.glow-border:focus-within::before,
+.glow-border:focus-within::after { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .glow-border::before, .glow-border::after { animation: none; }
+}
+

@@ -622,19 +622,19 @@ export default function AiPage() {
                       </p>
                     </div>
                   ) : (
-                    <>
+                    <div className="ai-response">
                       {mermaidBlocks.length > 0 ? (
                         <div className="space-y-3">
                           {mermaidBlocks.map((block, bi) => (
                             <div key={bi}>
-                              {block.before && <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />}
+                              {block.before && <div className="leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />}
                               <MermaidDiagram chart={block.mermaid} />
-                              {block.after && <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />}
+                              {block.after && <div className="leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
+                        <div className="leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
                       )}
 
                       {(editMarker || deleteMarker || memMarkers.length > 0) && (
@@ -687,7 +687,8 @@ export default function AiPage() {
                           <Download className="h-3 w-3" /> Download
                         </Button>
                       </motion.div>
-                    </>
+                    </div>
+
                   )}
                 </div>
               </div>
@@ -737,7 +738,7 @@ export default function AiPage() {
 
         <NoteMentionDropdown query={mentionQuery} onSelect={handleMentionSelect} visible={showMentions && isAuthenticated} />
 
-        <div className="rounded-2xl border border-border/60 bg-card shadow-[0_1px_8px_-2px_hsl(0_0%_0%/0.06)] focus-within:border-foreground/15 focus-within:shadow-[0_2px_16px_-4px_hsl(0_0%_0%/0.1)] transition-all duration-200">
+        <div className="glow-border rounded-2xl border border-border/60 bg-card shadow-[0_1px_8px_-2px_hsl(0_0%_0%/0.06)] focus-within:border-foreground/15 focus-within:shadow-[0_2px_16px_-4px_hsl(0_0%_0%/0.1)] transition-all duration-200">
           {/* Textarea row */}
           <div className="px-4 pt-3 pb-2">
             <textarea
