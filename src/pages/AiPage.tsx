@@ -622,19 +622,19 @@ export default function AiPage() {
                       </p>
                     </div>
                   ) : (
-                    <>
+                    <div className="ai-response">
                       {mermaidBlocks.length > 0 ? (
                         <div className="space-y-3">
                           {mermaidBlocks.map((block, bi) => (
                             <div key={bi}>
-                              {block.before && <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />}
+                              {block.before && <div className="leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.before }} />}
                               <MermaidDiagram chart={block.mermaid} />
-                              {block.after && <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />}
+                              {block.after && <div className="leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: block.after }} />}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-[15px] leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
+                        <div className="leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
                       )}
 
                       {(editMarker || deleteMarker || memMarkers.length > 0) && (
