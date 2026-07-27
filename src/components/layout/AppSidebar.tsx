@@ -176,9 +176,35 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               );
             })}
+            {features.notemaroyaar && (
+              <SidebarMenuItem>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton asChild>
+                      <a
+                        href="https://notemaroyaar.com/auth"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all duration-150",
+                          "text-foreground/65 hover:bg-secondary hover:text-foreground"
+                        )}
+                      >
+                        <Pencil className="h-[18px] w-[18px] shrink-0" />
+                        {!collapsed && <span className="truncate">Notemaroyaar</span>}
+                      </a>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  {collapsed && (
+                    <TooltipContent side="right" className="text-xs">Notemaroyaar</TooltipContent>
+                  )}
+                </Tooltip>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </ScrollArea>
       </SidebarContent>
+
 
       <SidebarFooter className="px-3 pb-3 space-y-0.5">
         {features.calendar && !collapsed ? (
