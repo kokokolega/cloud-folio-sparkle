@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type SidebarFeatureKey = "files" | "codrix" | "groups" | "calendar" | "pdfEditor";
+export type SidebarFeatureKey = "files" | "codrix" | "groups" | "calendar" | "pdfEditor" | "notemaroyaar";
 
 const STORAGE_KEY = "oltrid-sidebar-features";
 
@@ -10,6 +10,7 @@ const DEFAULTS: Record<SidebarFeatureKey, boolean> = {
   groups: false,
   calendar: false,
   pdfEditor: false,
+  notemaroyaar: false,
 };
 
 function read(): Record<SidebarFeatureKey, boolean> {
