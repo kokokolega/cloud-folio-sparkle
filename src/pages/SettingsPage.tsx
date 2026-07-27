@@ -229,6 +229,7 @@ export default function SettingsPage() {
               { key: "codrix", icon: Code2, label: "Codrix" },
               { key: "calendar", icon: CalendarDays, label: "Calendar" },
               { key: "pdfEditor", icon: FileEdit, label: "PDF / Slide Editor" },
+              { key: "notemaroyaar", icon: Pencil, label: "Notemaroyaar (Drawing)" },
             ] as const).map(({ key, icon: Icon, label }) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
