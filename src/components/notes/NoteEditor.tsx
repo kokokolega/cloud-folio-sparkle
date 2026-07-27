@@ -13,7 +13,7 @@ import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
   X, Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
   List, ListOrdered, ListChecks, Heading2, Quote, Code, Minus, Undo, Redo, Check, Loader2,
-  ImagePlus, Maximize2, Minimize2, History, PenTool,
+  ImagePlus, Maximize2, Minimize2, History,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DrawingPad } from "@/components/notes/DrawingPad";
 
 
 interface NoteEditorProps {
