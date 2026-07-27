@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, CalendarDays, Plus, Check, X, FileEdit } from "lucide-react";
+import { Bot, StickyNote, Files, Users, Trash2, Settings, Code2, PanelLeftClose, BarChart3, CalendarDays, Plus, Check, X, FileEdit, Pencil } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { OltridLogo } from "@/components/OltridLogo";
