@@ -21,9 +21,10 @@ interface NoteCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onTogglePin: () => void;
+  onShareCards?: () => void;
 }
 
-export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps) {
+export function NoteCard({ note, onEdit, onDelete, onTogglePin, onShareCards }: NoteCardProps) {
   const colorConfig = NOTE_COLORS.find((c) => c.id === note.color) || NOTE_COLORS[0];
 
   const formatDate = (date: string) =>
