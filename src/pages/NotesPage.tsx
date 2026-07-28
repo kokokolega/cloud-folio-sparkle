@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { NotesFloatingSidebar } from "@/components/notes/NotesFloatingSidebar";
+import { ShareCardsDialog } from "@/components/notes/ShareCardsDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, StickyNote, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -27,6 +28,7 @@ export default function NotesPage() {
   const [editingNote, setEditingNote] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<string | null | "all">("all");
+  const [cardNote, setCardNote] = useState<any | null>(null);
 
   const { notes, isLoading, isOfflineMode, createMutation, updateMutation, deleteMutation, autoSave } = useOfflineNotes({ limit: 200, enableOffline: true });
 
@@ -107,7 +109,7 @@ export default function NotesPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
                     {pinned.map((note: any) => (
-                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
+                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} onShareCards={() => setCardNote(note)} />
                     ))}
                   </AnimatePresence>
                 </div>
@@ -119,7 +121,7 @@ export default function NotesPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <AnimatePresence>
                     {unpinned.map((note: any) => (
-                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} />
+                      <NoteCard key={note.id} note={note} onEdit={() => setEditingNote(note)} onDelete={() => deleteMutation.mutate(note.id)} onTogglePin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })} onShareCards={() => setCardNote(note)} />
                     ))}
                   </AnimatePresence>
                 </div>
@@ -128,6 +130,8 @@ export default function NotesPage() {
           </>
         )}
       </div>
+
+      <ShareCardsDialog open={!!cardNote} onOpenChange={(o) => !o && setCardNote(null)} note={cardNote} />
     </DashboardLayout>
   );
 }
