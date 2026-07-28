@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pin, PinOff, Pencil, Trash2, LayoutGrid } from "lucide-react";
 import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
   DropdownMenu,
