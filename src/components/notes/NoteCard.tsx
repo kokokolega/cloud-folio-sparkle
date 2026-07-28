@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pin, PinOff, Pencil, Trash2, LayoutGrid } from "lucide-react";
 import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
   DropdownMenu,
@@ -21,9 +21,10 @@ interface NoteCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onTogglePin: () => void;
+  onShareCards?: () => void;
 }
 
-export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps) {
+export function NoteCard({ note, onEdit, onDelete, onTogglePin, onShareCards }: NoteCardProps) {
   const colorConfig = NOTE_COLORS.find((c) => c.id === note.color) || NOTE_COLORS[0];
 
   const formatDate = (date: string) =>
@@ -77,6 +78,12 @@ export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps)
                 <Pencil className="h-3.5 w-3.5 mr-2" />
                 Edit
               </DropdownMenuItem>
+              {onShareCards && (
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onShareCards(); }} className="text-[13px]">
+                  <LayoutGrid className="h-3.5 w-3.5 mr-2" />
+                  Share as Cards
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-destructive text-[13px]">
                 <Trash2 className="h-3.5 w-3.5 mr-2" />
                 Delete
