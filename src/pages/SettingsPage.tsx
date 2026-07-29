@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert, User, Camera, Pencil, Files, Users, Code2, CalendarDays, Layers, FileEdit } from "lucide-react";
+import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader2, Trash2, ShieldAlert, User, Camera, Pencil, ScanLine, Files, Users, Code2, CalendarDays, Layers, FileEdit } from "lucide-react";
 import { toast } from "sonner";
 import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
 
@@ -230,6 +230,7 @@ export default function SettingsPage() {
               { key: "calendar", icon: CalendarDays, label: "Calendar" },
               { key: "pdfEditor", icon: FileEdit, label: "PDF / Slide Editor" },
               { key: "notemaroyaar", icon: Pencil, label: "Notemaroyaar (Drawing)" },
+              { key: "smartCapture", icon: ScanLine, label: "Smart Capture" },
             ] as const).map(({ key, icon: Icon, label }) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

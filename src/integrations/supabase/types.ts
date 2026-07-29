@@ -97,6 +97,117 @@ export type Database = {
           },
         ]
       }
+      capture_rules: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          keyword: string
+          subfolder: string | null
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          keyword: string
+          subfolder?: string | null
+          updated_at?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          keyword?: string
+          subfolder?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      captures: {
+        Row: {
+          captured_at: string
+          category: string
+          confidence: number
+          created_at: string
+          entities: Json
+          file_id: string | null
+          folder_id: string | null
+          id: string
+          ocr_text: string
+          phash: string | null
+          size: number
+          status: string
+          storage_path: string
+          subfolder: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          captured_at?: string
+          category?: string
+          confidence?: number
+          created_at?: string
+          entities?: Json
+          file_id?: string | null
+          folder_id?: string | null
+          id?: string
+          ocr_text?: string
+          phash?: string | null
+          size?: number
+          status?: string
+          storage_path: string
+          subfolder?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          captured_at?: string
+          category?: string
+          confidence?: number
+          created_at?: string
+          entities?: Json
+          file_id?: string | null
+          folder_id?: string | null
+          id?: string
+          ocr_text?: string
+          phash?: string | null
+          size?: number
+          status?: string
+          storage_path?: string
+          subfolder?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "captures_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "captures_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       files: {
         Row: {
           created_at: string
