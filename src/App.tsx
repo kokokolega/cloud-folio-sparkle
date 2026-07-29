@@ -26,6 +26,7 @@ import DashboardPage from "./pages/DashboardPage";
 import FoldersPage from "./pages/FoldersPage";
 import NoteFoldersPage from "./pages/NoteFoldersPage";
 import PdfEditorPage from "./pages/PdfEditorPage";
+import SmartCapturePage from "./pages/SmartCapturePage";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/ai" element={<ProtectedRoute allowGuest><AiPage /></ProtectedRoute>} />
               <Route path="/codrix" element={<ProtectedRoute allowGuest><CodrixPage /></ProtectedRoute>} />
               <Route path="/pdf-editor" element={<ProtectedRoute><PdfEditorPage /></ProtectedRoute>} />
+              <Route path="/capture" element={<ProtectedRoute><SmartCapturePage /></ProtectedRoute>} />
               <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
