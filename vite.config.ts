@@ -19,15 +19,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          editor: ['@tiptap/react', '@tiptap/starter-kit'],
-        },
-      },
-    },
+    chunkSizeWarningLimit: 1500,
+    target: 'es2018',
   },
   // Ensure service worker is properly served
   publicDir: 'public',
