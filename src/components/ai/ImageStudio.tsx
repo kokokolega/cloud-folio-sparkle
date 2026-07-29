@@ -3,13 +3,10 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Wand2, Download, Upload, X, ImageIcon, Sparkles } from "lucide-react";
+import { Loader as Loader2, Wand as Wand2, Download, Upload, X, Image as ImageIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, SUPABASE_URL_VALUE as SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY_VALUE as SUPABASE_KEY } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 interface Props {
   open: boolean;

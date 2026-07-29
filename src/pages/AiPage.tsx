@@ -3,16 +3,9 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, SUPABASE_URL_VALUE as SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY_VALUE as SUPABASE_KEY } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Loader2, Bot, StickyNote, FileDown, User,
-  PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download,
-  X, Plus, ArrowUp, Search, Brain, Pencil, Trash2,
-  NotebookPen, MessageCircle, Workflow, Globe2, ChevronDown, Sparkles,
-  FileText, Image as ImageIcon, Code, ListChecks, Check, ImagePlus,
-  Lightbulb, Telescope, MoreHorizontal, FolderOpen, FileClock,
-} from "lucide-react";
+import { Loader as Loader2, Bot, StickyNote, FileDown, User, PanelRightClose, PanelRightOpen, Clock, Globe, Paperclip, Download, X, Plus, ArrowUp, Search, Brain, Pencil, Trash2, NotebookPen, MessageCircle, Workflow, Globe as Globe2, ChevronDown, Sparkles, FileText, Image as ImageIcon, Code, ListChecks, Check, ImagePlus, Lightbulb, Telescope, MoveHorizontal as MoreHorizontal, FolderOpen, FileClock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,8 +31,7 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
 
 type Msg = { role: "user" | "assistant"; content: string; attachments?: FileAttachment[] };
 

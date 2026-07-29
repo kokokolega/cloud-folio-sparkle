@@ -1,5 +1,4 @@
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+import { SUPABASE_URL_VALUE as SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY_VALUE as SUPABASE_KEY } from "@/integrations/supabase/client";
 
 export type CardAiMode = "summarize_social" | "rewrite_audience" | "better_carousel";
 

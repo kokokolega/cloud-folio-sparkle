@@ -1,21 +1,6 @@
 import { useState } from "react";
 import { Editor } from "@tiptap/react";
-import {
-  Sparkles,
-  FileText,
-  Expand,
-  Wand2,
-  SpellCheck,
-  ArrowDownToLine,
-  Briefcase,
-  SmilePlus,
-  List,
-  Heading,
-  PenLine,
-  Languages,
-  MessageSquare,
-  Loader2,
-} from "lucide-react";
+import { Sparkles, FileText, Expand, Wand as Wand2, SpellCheck, ArrowDownToLine, Briefcase, SmilePlus, List, Heading, PenLine, Languages, MessageSquare, Loader as Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,9 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+import { SUPABASE_URL_VALUE as SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY_VALUE as SUPABASE_KEY } from "@/integrations/supabase/client";
 
 interface AiToolbarProps {
   editor: Editor;
