@@ -3,13 +3,14 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Camera, ImagePlus, Search, Sparkles, Inbox, ShieldCheck } from "lucide-react";
+import { Camera, ImagePlus, Search, Sparkles, Inbox, ShieldCheck, CloudOff, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CaptureCamera } from "@/components/capture/CaptureCamera";
 import { CaptureProcessing } from "@/components/capture/CaptureProcessing";
+import { CaptureReviewSheet } from "@/components/capture/CaptureReviewSheet";
 import { CaptureDetail } from "@/components/capture/CaptureDetail";
 import { DuplicateDialog } from "@/components/capture/DuplicateDialog";
 import {
@@ -21,6 +22,15 @@ import {
   type CaptureStep,
   type DuplicateInfo,
 } from "@/lib/smartCapture/pipeline";
+import {
+  cacheCaptures,
+  isOnline,
+  listPending,
+  queueCapture,
+  readCachedCaptures,
+  syncPendingCaptures,
+  type PendingCapture,
+} from "@/lib/smartCapture/offlineQueue";
 import { textSimilarity, type UserRule } from "@/lib/smartCapture/rules";
 
 const db = supabase as any;
@@ -33,6 +43,7 @@ export default function SmartCapturePage() {
   const [rules, setRules] = useState<UserRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [review, setReview] = useState<File | null>(null);
   const [step, setStep] = useState<CaptureStep | null>(null);
   const [queue, setQueue] = useState({ current: 0, total: 0 });
   const [duplicate, setDuplicate] = useState<DuplicateInfo | null>(null);
@@ -42,22 +53,68 @@ export default function SmartCapturePage() {
   const [category, setCategory] = useState<string>("All");
   const [inbox, setInbox] = useState<{ total: number; breakdown: [string, number][] } | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [online, setOnline] = useState(isOnline());
+  const [pending, setPending] = useState<PendingCapture[]>([]);
+  const [syncing, setSyncing] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
+    if (!isOnline()) {
+      setCaptures(await readCachedCaptures(user.id));
+      setPending(await listPending(user.id));
+      setLoading(false);
+      return;
+    }
     const { data } = await db
       .from("captures")
       .select("*")
       .eq("user_id", user.id)
       .order("captured_at", { ascending: false });
-    setCaptures((data ?? []) as CaptureRow[]);
-    setRules(await fetchUserRules(user.id));
+    const rows = (data ?? []) as CaptureRow[];
+    setCaptures(rows);
+    cacheCaptures(rows).catch(() => undefined);
+    setPending(await listPending(user.id));
+    try {
+      setRules(await fetchUserRules(user.id));
+    } catch {
+      /* offline */
+    }
     setLoading(false);
   }, [user]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  /* ---- offline / sync ---- */
+  const runSync = useCallback(async () => {
+    if (!user || !isOnline()) return;
+    const queued = await listPending(user.id);
+    if (!queued.length) return;
+    setSyncing(true);
+    const { synced, failed } = await syncPendingCaptures(user.id);
+    setSyncing(false);
+    setPending(await listPending(user.id));
+    if (synced.length) toast.success(`${synced.length} offline capture${synced.length > 1 ? "s" : ""} synced`);
+    if (failed) toast.error(`${failed} capture${failed > 1 ? "s" : ""} couldn't sync yet`);
+    if (synced.length) load();
+  }, [user, load]);
+
+  useEffect(() => {
+    const goOnline = () => {
+      setOnline(true);
+      runSync();
+    };
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    if (isOnline()) runSync();
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, [runSync]);
+
 
   const runFiles = useCallback(
     async (files: File[], allowDuplicate = false) => {
