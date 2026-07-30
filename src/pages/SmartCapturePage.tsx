@@ -260,6 +260,35 @@ export default function SmartCapturePage() {
           </div>
         </div>
 
+        {/* Offline / sync status */}
+        {(!online || pending.length > 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-[12px] text-foreground"
+          >
+            <CloudOff className={`h-3.5 w-3.5 ${online ? "text-muted-foreground" : "text-amber-500"}`} />
+            <span>
+              {online
+                ? `${pending.length} capture${pending.length > 1 ? "s" : ""} waiting to sync`
+                : "Offline mode — capture, scan and organize keep working; everything syncs later."}
+            </span>
+            {online && pending.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={runSync}
+                disabled={syncing}
+                className="ml-auto h-7 rounded-lg px-2 text-[11px]"
+              >
+                <RefreshCw className={`mr-1 h-3 w-3 ${syncing ? "animate-spin" : ""}`} />
+                {syncing ? "Syncing…" : "Sync now"}
+              </Button>
+            )}
+          </motion.div>
+        )}
+
+
         {/* Search + filters */}
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1">
