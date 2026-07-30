@@ -124,7 +124,23 @@ export default function SmartCapturePage() {
         toast.error("Only images are supported right now");
         return;
       }
-      const currentRules = await fetchUserRules(user.id);
+
+      // Offline: queue locally, sync automatically when the connection returns.
+      if (!isOnline()) {
+        for (const f of images) {
+          await queueCapture({ userId: user.id, blob: f, name: f.name || `capture-${Date.now()}.jpg`, allowDuplicate: true });
+        }
+        setPending(await listPending(user.id));
+        toast.success(`Saved offline — ${images.length} capture${images.length > 1 ? "s" : ""} will sync automatically`);
+        return;
+      }
+
+      let currentRules: UserRule[] = rules;
+      try {
+        currentRules = await fetchUserRules(user.id);
+      } catch {
+        /* keep cached rules */
+      }
       const results: CaptureRow[] = [];
       for (let i = 0; i < images.length; i++) {
         setQueue({ current: i + 1, total: images.length });
@@ -144,7 +160,14 @@ export default function SmartCapturePage() {
           }
           if (res.capture) results.push(res.capture);
         } catch (e: any) {
-          toast.error(e?.message || "Could not process that image");
+          // Lost connection mid-flight — fall back to the offline queue.
+          if (!isOnline()) {
+            await queueCapture({ userId: user.id, blob: images[i], name: images[i].name, allowDuplicate: true });
+            setPending(await listPending(user.id));
+            toast.message("Connection lost — capture saved offline");
+          } else {
+            toast.error(e?.message || "Could not process that image");
+          }
         }
       }
       setStep(null);
@@ -158,14 +181,16 @@ export default function SmartCapturePage() {
       }
       load();
     },
-    [user, load]
+    [user, load, rules]
   );
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    runFiles(files);
+    if (files.length === 1 && files[0].type.startsWith("image/")) setReview(files[0]);
+    else runFiles(files);
   };
+
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
