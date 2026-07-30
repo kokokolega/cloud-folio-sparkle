@@ -3,13 +3,14 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Camera, ImagePlus, Search, Sparkles, Inbox, ShieldCheck } from "lucide-react";
+import { Camera, ImagePlus, Search, Sparkles, Inbox, ShieldCheck, CloudOff, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CaptureCamera } from "@/components/capture/CaptureCamera";
 import { CaptureProcessing } from "@/components/capture/CaptureProcessing";
+import { CaptureReviewSheet } from "@/components/capture/CaptureReviewSheet";
 import { CaptureDetail } from "@/components/capture/CaptureDetail";
 import { DuplicateDialog } from "@/components/capture/DuplicateDialog";
 import {
@@ -21,6 +22,15 @@ import {
   type CaptureStep,
   type DuplicateInfo,
 } from "@/lib/smartCapture/pipeline";
+import {
+  cacheCaptures,
+  isOnline,
+  listPending,
+  queueCapture,
+  readCachedCaptures,
+  syncPendingCaptures,
+  type PendingCapture,
+} from "@/lib/smartCapture/offlineQueue";
 import { textSimilarity, type UserRule } from "@/lib/smartCapture/rules";
 
 const db = supabase as any;
@@ -33,6 +43,7 @@ export default function SmartCapturePage() {
   const [rules, setRules] = useState<UserRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [review, setReview] = useState<File | null>(null);
   const [step, setStep] = useState<CaptureStep | null>(null);
   const [queue, setQueue] = useState({ current: 0, total: 0 });
   const [duplicate, setDuplicate] = useState<DuplicateInfo | null>(null);
@@ -42,22 +53,68 @@ export default function SmartCapturePage() {
   const [category, setCategory] = useState<string>("All");
   const [inbox, setInbox] = useState<{ total: number; breakdown: [string, number][] } | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [online, setOnline] = useState(isOnline());
+  const [pending, setPending] = useState<PendingCapture[]>([]);
+  const [syncing, setSyncing] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
+    if (!isOnline()) {
+      setCaptures(await readCachedCaptures(user.id));
+      setPending(await listPending(user.id));
+      setLoading(false);
+      return;
+    }
     const { data } = await db
       .from("captures")
       .select("*")
       .eq("user_id", user.id)
       .order("captured_at", { ascending: false });
-    setCaptures((data ?? []) as CaptureRow[]);
-    setRules(await fetchUserRules(user.id));
+    const rows = (data ?? []) as CaptureRow[];
+    setCaptures(rows);
+    cacheCaptures(rows).catch(() => undefined);
+    setPending(await listPending(user.id));
+    try {
+      setRules(await fetchUserRules(user.id));
+    } catch {
+      /* offline */
+    }
     setLoading(false);
   }, [user]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  /* ---- offline / sync ---- */
+  const runSync = useCallback(async () => {
+    if (!user || !isOnline()) return;
+    const queued = await listPending(user.id);
+    if (!queued.length) return;
+    setSyncing(true);
+    const { synced, failed } = await syncPendingCaptures(user.id);
+    setSyncing(false);
+    setPending(await listPending(user.id));
+    if (synced.length) toast.success(`${synced.length} offline capture${synced.length > 1 ? "s" : ""} synced`);
+    if (failed) toast.error(`${failed} capture${failed > 1 ? "s" : ""} couldn't sync yet`);
+    if (synced.length) load();
+  }, [user, load]);
+
+  useEffect(() => {
+    const goOnline = () => {
+      setOnline(true);
+      runSync();
+    };
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    if (isOnline()) runSync();
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, [runSync]);
+
 
   const runFiles = useCallback(
     async (files: File[], allowDuplicate = false) => {
@@ -67,7 +124,23 @@ export default function SmartCapturePage() {
         toast.error("Only images are supported right now");
         return;
       }
-      const currentRules = await fetchUserRules(user.id);
+
+      // Offline: queue locally, sync automatically when the connection returns.
+      if (!isOnline()) {
+        for (const f of images) {
+          await queueCapture({ userId: user.id, blob: f, name: f.name || `capture-${Date.now()}.jpg`, allowDuplicate: true });
+        }
+        setPending(await listPending(user.id));
+        toast.success(`Saved offline — ${images.length} capture${images.length > 1 ? "s" : ""} will sync automatically`);
+        return;
+      }
+
+      let currentRules: UserRule[] = rules;
+      try {
+        currentRules = await fetchUserRules(user.id);
+      } catch {
+        /* keep cached rules */
+      }
       const results: CaptureRow[] = [];
       for (let i = 0; i < images.length; i++) {
         setQueue({ current: i + 1, total: images.length });
@@ -87,7 +160,14 @@ export default function SmartCapturePage() {
           }
           if (res.capture) results.push(res.capture);
         } catch (e: any) {
-          toast.error(e?.message || "Could not process that image");
+          // Lost connection mid-flight — fall back to the offline queue.
+          if (!isOnline()) {
+            await queueCapture({ userId: user.id, blob: images[i], name: images[i].name, allowDuplicate: true });
+            setPending(await listPending(user.id));
+            toast.message("Connection lost — capture saved offline");
+          } else {
+            toast.error(e?.message || "Could not process that image");
+          }
         }
       }
       setStep(null);
@@ -101,14 +181,16 @@ export default function SmartCapturePage() {
       }
       load();
     },
-    [user, load]
+    [user, load, rules]
   );
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    runFiles(files);
+    if (files.length === 1 && files[0].type.startsWith("image/")) setReview(files[0]);
+    else runFiles(files);
   };
+
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -177,6 +259,35 @@ export default function SmartCapturePage() {
             <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={onPick} />
           </div>
         </div>
+
+        {/* Offline / sync status */}
+        {(!online || pending.length > 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-[12px] text-foreground"
+          >
+            <CloudOff className={`h-3.5 w-3.5 ${online ? "text-muted-foreground" : "text-amber-500"}`} />
+            <span>
+              {online
+                ? `${pending.length} capture${pending.length > 1 ? "s" : ""} waiting to sync`
+                : "Offline mode — capture, scan and organize keep working; everything syncs later."}
+            </span>
+            {online && pending.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={runSync}
+                disabled={syncing}
+                className="ml-auto h-7 rounded-lg px-2 text-[11px]"
+              >
+                <RefreshCw className={`mr-1 h-3 w-3 ${syncing ? "animate-spin" : ""}`} />
+                {syncing ? "Syncing…" : "Sync now"}
+              </Button>
+            )}
+          </motion.div>
+        )}
+
 
         {/* Search + filters */}
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -312,7 +423,21 @@ export default function SmartCapturePage() {
         )}
       </AnimatePresence>
 
-      <CaptureCamera open={cameraOpen} onOpenChange={setCameraOpen} onCapture={(f) => runFiles([f])} />
+      <CaptureCamera
+        open={cameraOpen}
+        onOpenChange={setCameraOpen}
+        onCapture={(f) => setReview(f)}
+        onImport={() => inputRef.current?.click()}
+      />
+      <CaptureReviewSheet
+        file={review}
+        onCancel={() => setReview(null)}
+        onConfirm={(f) => {
+          setReview(null);
+          runFiles([f]);
+        }}
+      />
+
       <CaptureProcessing open={!!step && step !== "done"} step={step} current={queue.current} total={queue.total} />
       <CaptureDetail
         capture={selected}

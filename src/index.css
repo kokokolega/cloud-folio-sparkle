@@ -361,14 +361,15 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ==== AI chat: VT323 response font ==== */
+/* ==== AI chat: default Inter typography (restored) ==== */
 .ai-response, .ai-response .prose-editor, .ai-response p, .ai-response li, .ai-response h1, .ai-response h2, .ai-response h3, .ai-response blockquote {
-  font-family: 'VT323', ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 18px;
-  line-height: 1.5;
-  letter-spacing: 0.2px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  letter-spacing: normal;
 }
-.ai-response code, .ai-response pre { font-family: 'VT323', ui-monospace, monospace; }
+.ai-response code, .ai-response pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
 
 /* ==== Animated glowing border (ChatGPT/Vercel-style) ==== */
 @property --glow-angle {
