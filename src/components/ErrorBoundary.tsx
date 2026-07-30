@@ -21,16 +21,17 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReload = () => {
-    if ("caches" in window) {
-      caches.keys().then((names) => {
-        Promise.all(names.map((name) => caches.delete(name))).then(() => {
-          window.location.reload();
-        });
-      });
+    const reload = () => location.reload();
+    if (typeof caches !== "undefined") {
+      caches
+        .keys()
+        .then((names) => Promise.all(names.map((name) => caches.delete(name))))
+        .finally(reload);
     } else {
-      window.location.reload();
+      reload();
     }
   };
+
 
   render() {
     if (this.state.hasError) {
