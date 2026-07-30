@@ -423,7 +423,21 @@ export default function SmartCapturePage() {
         )}
       </AnimatePresence>
 
-      <CaptureCamera open={cameraOpen} onOpenChange={setCameraOpen} onCapture={(f) => runFiles([f])} />
+      <CaptureCamera
+        open={cameraOpen}
+        onOpenChange={setCameraOpen}
+        onCapture={(f) => setReview(f)}
+        onImport={() => inputRef.current?.click()}
+      />
+      <CaptureReviewSheet
+        file={review}
+        onCancel={() => setReview(null)}
+        onConfirm={(f) => {
+          setReview(null);
+          runFiles([f]);
+        }}
+      />
+
       <CaptureProcessing open={!!step && step !== "done"} step={step} current={queue.current} total={queue.total} />
       <CaptureDetail
         capture={selected}
