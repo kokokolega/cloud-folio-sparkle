@@ -1,6 +1,11 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { pruneDrafts } from "./lib/localDraft";
+
+// Drop local drafts that haven't been touched in a month.
+pruneDrafts();
+
 
 // Service Worker Registration for PWA
 if ('serviceWorker' in navigator) {
