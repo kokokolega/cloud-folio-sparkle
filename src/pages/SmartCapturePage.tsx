@@ -3,7 +3,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Camera, ImagePlus, Search, Sparkles, Inbox, ShieldCheck, CloudOff, RefreshCw } from "lucide-react";
+import { Camera, ImagePlus, Search, Sparkles, Inbox, ShieldCheck, CloudOff, RefreshCw, Wand2, SlidersHorizontal } from "lucide-react";
+import { autoScan } from "@/lib/smartCapture/scan";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,6 +57,11 @@ export default function SmartCapturePage() {
   const [online, setOnline] = useState(isOnline());
   const [pending, setPending] = useState<PendingCapture[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [instant, setInstant] = useState(() => localStorage.getItem("oltrid-capture-instant") !== "off");
+
+  useEffect(() => {
+    localStorage.setItem("oltrid-capture-instant", instant ? "on" : "off");
+  }, [instant]);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -125,13 +131,18 @@ export default function SmartCapturePage() {
         return;
       }
 
+      // Instant mode: detect the page, straighten, enhance — all on-device.
+      const prepared = instant
+        ? await Promise.all(images.map((f) => autoScan(f)))
+        : images;
+
       // Offline: queue locally, sync automatically when the connection returns.
       if (!isOnline()) {
-        for (const f of images) {
+        for (const f of prepared) {
           await queueCapture({ userId: user.id, blob: f, name: f.name || `capture-${Date.now()}.jpg`, allowDuplicate: true });
         }
         setPending(await listPending(user.id));
-        toast.success(`Saved offline — ${images.length} capture${images.length > 1 ? "s" : ""} will sync automatically`);
+        toast.success(`Saved offline — ${prepared.length} capture${prepared.length > 1 ? "s" : ""} will sync automatically`);
         return;
       }
 
@@ -142,18 +153,18 @@ export default function SmartCapturePage() {
         /* keep cached rules */
       }
       const results: CaptureRow[] = [];
-      for (let i = 0; i < images.length; i++) {
-        setQueue({ current: i + 1, total: images.length });
+      for (let i = 0; i < prepared.length; i++) {
+        setQueue({ current: i + 1, total: prepared.length });
         try {
           const res = await processCapture({
             userId: user.id,
-            file: images[i],
+            file: prepared[i],
             userRules: currentRules,
             onStep: setStep,
             allowDuplicate,
           });
           if (res.duplicate) {
-            pendingRef.current = images[i];
+            pendingRef.current = prepared[i];
             setDuplicate(res.duplicate);
             setStep(null);
             return;
@@ -162,7 +173,7 @@ export default function SmartCapturePage() {
         } catch (e: any) {
           // Lost connection mid-flight — fall back to the offline queue.
           if (!isOnline()) {
-            await queueCapture({ userId: user.id, blob: images[i], name: images[i].name, allowDuplicate: true });
+            await queueCapture({ userId: user.id, blob: prepared[i], name: prepared[i].name, allowDuplicate: true });
             setPending(await listPending(user.id));
             toast.message("Connection lost — capture saved offline");
           } else {
@@ -181,13 +192,13 @@ export default function SmartCapturePage() {
       }
       load();
     },
-    [user, load, rules]
+    [user, load, rules, instant]
   );
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (files.length === 1 && files[0].type.startsWith("image/")) setReview(files[0]);
+    if (!instant && files.length === 1 && files[0].type.startsWith("image/")) setReview(files[0]);
     else runFiles(files);
   };
 
@@ -255,6 +266,15 @@ export default function SmartCapturePage() {
               className="h-9 flex-1 rounded-xl text-xs sm:flex-none"
             >
               <ImagePlus className="mr-1.5 h-3.5 w-3.5" /> Import
+            </Button>
+            <Button
+              variant={instant ? "secondary" : "ghost"}
+              onClick={() => setInstant((v) => !v)}
+              className="h-9 rounded-xl text-xs"
+              title={instant ? "Instant mode: scan, name and file automatically" : "Review mode: adjust crop before saving"}
+            >
+              {instant ? <Wand2 className="mr-1.5 h-3.5 w-3.5" /> : <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />}
+              {instant ? "Instant" : "Review"}
             </Button>
             <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={onPick} />
           </div>
@@ -426,7 +446,7 @@ export default function SmartCapturePage() {
       <CaptureCamera
         open={cameraOpen}
         onOpenChange={setCameraOpen}
-        onCapture={(f) => setReview(f)}
+        onCapture={(f) => (instant ? runFiles([f]) : setReview(f))}
         onImport={() => inputRef.current?.click()}
       />
       <CaptureReviewSheet

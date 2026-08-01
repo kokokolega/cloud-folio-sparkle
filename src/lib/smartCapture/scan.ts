@@ -293,3 +293,24 @@ export function canvasToFile(canvas: HTMLCanvasElement, name: string, quality = 
     );
   });
 }
+
+
+/**
+ * Zero-click scan: detect the document, straighten it, enhance it and hand back
+ * a ready-to-store file. Falls back to the original frame when no reliable
+ * document outline is found.
+ */
+export async function autoScan(file: File, mode: EnhanceMode = "auto"): Promise<File> {
+  try {
+    const canvas = await toCanvas(file);
+    const quad = detectDocumentQuad(canvas);
+    const full = fullFrameQuad(canvas);
+    const useQuad =
+      quad && quadArea(quad) > quadArea(full) * 0.25 && quadArea(quad) < quadArea(full) * 0.995 ? quad : null;
+    const warped = useQuad ? warpQuad(canvas, useQuad) : canvas;
+    const enhanced = enhanceCanvas(warped, mode);
+    return await canvasToFile(enhanced, file.name || `scan-${Date.now()}.jpg`);
+  } catch {
+    return file;
+  }
+}

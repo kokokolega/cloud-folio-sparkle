@@ -16,7 +16,6 @@ import {
   StickyNote,
   ListTodo,
   Layers,
-  X,
   FolderInput,
   Download,
   Trash2,
@@ -143,12 +142,6 @@ export function CaptureDetail({ capture, all, onOpenChange, onChanged, onSelect 
               alt={capture.title}
               className="max-h-full max-w-full rounded-xl object-contain shadow-sm"
             />
-            <button
-              onClick={() => onOpenChange(false)}
-              className="absolute right-3 top-3 rounded-full bg-background/80 p-1.5 text-muted-foreground backdrop-blur hover:text-foreground md:hidden"
-            >
-              <X className="h-4 w-4" />
-            </button>
           </div>
 
           {/* Info */}
@@ -162,12 +155,6 @@ export function CaptureDetail({ capture, all, onOpenChange, onChanged, onSelect 
                     {formatSize(capture.size)}
                   </p>
                 </div>
-                <button
-                  onClick={() => onOpenChange(false)}
-                  className="hidden md:block rounded-full p-1.5 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
 
               <div>

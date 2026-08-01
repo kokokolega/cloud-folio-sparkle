@@ -25,6 +25,9 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ShareCardsDialog } from "@/components/notes/ShareCardsDialog";
+import { NoteCardsWorkspace } from "@/components/notes/NoteCardsWorkspace";
+import { embedCards, parseCards, stripCards, type CardsDoc } from "@/lib/noteCards";
+import { useLocalDraft } from "@/hooks/useLocalDraft";
 
 
 interface NoteEditorProps {
@@ -67,6 +70,12 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
   const [showVersions, setShowVersions] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showCards, setShowCards] = useState(false);
+  const [mode, setMode] = useState<"write" | "canvas">("write");
+  const draftKey = `note:${note?.id ?? "new"}`;
+  const [cardsDoc, setCardsDoc] = useLocalDraft<CardsDoc>(
+    `${draftKey}:cards`,
+    parseCards(note?.content || ""),
+  );
   
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,7 +89,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
       Underline,
       ImageResize,
     ],
-    content: note?.content || "",
+    content: stripCards(note?.content || ""),
     editorProps: {
       attributes: {
         class: "prose-editor min-h-[160px] outline-none text-[13px] leading-relaxed",
@@ -92,6 +101,11 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
       }
     },
   });
+
+  const cardsDocRef = useRef(cardsDoc);
+  useEffect(() => {
+    cardsDocRef.current = cardsDoc;
+  }, [cardsDoc]);
 
   // Track versions on auto-save
   const addVersion = useCallback(() => {
@@ -109,7 +123,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
     autoSaveTimerRef.current = setTimeout(() => {
       if (!editor) return;
       addVersion();
-      const html = editor.getHTML();
+      const html = embedCards(editor.getHTML(), cardsDocRef.current);
       setAutoSaveStatus("saving");
       onAutoSave?.({ title, content: html, color });
       setTimeout(() => setAutoSaveStatus("saved"), 500);
@@ -121,7 +135,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
     if (isExistingNote && onAutoSave) {
       triggerAutoSave();
     }
-  }, [title, color]);
+  }, [title, color, cardsDoc]);
 
   useEffect(() => {
     return () => clearTimeout(autoSaveTimerRef.current);
@@ -166,15 +180,27 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
     }
   };
 
+  const uploadCardImage = useCallback(
+    async (file: File) => {
+      if (!user) throw new Error("Sign in to upload");
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/note-card-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("user-files").upload(path, file);
+      if (error) throw error;
+      return supabase.storage.from("user-files").getPublicUrl(path).data.publicUrl;
+    },
+    [user]
+  );
+
   const colorConfig = NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
 
   const handleSave = useCallback(() => {
     if (!editor) return;
-    const html = editor.getHTML();
-    const isEmpty = editor.isEmpty && !title.trim();
+    const html = embedCards(editor.getHTML(), cardsDoc);
+    const isEmpty = editor.isEmpty && !title.trim() && !cardsDoc.cards.length;
     if (isEmpty) return;
     onSave({ title, content: html, color });
-  }, [editor, title, color, onSave]);
+  }, [editor, title, color, onSave, cardsDoc]);
 
   if (!editor) return null;
 
@@ -249,8 +275,33 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         onChange={handleImageUpload}
       />
 
+      <div className="px-4 pb-2">
+        <div className="inline-flex rounded-lg border border-border p-0.5 mb-2">
+          {(["write", "canvas"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={`px-2.5 py-1 text-[11px] rounded-md transition-colors ${mode === m ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {m === "write" ? "Write" : "Cards canvas"}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className={`px-4 pb-2 ${isFullscreen ? "flex-1 overflow-y-auto" : ""}`}>
-        <EditorContent editor={editor} />
+        <div className={mode === "write" ? "" : "hidden"}>
+          <EditorContent editor={editor} />
+        </div>
+        {mode === "canvas" && (
+          <NoteCardsWorkspace
+            doc={cardsDoc}
+            onChange={setCardsDoc}
+            noteHtml={editor.getHTML()}
+            onUploadImage={uploadCardImage}
+          />
+        )}
       </div>
 
       <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
@@ -273,7 +324,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" className="h-7 rounded-lg text-[12px] px-4" onClick={handleSave} disabled={isSaving || (editor.isEmpty && !title.trim())}>
+          <Button size="sm" className="h-7 rounded-lg text-[12px] px-4" onClick={handleSave} disabled={isSaving || (editor.isEmpty && !title.trim() && !cardsDoc.cards.length)}>
             {isSaving ? "Saving…" : "Save"}
           </Button>
         </div>
