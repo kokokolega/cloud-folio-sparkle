@@ -197,7 +197,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
   const handleSave = useCallback(() => {
     if (!editor) return;
     const html = embedCards(editor.getHTML(), cardsDoc);
-    const isEmpty = editor.isEmpty && !title.trim();
+    const isEmpty = editor.isEmpty && !title.trim() && !cardsDoc.cards.length;
     if (isEmpty) return;
     onSave({ title, content: html, color });
   }, [editor, title, color, onSave, cardsDoc]);
@@ -324,7 +324,7 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" className="h-7 rounded-lg text-[12px] px-4" onClick={handleSave} disabled={isSaving || (editor.isEmpty && !title.trim())}>
+          <Button size="sm" className="h-7 rounded-lg text-[12px] px-4" onClick={handleSave} disabled={isSaving || (editor.isEmpty && !title.trim() && !cardsDoc.cards.length)}>
             {isSaving ? "Saving…" : "Save"}
           </Button>
         </div>
