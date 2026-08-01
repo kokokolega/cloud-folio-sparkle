@@ -272,9 +272,6 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
           <div className="w-full md:w-[340px] border-t md:border-t-0 md:border-l border-border flex flex-col min-h-0 max-h-[46vh] md:max-h-none">
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
               <span className="text-[12px] font-medium">Customize</span>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onOpenChange(false)}>
-                <X className="h-4 w-4" />
-              </Button>
             </div>
 
             <Tabs defaultValue="style" className="flex-1 min-h-0 flex flex-col">
