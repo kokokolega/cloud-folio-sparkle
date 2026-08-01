@@ -28,7 +28,6 @@ import {
   Loader2,
   Sparkles,
   ImagePlus,
-  X,
 } from "lucide-react";
 import { CardSlide, parseNoteToSlides } from "@/lib/cardParser";
 import {

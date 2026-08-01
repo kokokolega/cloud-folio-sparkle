@@ -16,7 +16,6 @@ import {
   StickyNote,
   ListTodo,
   Layers,
-  X,
   FolderInput,
   Download,
   Trash2,
