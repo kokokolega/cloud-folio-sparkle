@@ -302,7 +302,7 @@ export function canvasToFile(canvas: HTMLCanvasElement, name: string, quality = 
  */
 export async function autoScan(file: File, mode: EnhanceMode = "auto"): Promise<File> {
   try {
-    const { canvas } = await toCanvas(file);
+    const canvas = await toCanvas(file);
     const quad = detectDocumentQuad(canvas);
     const full = fullFrameQuad(canvas);
     const useQuad =
