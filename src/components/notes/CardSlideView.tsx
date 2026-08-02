@@ -16,16 +16,23 @@ export interface CardStyleConfig {
   coverImage?: string | null;
   index: number;
   total: number;
+  /** global styling knobs */
+  textScale?: number;
+  spacingScale?: number;
+  /** hide the generated body so only design elements show */
+  contentHidden?: boolean;
 }
 
 const px = (n: number) => `${n}px`;
 
-export const CardSlideView = forwardRef<HTMLDivElement, { slide: CardSlide; cfg: CardStyleConfig }>(
-  function CardSlideView({ slide, cfg }, ref) {
+export const CardSlideView = forwardRef<
+  HTMLDivElement,
+  { slide: CardSlide; cfg: CardStyleConfig; overlay?: React.ReactNode }
+>(function CardSlideView({ slide, cfg, overlay }, ref) {
     const { theme, accent, width, height } = cfg;
     // Scale typography relative to a 1080x1350 reference so every ratio stays balanced.
-    const u = Math.min(width, height) / 1080;
-    const pad = 88 * u;
+    const u = (Math.min(width, height) / 1080) * (cfg.textScale ?? 1);
+    const pad = 88 * (Math.min(width, height) / 1080) * (cfg.spacingScale ?? 1);
     const isDark = ["dark", "neon", "glass", "startup"].includes(theme.id) ;
 
     const surface: React.CSSProperties = {
