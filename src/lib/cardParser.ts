@@ -209,7 +209,7 @@ export function parseNoteToSlides({
         slides.push({ id: uid(), kind: "stat", eyebrow: section, stat: stat.stat, statLabel: stat.label });
         return;
       }
-      splitParagraph(text, 340).forEach((part) =>
+      splitParagraph(text, maxChars).forEach((part) =>
         slides.push({ id: uid(), kind: "paragraph", eyebrow: section, title: section, body: part })
       );
       return;
