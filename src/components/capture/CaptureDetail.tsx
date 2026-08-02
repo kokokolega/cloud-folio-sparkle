@@ -133,10 +133,10 @@ export function CaptureDetail({ capture, all, onOpenChange, onChanged, onSelect 
 
   return (
     <Dialog open={!!capture} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] md:max-w-4xl h-[92dvh] md:h-[85vh] p-0 gap-0 rounded-2xl overflow-hidden glass-card border-0">
-        <div className="flex h-full flex-col md:flex-row">
+      <DialogContent className="w-[96vw] max-w-[96vw] md:max-w-4xl h-[92dvh] md:h-[85vh] p-0 gap-0 rounded-2xl overflow-hidden glass-card border-0">
+        <div className="flex h-full min-h-0 w-full flex-col md:flex-row">
           {/* Image */}
-          <div className="relative md:w-1/2 shrink-0 bg-muted/40 flex items-center justify-center p-3 md:p-6 max-h-[35dvh] md:max-h-none">
+          <div className="relative flex min-h-[30dvh] shrink-0 items-center justify-center bg-muted/40 p-3 md:min-h-0 md:w-1/2 md:p-6 max-h-[38dvh] md:max-h-none">
             <img
               src={publicUrl(capture.storage_path)}
               alt={capture.title}
@@ -144,9 +144,11 @@ export function CaptureDetail({ capture, all, onOpenChange, onChanged, onSelect 
             />
           </div>
 
+
           {/* Info */}
-          <ScrollArea className="flex-1 min-h-0">
-            <div className="p-4 md:p-6 space-y-5">
+          <ScrollArea className="min-h-0 w-full flex-1">
+            <div className="w-full max-w-full space-y-5 overflow-hidden p-4 md:p-6">
+
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
                   <h2 className="text-base md:text-lg font-semibold text-foreground break-words">{capture.title}</h2>
