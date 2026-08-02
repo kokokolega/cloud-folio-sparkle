@@ -73,6 +73,20 @@ export interface ParseOptions {
   /** points per content slide — tighter for story/square formats */
   pointsPerSlide?: number;
   includeCta?: boolean;
+  /** smart overflow: max characters of body copy that fit one card */
+  maxChars?: number;
+}
+
+/**
+ * Smart overflow capacity — how much copy comfortably fits a card of this size
+ * at the current global text scale. Used to spill content onto a new card that
+ * keeps exactly the same design.
+ */
+export function capacityFor(width: number, height: number, textScale = 1) {
+  const area = (width * height) / (1080 * 1350);
+  const maxChars = Math.max(140, Math.round((340 * area) / (textScale * textScale)));
+  const pointsPerSlide = Math.max(2, Math.min(6, Math.round((4 * Math.sqrt(area)) / textScale)));
+  return { maxChars, pointsPerSlide };
 }
 
 export function parseNoteToSlides({
@@ -80,7 +94,9 @@ export function parseNoteToSlides({
   content,
   pointsPerSlide = 4,
   includeCta = true,
+  maxChars = 340,
 }: ParseOptions): CardSlide[] {
+
   counter = 0;
   const doc = new DOMParser().parseFromString(
     `<div id="root">${content || ""}</div>`,
