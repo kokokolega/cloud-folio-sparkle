@@ -290,7 +290,7 @@ export const CardSlideView = forwardRef<
           />
         )}
         <div style={{ position: "absolute", inset: 0, padding: px(pad), display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <div style={{ flex: 1, minHeight: 0 }}>{body()}</div>
+          <div style={{ flex: 1, minHeight: 0, visibility: cfg.contentHidden ? "hidden" : "visible" }}>{body()}</div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: px(24 * u) }}>
             <div style={{ display: "flex", alignItems: "center", gap: px(14 * u) }}>
               {cfg.showLogo && slide.kind !== "cta" && (
@@ -307,7 +307,9 @@ export const CardSlideView = forwardRef<
             </span>
           </div>
         </div>
+        {overlay}
       </div>
     );
   }
 );
+
