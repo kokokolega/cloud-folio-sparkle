@@ -68,8 +68,11 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <HandoffManager />
+            <Scratchpad />
         </TooltipProvider>
       </GuestProvider>
+
       </AuthProvider>
       </BrowserRouter>
       </BgThemeProvider>
