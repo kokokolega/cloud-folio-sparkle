@@ -226,13 +226,15 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
     return () => ro.disconnect();
   }, [open, designMode]);
 
-  const rulerPad = designMode && showRulers ? 26 : 8;
+  const rulersOn = showRulers && !isMobile;
+  const rulerPad = designMode && rulersOn ? 26 : 8;
   const fitScale = Math.min(
     (previewWidth - rulerPad) / ratio.w,
     (previewHeight - rulerPad) / ratio.h,
     1
   );
   const scale = Math.max(0.05, fitScale * zoom);
+
 
   /* ---------------- design helpers ---------------- */
 
