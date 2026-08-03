@@ -82,6 +82,8 @@ import {
   templateElements,
 } from "@/lib/cardDesign";
 import { rewriteForCards } from "@/lib/cardAi";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 
 interface ShareCardsDialogProps {
   open: boolean;
