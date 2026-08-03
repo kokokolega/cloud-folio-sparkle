@@ -251,11 +251,24 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
     const item = ELEMENT_LIBRARY.find((i) => i.kind === kind);
     if (!item) return;
     const z = elements.length ? Math.max(...elements.map((e) => e.z)) + 1 : 1;
-    const el = createElement(item, { x: Math.round(ratio.w / 2 - item.w / 2), y: Math.round(ratio.h / 2 - item.h / 2) }, z);
+    // stagger new elements so they never land exactly on top of each other
+    const offset = (elements.length % 5) * 28;
+    const el = createElement(
+      item,
+      {
+        x: Math.round(Math.min(Math.max(24, ratio.w / 2 - item.w / 2 + offset), ratio.w - item.w - 24)),
+        y: Math.round(Math.min(Math.max(24, ratio.h / 2 - item.h / 2 + offset), ratio.h - item.h - 24)),
+      },
+      z
+    );
     setElements([...elements, el]);
     setSelectedIds([el.id]);
     setDesignMode(true);
+    setPanelTab("design");
+    if (isMobile) setPanelOpen(false);
+    toast.success(`${item.label} added`);
   };
+
 
   const duplicateSelection = useCallback(() => {
     if (!selected.length) return;
