@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -57,6 +57,7 @@ const KIND_ICON: Record<string, any> = {
 export function Scratchpad() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [open, setOpen] = useState(false);
   const [doc, setDoc] = useState<ScratchDoc>(() => loadScratch());
@@ -196,6 +197,9 @@ export function Scratchpad() {
     setDoc((d) => ({ ...d, sections: [...d.sections, name] }));
     setSection(name);
   };
+
+  const hidden = ["/auth", "/reset-password", "/file/", "/embed/"].some((r) => location.pathname.startsWith(r));
+  if (hidden) return null;
 
   return (
     <>
