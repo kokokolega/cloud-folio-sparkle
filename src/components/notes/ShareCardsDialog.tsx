@@ -122,6 +122,10 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
   const [assets, setAssets] = useState<Asset[]>([]);
   const [components, setComponents] = useState<SavedComponent[]>([]);
   const [order, setOrder] = useState<number[] | null>(null);
+  const [panelTab, setPanelTab] = useState("style");
+  const [panelOpen, setPanelOpen] = useState(false);
+  const isMobile = useIsMobile();
+
 
   const previewBox = useRef<HTMLDivElement>(null);
   const exportRefs = useRef<Record<string, HTMLDivElement | null>>({});
