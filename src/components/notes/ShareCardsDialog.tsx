@@ -36,7 +36,12 @@ import {
   ImagePlus,
   Trash2,
   Plus,
+  Settings2,
+  X,
+  Lock as LockIcon,
+  Unlock,
 } from "lucide-react";
+
 import { CardSlide, capacityFor, parseNoteToSlides } from "@/lib/cardParser";
 import {
   ASPECT_RATIOS,
