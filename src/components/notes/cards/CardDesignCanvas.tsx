@@ -13,6 +13,7 @@ interface Props {
   onSelect: (ids: string[]) => void;
   onChange: (els: DesignElement[], commit: boolean) => void;
   onGuidesChange: (g: Guide[]) => void;
+  onEdit?: () => void;
   children: React.ReactNode;
 }
 
@@ -37,6 +38,7 @@ export function CardDesignCanvas({
   onSelect,
   onChange,
   onGuidesChange,
+  onEdit,
   children,
 }: Props) {
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -266,8 +268,8 @@ export function CardDesignCanvas({
 
       <div
         ref={surfaceRef}
-        className="relative overflow-hidden rounded-lg shadow-xl"
-        style={{ width: width * scale, height: height * scale }}
+        className="relative select-none overflow-hidden rounded-lg shadow-xl"
+        style={{ width: width * scale, height: height * scale, touchAction: "none" }}
         onPointerDown={() => onSelect([])}
       >
         <div style={{ width, height, transform: `scale(${scale})`, transformOrigin: "top left" }}>{children}</div>
@@ -318,8 +320,14 @@ export function CardDesignCanvas({
               <div
                 key={el.id}
                 onPointerDown={(e) => startMove(e, el)}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  onSelect([el.id]);
+                  onEdit?.();
+                }}
                 className="absolute"
                 style={{
+                  touchAction: "none",
                   left: el.x * scale,
                   top: el.y * scale,
                   width: el.w * scale,
@@ -335,12 +343,13 @@ export function CardDesignCanvas({
                     <div
                       key={h}
                       onPointerDown={(e) => startResize(e, el, h)}
-                      className="absolute h-2.5 w-2.5 rounded-[2px] border border-primary bg-background"
+                      className="absolute h-4 w-4 rounded-[3px] border border-primary bg-background md:h-2.5 md:w-2.5"
                       style={{
-                        left: h.includes("w") ? -5 : undefined,
-                        right: h.includes("e") ? -5 : undefined,
-                        top: h.includes("n") ? -5 : undefined,
-                        bottom: h.includes("s") ? -5 : undefined,
+                        touchAction: "none",
+                        left: h.includes("w") ? -8 : undefined,
+                        right: h.includes("e") ? -8 : undefined,
+                        top: h.includes("n") ? -8 : undefined,
+                        bottom: h.includes("s") ? -8 : undefined,
                         cursor: h === "nw" || h === "se" ? "nwse-resize" : "nesw-resize",
                       }}
                     />

@@ -728,7 +728,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                   <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Bring forward" onClick={() => selected.forEach((s) => reorderLayer(s.id, 1))}><ChevronRight className="h-3.5 w-3.5" /></Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Send backward" onClick={() => selected.forEach((s) => reorderLayer(s.id, -1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Toggle lock" onClick={() => selected.forEach((s) => updateElement(s.id, { locked: !s.locked }))}>
-                    {selected[0].locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+                    {selected[0].locked ? <LockIcon className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
                   </Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" aria-label="Delete selection" onClick={deleteSelection}><Trash2 className="h-3.5 w-3.5" /></Button>
                   <Button size="sm" variant="outline" className="ml-auto h-7 px-2 text-[11px]" onClick={() => { setPanelTab("design"); setPanelOpen(true); }}>
