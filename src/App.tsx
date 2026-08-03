@@ -28,6 +28,9 @@ import FoldersPage from "./pages/FoldersPage";
 import NoteFoldersPage from "./pages/NoteFoldersPage";
 import PdfEditorPage from "./pages/PdfEditorPage";
 import SmartCapturePage from "./pages/SmartCapturePage";
+import { Scratchpad } from "@/components/scratchpad/Scratchpad";
+import { HandoffManager } from "@/components/HandoffManager";
+
 
 const queryClient = new QueryClient();
 
@@ -65,8 +68,11 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <HandoffManager />
+            <Scratchpad />
         </TooltipProvider>
       </GuestProvider>
+
       </AuthProvider>
       </BrowserRouter>
       </BgThemeProvider>

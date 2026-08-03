@@ -208,6 +208,42 @@ export type Database = {
           },
         ]
       }
+      device_sessions: {
+        Row: {
+          created_at: string
+          device_id: string
+          device_label: string
+          id: string
+          route: string
+          state: Json
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          device_label?: string
+          id?: string
+          route?: string
+          state?: Json
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          device_label?: string
+          id?: string
+          route?: string
+          state?: Json
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       files: {
         Row: {
           created_at: string
