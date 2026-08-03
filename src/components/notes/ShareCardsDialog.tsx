@@ -629,47 +629,56 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[98vw] max-w-[min(1240px,98vw)] h-[94dvh] sm:h-[90vh] p-0 gap-0 overflow-hidden rounded-2xl">
+        <DialogContent className="w-[100vw] max-w-[min(1240px,100vw)] h-[100dvh] sm:h-[92dvh] sm:w-[96vw] p-0 gap-0 overflow-hidden rounded-none sm:rounded-2xl">
           <VisuallyHidden>
             <DialogTitle>Share as beautiful cards</DialogTitle>
             <DialogDescription>Turn this note into a shareable carousel</DialogDescription>
           </VisuallyHidden>
 
-          <div className="flex h-full min-h-0 flex-col md:flex-row">
+          <div className="relative flex h-full min-h-0 flex-col md:flex-row">
             {/* Stage */}
             <div className="flex min-h-0 flex-1 flex-col bg-muted/40 p-2 sm:p-4">
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <p className="text-[13px] font-medium text-foreground">Show as Cards</p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="truncate text-[13px] font-medium text-foreground">Show as Cards</p>
                   <span className="hidden text-[11px] text-muted-foreground sm:inline">
                     {slides.length} cards · {ratio.label}
                   </span>
                 </div>
-                <div className="flex flex-wrap items-center gap-1">
-                  <Button size="sm" variant={designMode ? "default" : "outline"} className="h-7 text-[11px]" onClick={() => setDesignMode((d) => !d)}>
-                    {designMode ? "Editing" : "Edit design"}
+                <div className="flex items-center gap-1">
+                  <Button size="sm" variant={designMode ? "default" : "outline"} className="h-7 px-2 text-[11px]" onClick={() => setDesignMode((d) => !d)}>
+                    {designMode ? "Editing" : "Edit"}
                   </Button>
-                  <Button size="icon" variant="outline" className="h-7 w-7" aria-label="Toggle rulers" onClick={() => setShowRulers((v) => !v)}>
-                    <Ruler className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button size="icon" variant="outline" className="h-7 w-7" aria-label="Toggle grid" onClick={() => setShowGrid((v) => !v)}>
-                    <Grid3X3 className="h-3.5 w-3.5" />
-                  </Button>
+                  {!isMobile && (
+                    <>
+                      <Button size="icon" variant="outline" className="h-7 w-7" aria-label="Toggle rulers" onClick={() => setShowRulers((v) => !v)}>
+                        <Ruler className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="outline" className="h-7 w-7" aria-label="Toggle grid" onClick={() => setShowGrid((v) => !v)}>
+                        <Grid3X3 className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
+                  )}
                   <Button size="icon" variant="outline" className="h-7 w-7" aria-label="Present" onClick={() => setPresenting(true)}>
                     <Play className="h-3.5 w-3.5" />
                   </Button>
                   <Button size="icon" variant="outline" className="h-7 w-7" aria-label="Print" onClick={printCards} disabled={exporting}>
                     <Printer className="h-3.5 w-3.5" />
                   </Button>
+                  {isMobile && (
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setPanelOpen(true)}>
+                      <Settings2 className="mr-1 h-3.5 w-3.5" /> Tools
+                    </Button>
+                  )}
                 </div>
               </div>
 
               {designMode && (
-                <div className="mb-2 flex flex-wrap items-center gap-2">
+                <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1">
                   <AlignBar disabled={!selected.length} onAlign={align} />
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex shrink-0 items-center gap-1.5">
                     <span className="text-[10px] text-muted-foreground">Zoom</span>
-                    <Slider className="w-24" value={[zoom * 100]} min={25} max={300} step={5} onValueChange={([v]) => setZoom(v / 100)} />
+                    <Slider className="w-20 sm:w-24" value={[zoom * 100]} min={25} max={300} step={5} onValueChange={([v]) => setZoom(v / 100)} />
                   </div>
                 </div>
               )}
@@ -684,11 +693,15 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                       elements={elements}
                       selectedIds={selectedIds}
                       guides={guides}
-                      showRulers={showRulers}
+                      showRulers={rulersOn}
                       showGrid={showGrid}
                       onSelect={setSelectedIds}
                       onChange={(els) => setElements(els)}
                       onGuidesChange={setGuides}
+                      onEdit={() => {
+                        setPanelTab("design");
+                        if (isMobile) setPanelOpen(true);
+                      }}
                     >
                       {renderSlide(current)}
                     </CardDesignCanvas>
@@ -701,6 +714,23 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                   )
                 )}
               </div>
+
+              {/* Selection quick actions — essential on touch devices */}
+              {designMode && selected.length > 0 && (
+                <div className="mt-2 flex flex-wrap items-center gap-1 rounded-xl border border-border bg-background/80 p-1.5 backdrop-blur">
+                  <span className="px-1 text-[11px] text-muted-foreground">{selected.length} selected</span>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Duplicate selection" onClick={duplicateSelection}><Copy className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Bring forward" onClick={() => selected.forEach((s) => reorderLayer(s.id, 1))}><ChevronRight className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Send backward" onClick={() => selected.forEach((s) => reorderLayer(s.id, -1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Toggle lock" onClick={() => selected.forEach((s) => updateElement(s.id, { locked: !s.locked }))}>
+                    {selected[0].locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" aria-label="Delete selection" onClick={deleteSelection}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  <Button size="sm" variant="outline" className="ml-auto h-7 px-2 text-[11px]" onClick={() => { setPanelTab("design"); setPanelOpen(true); }}>
+                    Edit properties
+                  </Button>
+                </div>
+              )}
 
               {/* Page navigator */}
               <div className="mt-2 flex items-center gap-2">
@@ -716,10 +746,10 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                           setSelectedIds([]);
                         }}
                         className={`overflow-hidden rounded-md border transition-all ${i === current ? "border-primary ring-2 ring-primary/30" : "border-border opacity-70 hover:opacity-100"}`}
-                        style={{ width: 54, height: (54 * ratio.h) / ratio.w }}
+                        style={{ width: 44, height: (44 * ratio.h) / ratio.w }}
                         aria-label={`Card ${i + 1}`}
                       >
-                        <div style={{ width: ratio.w, height: ratio.h, transform: `scale(${54 / ratio.w})`, transformOrigin: "top left" }}>
+                        <div style={{ width: ratio.w, height: ratio.h, transform: `scale(${44 / ratio.w})`, transformOrigin: "top left" }}>
                           {renderSlide(i)}
                         </div>
                       </button>
@@ -738,9 +768,29 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
               </div>
             </div>
 
+            {/* Mobile scrim */}
+            {isMobile && panelOpen && (
+              <button aria-label="Close tools" className="absolute inset-0 z-20 bg-black/30" onClick={() => setPanelOpen(false)} />
+            )}
+
             {/* Controls */}
-            <div className="flex max-h-[48dvh] w-full min-h-0 flex-col border-t border-border md:max-h-none md:w-[350px] md:border-l md:border-t-0">
-              <Tabs defaultValue="style" className="flex min-h-0 flex-1 flex-col">
+            <div
+              className={`flex min-h-0 flex-col border-border bg-background md:relative md:inset-auto md:h-auto md:w-[350px] md:translate-y-0 md:border-l md:shadow-none ${
+                isMobile
+                  ? `absolute inset-x-0 bottom-0 z-30 h-[76dvh] rounded-t-2xl border-t shadow-2xl transition-transform duration-300 ${panelOpen ? "translate-y-0" : "translate-y-full"}`
+                  : "w-full border-t md:border-t-0"
+              }`}
+            >
+              {isMobile && (
+                <div className="flex items-center justify-between px-3 pt-2">
+                  <div className="mx-auto h-1 w-10 rounded-full bg-border" />
+                  <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Close tools" onClick={() => setPanelOpen(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              <Tabs value={panelTab} onValueChange={setPanelTab} className="flex min-h-0 flex-1 flex-col">
+
                 <TabsList className="mx-3 mt-3 grid h-8 grid-cols-4">
                   <TabsTrigger value="style" className="text-[11px]">Style</TabsTrigger>
                   <TabsTrigger value="design" className="text-[11px]">Design</TabsTrigger>
