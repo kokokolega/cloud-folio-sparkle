@@ -28,6 +28,9 @@ import FoldersPage from "./pages/FoldersPage";
 import NoteFoldersPage from "./pages/NoteFoldersPage";
 import PdfEditorPage from "./pages/PdfEditorPage";
 import SmartCapturePage from "./pages/SmartCapturePage";
+import { Scratchpad } from "@/components/scratchpad/Scratchpad";
+import { HandoffManager } from "@/components/HandoffManager";
+
 
 const queryClient = new QueryClient();
 
