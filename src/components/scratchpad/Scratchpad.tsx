@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
 import {
   DEFAULT_SECTIONS,
   ScratchDoc,
@@ -58,6 +59,7 @@ export function Scratchpad() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { features } = useSidebarFeatures();
 
   const [open, setOpen] = useState(false);
   const [doc, setDoc] = useState<ScratchDoc>(() => loadScratch());
@@ -198,7 +200,7 @@ export function Scratchpad() {
     setSection(name);
   };
 
-  const hidden = ["/auth", "/reset-password", "/file/", "/embed/"].some((r) => location.pathname.startsWith(r));
+  const hidden = ["/auth", "/reset-password", "/file/", "/embed/"].some((r) => location.pathname.startsWith(r)) || location.pathname.startsWith("/ai") || features.scratchpad === false;
   if (hidden) return null;
 
   return (
