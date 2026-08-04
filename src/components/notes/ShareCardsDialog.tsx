@@ -643,14 +643,14 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
           <div className="relative flex h-full min-h-0 flex-col md:flex-row">
             {/* Stage */}
             <div className="flex min-h-0 flex-1 flex-col bg-muted/40 p-2 sm:p-4">
-              <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <p className="truncate text-[13px] font-medium text-foreground">Show as Cards</p>
                   <span className="hidden text-[11px] text-muted-foreground sm:inline">
                     {slides.length} cards · {ratio.label}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1">
                   <Button size="sm" variant={designMode ? "default" : "outline"} className="h-7 px-2 text-[11px]" onClick={() => setDesignMode((d) => !d)}>
                     {designMode ? "Editing" : "Edit"}
                   </Button>
@@ -780,7 +780,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
 
             {/* Controls */}
             <div
-              className={`flex min-h-0 flex-col border-border bg-background md:relative md:inset-auto md:h-auto md:w-[350px] md:translate-y-0 md:border-l md:shadow-none ${
+              className={`flex min-h-0 flex-col border-border bg-background md:relative md:inset-auto md:h-auto md:w-[290px] lg:w-[350px] md:translate-y-0 md:border-l md:shadow-none ${
                 isMobile
                   ? `absolute inset-x-0 bottom-0 z-30 h-[76dvh] rounded-t-2xl border-t shadow-2xl transition-transform duration-300 ${panelOpen ? "translate-y-0" : "translate-y-full"}`
                   : "w-full border-t md:border-t-0"
@@ -796,11 +796,11 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
               )}
               <Tabs value={panelTab} onValueChange={setPanelTab} className="flex min-h-0 flex-1 flex-col">
 
-                <TabsList className="mx-3 mt-3 grid h-8 grid-cols-4">
-                  <TabsTrigger value="style" className="text-[11px]">Style</TabsTrigger>
-                  <TabsTrigger value="design" className="text-[11px]">Design</TabsTrigger>
-                  <TabsTrigger value="layers" className="text-[11px]">Layers</TabsTrigger>
-                  <TabsTrigger value="library" className="text-[11px]">Library</TabsTrigger>
+                <TabsList className="mx-3 mt-3 grid h-8 w-[calc(100%-1.5rem)] grid-cols-4">
+                  <TabsTrigger value="style" className="text-[10.5px] sm:text-[11px]">Style</TabsTrigger>
+                  <TabsTrigger value="design" className="text-[10.5px] sm:text-[11px]">Design</TabsTrigger>
+                  <TabsTrigger value="layers" className="text-[10.5px] sm:text-[11px]">Layers</TabsTrigger>
+                  <TabsTrigger value="library" className="text-[10.5px] sm:text-[11px]">Library</TabsTrigger>
                 </TabsList>
 
                 <ScrollArea className="min-h-0 flex-1">
@@ -815,7 +815,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
 
                     <div>
                       <Label className="text-[11px] text-muted-foreground">Theme</Label>
-                      <div className="mt-2 grid grid-cols-3 gap-2">
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {CARD_THEMES.map((t) => (
                           <button
                             key={t.id}
@@ -1056,7 +1056,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                 </ScrollArea>
               </Tabs>
 
-              <div className="flex gap-2 border-t border-border p-3">
+              <div className="flex flex-wrap gap-2 border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="h-9 flex-1 text-[12px]" disabled={exporting}>
