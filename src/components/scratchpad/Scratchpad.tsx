@@ -72,6 +72,22 @@ export function Scratchpad() {
   const recorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
 
+  /* draggable launcher position */
+  const [pos, setPos] = useState(() => {
+    try {
+      const raw = localStorage.getItem("oltrid-scratchpad-pos");
+      if (raw) return JSON.parse(raw) as { x: number; y: number };
+    } catch { /* ignore */ }
+    return { x: 16, y: typeof window !== "undefined" ? window.innerHeight - 72 : 600 };
+  });
+  const posRef = useRef(pos);
+  posRef.current = pos;
+  const dragged = useRef(false);
+  const savePos = (p: { x: number; y: number }) => {
+    try { localStorage.setItem("oltrid-scratchpad-pos", JSON.stringify(p)); } catch { /* ignore */ }
+  };
+
+
   /* persist instantly on every change */
   useEffect(() => saveScratch(doc), [doc]);
 
@@ -205,12 +221,33 @@ export function Scratchpad() {
 
   return (
     <>
-      {/* launcher */}
+      {/* launcher — draggable anywhere, position remembered */}
       <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Open Scratchpad (Ctrl/⌘ + J)"
-        title="Scratchpad · ⌘/Ctrl + J"
-        className="fixed bottom-4 left-4 z-[80] flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-background/80 text-foreground shadow-lg backdrop-blur-xl transition-transform hover:scale-105 active:scale-95"
+        onPointerDown={(e) => {
+          const startX = e.clientX, startY = e.clientY;
+          const origin = { ...pos };
+          dragged.current = false;
+          const move = (ev: PointerEvent) => {
+            const dx = ev.clientX - startX, dy = ev.clientY - startY;
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragged.current = true;
+            setPos({
+              x: Math.min(window.innerWidth - 56, Math.max(8, origin.x + dx)),
+              y: Math.min(window.innerHeight - 56, Math.max(8, origin.y + dy)),
+            });
+          };
+          const up = () => {
+            window.removeEventListener("pointermove", move);
+            window.removeEventListener("pointerup", up);
+            savePos(posRef.current);
+          };
+          window.addEventListener("pointermove", move);
+          window.addEventListener("pointerup", up);
+        }}
+        onClick={() => { if (!dragged.current) setOpen((o) => !o); }}
+        aria-label="Open Scratchpad (Ctrl/⌘ + J) — drag to move"
+        title="Scratchpad · ⌘/Ctrl + J · drag to move"
+        style={{ left: pos.x, top: pos.y }}
+        className="fixed z-[80] flex h-11 w-11 touch-none items-center justify-center rounded-full border border-border/70 bg-background/80 text-foreground shadow-lg backdrop-blur-xl transition-transform hover:scale-105 active:scale-95"
       >
         <NotebookPen className="h-[18px] w-[18px]" />
       </button>
@@ -223,6 +260,7 @@ export function Scratchpad() {
             exit={{ opacity: 0, y: 24, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             className="fixed inset-x-2 bottom-2 z-[85] flex h-[70dvh] flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/90 shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:left-4 sm:bottom-16 sm:h-[min(560px,72dvh)] sm:w-[380px]"
+
             onDragOver={(e) => {
               e.preventDefault();
               setDragOver(true);
