@@ -28,6 +28,7 @@ import FoldersPage from "./pages/FoldersPage";
 import NoteFoldersPage from "./pages/NoteFoldersPage";
 import PdfEditorPage from "./pages/PdfEditorPage";
 import SmartCapturePage from "./pages/SmartCapturePage";
+import SecondBrainPage from "./pages/SecondBrainPage";
 import { Scratchpad } from "@/components/scratchpad/Scratchpad";
 import { HandoffManager } from "@/components/HandoffManager";
 
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/ai" element={<ProtectedRoute allowGuest><AiPage /></ProtectedRoute>} />
               <Route path="/codrix" element={<ProtectedRoute allowGuest><CodrixPage /></ProtectedRoute>} />
               <Route path="/pdf-editor" element={<ProtectedRoute><PdfEditorPage /></ProtectedRoute>} />
+              <Route path="/desktop" element={<ProtectedRoute><SecondBrainPage /></ProtectedRoute>} />
               <Route path="/capture" element={<ProtectedRoute><SmartCapturePage /></ProtectedRoute>} />
               <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
