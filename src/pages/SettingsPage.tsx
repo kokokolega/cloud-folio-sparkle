@@ -38,6 +38,8 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const { features, setFeature } = useSidebarFeatures();
+  const { styleKey: sidebarStyleKey, setStyle: setSidebarStyle } = useSidebarStyle();
+
   const [editingName, setEditingName] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
