@@ -688,7 +688,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                 </div>
               )}
 
-              <div ref={previewBox} className="flex min-h-0 flex-1 items-center justify-center overflow-auto">
+              <div ref={previewBox} className="flex min-h-[190px] flex-1 items-center justify-center overflow-auto p-1">
                 {slides[current] && (
                   designMode ? (
                     <CardDesignCanvas
@@ -738,8 +738,8 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
               )}
 
               {/* Page navigator */}
-              <div className="mt-2 flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-7 w-7 shrink-0 rounded-full" onClick={() => setCurrent((c) => Math.max(0, c - 1))} disabled={current === 0} aria-label="Previous card">
+              <div className="mt-2 flex shrink-0 items-center gap-2">
+                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 rounded-full" onClick={() => setCurrent((c) => Math.max(0, c - 1))} disabled={current === 0} aria-label="Previous card">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">
@@ -751,14 +751,14 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                           setSelectedIds([]);
                         }}
                         className={`overflow-hidden rounded-md border transition-all ${i === current ? "border-primary ring-2 ring-primary/30" : "border-border opacity-70 hover:opacity-100"}`}
-                        style={{ width: 44, height: (44 * ratio.h) / ratio.w }}
+                        style={{ width: 48, height: (48 * ratio.h) / ratio.w }}
                         aria-label={`Card ${i + 1}`}
                       >
-                        <div style={{ width: ratio.w, height: ratio.h, transform: `scale(${44 / ratio.w})`, transformOrigin: "top left" }}>
+                        <div style={{ width: ratio.w, height: ratio.h, transform: `scale(${48 / ratio.w})`, transformOrigin: "top left" }}>
                           {renderSlide(i)}
                         </div>
                       </button>
-                      <div className="absolute inset-x-0 -bottom-0.5 hidden justify-center gap-0.5 group-hover:flex">
+                      <div className="absolute inset-x-0 -bottom-0.5 flex justify-center gap-0.5 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                         <button onClick={() => duplicateCard(i)} aria-label="Duplicate card" className="rounded bg-background/90 p-0.5 shadow"><Copy className="h-2.5 w-2.5" /></button>
                         <button onClick={() => moveCard(i, i - 1)} aria-label="Move card left" className="rounded bg-background/90 p-0.5 shadow"><ChevronLeft className="h-2.5 w-2.5" /></button>
                         <button onClick={() => moveCard(i, i + 1)} aria-label="Move card right" className="rounded bg-background/90 p-0.5 shadow"><ChevronRight className="h-2.5 w-2.5" /></button>
@@ -767,7 +767,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                     </div>
                   ))}
                 </div>
-                <Button variant="outline" size="icon" className="h-7 w-7 shrink-0 rounded-full" onClick={() => setCurrent((c) => Math.min(slides.length - 1, c + 1))} disabled={current >= slides.length - 1} aria-label="Next card">
+                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 rounded-full" onClick={() => setCurrent((c) => Math.min(slides.length - 1, c + 1))} disabled={current >= slides.length - 1} aria-label="Next card">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
