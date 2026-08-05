@@ -13,6 +13,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader as Loader2, Trash2, ShieldAlert, User, Camera, Pencil, ScanLine, Files, Users, Code as Code2, CalendarDays, Layers, File as FileEdit, NotebookPen, Boxes } from "lucide-react";
 import { toast } from "sonner";
 import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
+import { useSidebarStyle, SIDEBAR_STYLES } from "@/hooks/useSidebarStyle";
+
 
 const BG_THEMES: { id: BgTheme; name: string; description: string; preview: string }[] = [
   { id: "none", name: "None", description: "Clean solid background", preview: "bg-muted/40" },
@@ -243,6 +245,42 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+
+          {/* Sidebar Style */}
+          <div className="glass-card p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <Layers className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Sidebar Style</h3>
+                <p className="text-[11px] text-muted-foreground">Change how navigation items look</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {SIDEBAR_STYLES.map((s) => (
+                <button
+                  key={s.key}
+                  onClick={() => setSidebarStyle(s.key)}
+                  className={`text-left rounded-xl border p-2.5 transition-all ${
+                    sidebarStyleKey === s.key ? "border-primary ring-1 ring-primary/30 bg-secondary/40" : "border-border hover:bg-secondary/40"
+                  }`}
+                >
+                  <div className="space-y-1 mb-2 pointer-events-none">
+                    <div className={`flex items-center gap-2 ${s.item} ${s.active}`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                      <span className="h-1.5 flex-1 rounded-full bg-current opacity-60" />
+                    </div>
+                    <div className={`flex items-center gap-2 ${s.item} ${s.inactive}`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                      <span className="h-1.5 flex-1 rounded-full bg-current opacity-40" />
+                    </div>
+                  </div>
+                  <p className="text-xs font-medium text-foreground">{s.label}</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">{s.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
 
           {/* Background Theme */}
           <div className="glass-card p-5 space-y-4">
