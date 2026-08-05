@@ -37,13 +37,16 @@ export default function GroupsPage() {
 
   const createMutation = useMutation({
     mutationFn: async ({ name, description }: { name: string; description: string }) => {
-      const { data, error } = await supabase.from("groups").insert({ name, description, created_by: user!.id }).select().single();
+      const { data, error } = await supabase.rpc("create_group" as any, { _name: name, _description: description });
       if (error) throw error;
-      await supabase.from("group_members").insert({ group_id: data.id, user_id: user!.id, role: "admin" });
-      return data;
+      const group = Array.isArray(data) ? data[0] : data;
+      if (!group) throw new Error("Could not create group");
+      return group as any;
     },
-    onSuccess: (data) => { queryClient.invalidateQueries({ queryKey: ["groups"] }); setCreateOpen(false); setNewName(""); setNewDesc(""); setActiveGroup(data.id); toast.success("Group created!"); },
+    onSuccess: (data: any) => { queryClient.invalidateQueries({ queryKey: ["groups"] }); setCreateOpen(false); setNewName(""); setNewDesc(""); setActiveGroup(data.id); toast.success("Group created!"); },
+    onError: (e: any) => toast.error(e.message || "Could not create group"),
   });
+
 
   const joinMutation = useMutation({
     mutationFn: async (code: string) => {
@@ -60,7 +63,9 @@ export default function GroupsPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("groups").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["groups"] }); toast.success("Group deleted"); },
+    onError: (e: any) => toast.error(e.message || "Could not delete group"),
   });
+
 
   const filtered = groups.filter((g: any) => g.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
