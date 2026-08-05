@@ -655,6 +655,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_group: {
+        Args: { _description?: string; _name: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          invite_code: string
+          name: string
+          updated_at: string
+        }[]
+      }
       get_file_by_public_id: {
         Args: { _public_id: string }
         Returns: {
