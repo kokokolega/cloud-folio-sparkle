@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
+import { useSidebarStyle } from "@/hooks/useSidebarStyle";
 
 const baseNav = [
   { title: "Oltrid AI", url: "/", icon: Bot },
@@ -57,6 +58,7 @@ export function AppSidebar() {
   const { user } = useAuth();
   const collapsed = state === "collapsed";
   const { features } = useSidebarFeatures();
+  const { style } = useSidebarStyle();
   const mainNav = [
     ...baseNav,
     ...(features.files ? [optionalNav.files] : []),
@@ -128,7 +130,7 @@ export function AppSidebar() {
   const calendarAccent = CALENDAR_COLORS[calendarColorIndex];
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className={style.shell}>
       <SidebarHeader className={cn("p-4 pb-3", collapsed && "flex items-center justify-center p-2")}>
         {collapsed ? (
           <button onClick={toggleSidebar} className="cursor-pointer hover:opacity-80 transition-opacity">
@@ -159,10 +161,9 @@ export function AppSidebar() {
                           to={item.url}
                           end
                           className={cn(
-                            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all duration-150",
-                            isActive
-                              ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                              : "text-foreground/65 hover:bg-secondary hover:text-foreground"
+                            "flex items-center gap-3 transition-all duration-150",
+                            style.item,
+                            isActive ? style.active : style.inactive
                           )}
                           activeClassName=""
                         >
@@ -189,10 +190,7 @@ export function AppSidebar() {
                         href="https://notemaroyaar.com/auth"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={cn(
-                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all duration-150",
-                          "text-foreground/65 hover:bg-secondary hover:text-foreground"
-                        )}
+                        className={cn("flex items-center gap-3 transition-all duration-150", style.item, style.inactive)}
                       >
                         <Pencil className="h-[18px] w-[18px] shrink-0" />
                         {!collapsed && <span className="truncate">Notemaroyaar</span>}
@@ -344,10 +342,9 @@ export function AppSidebar() {
                         to={item.url}
                         end
                         className={cn(
-                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all duration-150",
-                          isActive
-                            ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                            : "text-foreground/65 hover:bg-secondary hover:text-foreground"
+                          "flex items-center gap-3 transition-all duration-150",
+                          style.item,
+                          isActive ? style.active : style.inactive
                         )}
                         activeClassName=""
                       >
