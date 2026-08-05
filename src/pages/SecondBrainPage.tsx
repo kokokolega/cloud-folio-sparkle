@@ -250,7 +250,7 @@ export default function SecondBrainPage() {
     desktop.objects.forEach((o) => { if (ids.includes(o.id)) origins[o.id] = { x: o.x, y: o.y }; });
     pointer.current = { mode: "drag", start: toCanvas(e.clientX, e.clientY), origins };
     patchObject(obj.id, { z: Date.now() });
-    (e.currentTarget as HTMLElement).closest("[data-stage-root]")?.setPointerCapture?.(e.pointerId);
+    stageRef.current?.setPointerCapture?.(e.pointerId);
   };
 
   /* ---------------- keyboard ---------------- */
@@ -398,7 +398,7 @@ export default function SecondBrainPage() {
   }, [desktop.links, selected]);
 
   /* ---------------- object card ---------------- */
-  const renderObject = (o: SBObject) => {
+  const renderObject = (o: SBObject, zi = 1) => {
     const Icon = KIND_ICON[o.kind] || FileText;
     const isSel = selected.includes(o.id);
     const dim = matches ? !matches.has(o.id) : false;
@@ -414,7 +414,7 @@ export default function SecondBrainPage() {
           transform: `rotate(${o.rotation}deg)`,
           borderColor: isSel ? "hsl(var(--primary))" : group?.color || (o.color ?? "hsl(var(--border))"),
           opacity: dim ? 0.25 : 1,
-          zIndex: Math.round(o.z / 100000) % 1000,
+          zIndex: (o.pinned ? 5000 : 0) + zi,
         }}
         className={`absolute select-none overflow-hidden rounded-2xl border bg-card/85 shadow-sm backdrop-blur-md transition-shadow ${
           isSel ? "shadow-lg ring-2 ring-primary/40" : connectedTo.has(o.id) ? "ring-2 ring-primary/25" : ""
@@ -462,15 +462,17 @@ export default function SecondBrainPage() {
               onPointerDown={(e) => {
                 e.stopPropagation();
                 pointer.current = { mode: "resize", id: o.id, w: o.w, h: o.h, start: toCanvas(e.clientX, e.clientY) };
+                stageRef.current?.setPointerCapture?.(e.pointerId);
               }}
-              className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize rounded-tl-md bg-primary/70"
+              className="absolute bottom-0 right-0 h-6 w-6 cursor-se-resize touch-none rounded-tl-lg bg-primary/70"
             />
             <div
               onPointerDown={(e) => {
                 e.stopPropagation();
                 pointer.current = { mode: "rotate", id: o.id, cx: o.x + o.w / 2, cy: o.y + o.h / 2 };
+                stageRef.current?.setPointerCapture?.(e.pointerId);
               }}
-              className="absolute -top-2 left-1/2 h-3.5 w-3.5 -translate-x-1/2 cursor-grab rounded-full bg-primary/70"
+              className="absolute -top-2.5 left-1/2 h-5 w-5 -translate-x-1/2 cursor-grab touch-none rounded-full bg-primary/70"
             />
           </>
         )}
@@ -598,7 +600,7 @@ export default function SecondBrainPage() {
 
   return (
     <DashboardLayout>
-      <div className={`flex h-[calc(100dvh-2rem)] flex-col gap-2 ${focus ? "fixed inset-0 z-[100] h-dvh bg-background p-2" : ""}`}>
+      <div className={`flex h-[calc(100dvh-7rem)] min-h-[420px] flex-col gap-2 sm:h-[calc(100dvh-5rem)] ${focus ? "fixed inset-0 z-[100] h-dvh bg-background p-2" : ""}`}>
         {/* top bar */}
         <div className="flex flex-wrap items-center gap-1.5">
           <Boxes className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -706,7 +708,7 @@ export default function SecondBrainPage() {
                   </g>
                 </svg>
 
-                {desktop.objects.map(renderObject)}
+                {[...desktop.objects].sort((a, b) => a.z - b.z).map((o, i) => renderObject(o, i + 1))}
 
                 {lasso && (
                   <div className="pointer-events-none absolute rounded-md border border-primary/60 bg-primary/10"
