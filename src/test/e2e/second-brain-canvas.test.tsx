@@ -3,7 +3,10 @@ import { screen, waitFor } from "@testing-library/react";
 import { renderApp, setViewport, pointer, MOBILE, DESKTOP, makeSupabaseMock } from "./harness";
 import { defaultState, makeDesktop, makeObject } from "@/lib/secondBrain";
 
-const supabaseMock = makeSupabaseMock();
+const supabaseMock = vi.hoisted(() => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return { holder: null as any };
+});
 vi.mock("@/integrations/supabase/client", () => ({ supabase: supabaseMock }));
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, session: {}, signOut: vi.fn(), loading: false }),

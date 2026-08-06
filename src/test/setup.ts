@@ -13,3 +13,21 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+if (!("ResizeObserver" in window)) {
+  (window as any).ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
+if (!(HTMLElement.prototype as any).setPointerCapture) {
+  (HTMLElement.prototype as any).setPointerCapture = () => {};
+  (HTMLElement.prototype as any).releasePointerCapture = () => {};
+  (HTMLElement.prototype as any).hasPointerCapture = () => false;
+}
+
+if (!(HTMLElement.prototype as any).scrollIntoView) {
+  (HTMLElement.prototype as any).scrollIntoView = () => {};
+}

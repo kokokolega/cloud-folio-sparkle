@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, fireEvent } from "@testing-library/react";
 import { renderApp, makeSupabaseMock, setViewport, MOBILE, DESKTOP } from "./harness";
 
-const supabaseMock = makeSupabaseMock();
+const supabaseMock = vi.hoisted(() => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return { holder: null as any };
+});
 
 vi.mock("@/integrations/supabase/client", () => ({ supabase: supabaseMock }));
 vi.mock("@/hooks/useAuth", () => ({
