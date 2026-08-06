@@ -1158,6 +1158,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                     <DropdownMenuItem onClick={() => exportOne("png")} className="text-[12px]">PNG</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => exportOne("jpg")} className="text-[12px]">JPG</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => exportOne("svg")} className="text-[12px]">SVG</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportPdf(true)} className="text-[12px]">PDF</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
