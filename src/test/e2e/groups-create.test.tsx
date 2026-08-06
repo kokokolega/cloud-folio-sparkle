@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, fireEvent } from "@testing-library/react";
-import { renderApp, makeSupabaseMock, setViewport, MOBILE, DESKTOP } from "./harness";
+import { renderApp, setViewport, MOBILE, DESKTOP } from "./harness";
+import { supabaseMock } from "./supabaseMock";
 
 vi.mock("@/integrations/supabase/client", async () => ({
   supabase: (await import("./supabaseMock")).supabaseMock,
