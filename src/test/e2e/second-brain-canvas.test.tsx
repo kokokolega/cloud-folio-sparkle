@@ -108,8 +108,8 @@ describe.each([
   it("keeps the touch-action lock so canvas gestures do not scroll the page", async () => {
     seed();
     renderApp(<SecondBrainPage />);
-    const card = await waitFor(() => cardEl());
-    const stage = card.parentElement!.closest("div[style]") as HTMLElement;
-    expect(stage.style.touchAction).toBe("none");
+    await waitFor(() => cardEl());
+    const stage = document.querySelector('div[style*="touch-action"]') as HTMLElement | null;
+    expect(stage?.style.touchAction).toBe("none");
   });
 });
