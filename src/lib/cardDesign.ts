@@ -71,14 +71,39 @@ export const DEFAULT_GLOBALS: GlobalStyles = {
   print: false,
 };
 
+/** Everything the Style tab controls — persisted so a refresh restores the look. */
+export interface CardStyle {
+  themeId: string;
+  accent: string;
+  fontId: string;
+  aspect: string;
+  pattern: string;
+  showLogo: boolean;
+  watermark: string;
+  coverImage: string | null;
+}
+
+export const DEFAULT_CARD_STYLE: CardStyle = {
+  themeId: "apple",
+  accent: "#007AFF",
+  fontId: "inter",
+  aspect: "4:5",
+  pattern: "none",
+  showLogo: true,
+  watermark: "Oltrid",
+  coverImage: null,
+};
+
 export interface DesignDoc {
   /** elements per slide index */
   bySlide: Record<number, DesignElement[]>;
   guides: Guide[];
   globals: GlobalStyles;
+  style: CardStyle;
 }
 
-export const EMPTY_DESIGN: DesignDoc = { bySlide: {}, guides: [], globals: DEFAULT_GLOBALS };
+export const EMPTY_DESIGN: DesignDoc = { bySlide: {}, guides: [], globals: DEFAULT_GLOBALS, style: DEFAULT_CARD_STYLE };
+
 
 /* ------------------------------------------------------------------ */
 /* element library                                                     */
@@ -354,6 +379,7 @@ export function loadDesign(noteId: string): DesignDoc {
     bySlide: d.value.bySlide ?? {},
     guides: d.value.guides ?? [],
     globals: { ...DEFAULT_GLOBALS, ...(d.value.globals ?? {}) },
+    style: { ...DEFAULT_CARD_STYLE, ...(d.value.style ?? {}) },
   };
 }
 
