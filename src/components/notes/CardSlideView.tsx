@@ -95,40 +95,43 @@ export const CardSlideView = forwardRef<
               <h1
                 style={{
                   fontFamily: cfg.fontHeading,
-                  fontSize: px(Math.min(96, 84) * u),
+                  fontSize: px(84 * u * fit(slide.title, 46, 0.5)),
                   lineHeight: 1.05,
                   letterSpacing: "-0.03em",
                   fontWeight: 700,
                   color: theme.text,
                   margin: 0,
+                  ...wrap,
                 }}
               >
                 {slide.title}
               </h1>
               {slide.subtitle && (
-                <p style={{ fontFamily: cfg.fontBody, fontSize: px(34 * u), lineHeight: 1.45, color: theme.muted, margin: 0 }}>
+                <p style={{ fontFamily: cfg.fontBody, fontSize: px(34 * u * fit(slide.subtitle, 120)), lineHeight: 1.45, color: theme.muted, margin: 0, ...wrap }}>
                   {slide.subtitle}
                 </p>
               )}
             </div>
           );
 
-        case "points":
+        case "points": {
+          const joined = (slide.points || []).join(" ");
+          const density = fit(joined, 200, 0.55) * fit(String((slide.points || []).length * 60), 200, 0.7);
           return (
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%", minHeight: 0 }}>
               {eyebrow}
               {slide.title && (
-                <h2 style={{ fontFamily: cfg.fontHeading, fontSize: px(58 * u), lineHeight: 1.1, letterSpacing: "-0.02em", color: theme.text, margin: `0 0 ${px(44 * u)}` }}>
+                <h2 style={{ fontFamily: cfg.fontHeading, fontSize: px(58 * u * fit(slide.title, 40, 0.6)), lineHeight: 1.1, letterSpacing: "-0.02em", color: theme.text, margin: `0 0 ${px(44 * u * density)}`, ...wrap }}>
                   {slide.title}
                 </h2>
               )}
-              <div style={{ display: "flex", flexDirection: "column", gap: px(26 * u) }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: px(26 * u * density) }}>
                 {slide.points?.map((p, i) => (
-                  <div key={i} style={{ display: "flex", gap: px(22 * u), alignItems: "flex-start", ...surface, padding: px(26 * u) }}>
+                  <div key={i} style={{ display: "flex", gap: px(22 * u), alignItems: "flex-start", ...surface, padding: px(26 * u * density) }}>
                     <div
                       style={{
-                        minWidth: px(46 * u),
-                        height: px(46 * u),
+                        minWidth: px(46 * u * density),
+                        height: px(46 * u * density),
                         borderRadius: px(14 * u),
                         background: theme.accentSoft,
                         color: accent,
@@ -136,24 +139,25 @@ export const CardSlideView = forwardRef<
                         alignItems: "center",
                         justifyContent: "center",
                         fontFamily: cfg.fontBody,
-                        fontSize: px(24 * u),
+                        fontSize: px(24 * u * density),
                         fontWeight: 700,
                       }}
                     >
                       {i + 1}
                     </div>
-                    <p style={{ fontFamily: cfg.fontBody, fontSize: px(32 * u), lineHeight: 1.35, color: theme.text, margin: 0 }}>{p}</p>
+                    <p style={{ fontFamily: cfg.fontBody, fontSize: px(32 * u * density), lineHeight: 1.35, color: theme.text, margin: 0, ...wrap }}>{p}</p>
                   </div>
                 ))}
               </div>
             </div>
           );
+        }
 
         case "paragraph":
           return (
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
               {eyebrow}
-              <p style={{ fontFamily: cfg.fontBody, fontSize: px(40 * u), lineHeight: 1.45, color: theme.text, margin: 0 }}>{slide.body}</p>
+              <p style={{ fontFamily: cfg.fontBody, fontSize: px(40 * u * fit(slide.body, 240, 0.5)), lineHeight: 1.45, color: theme.text, margin: 0, ...wrap }}>{slide.body}</p>
             </div>
           );
 
@@ -161,11 +165,11 @@ export const CardSlideView = forwardRef<
           return (
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%", gap: px(28 * u) }}>
               <div style={{ fontFamily: "Georgia, serif", fontSize: px(150 * u), lineHeight: 0.7, color: accent, opacity: 0.5 }}>“</div>
-              <p style={{ fontFamily: cfg.fontHeading, fontSize: px(52 * u), lineHeight: 1.3, letterSpacing: "-0.02em", color: theme.text, margin: 0 }}>
+              <p style={{ fontFamily: cfg.fontHeading, fontSize: px(52 * u * fit(slide.quote, 150, 0.55)), lineHeight: 1.3, letterSpacing: "-0.02em", color: theme.text, margin: 0, ...wrap }}>
                 {slide.quote}
               </p>
               {slide.attribution && (
-                <p style={{ fontFamily: cfg.fontBody, fontSize: px(26 * u), color: theme.muted, margin: 0 }}>— {slide.attribution}</p>
+                <p style={{ fontFamily: cfg.fontBody, fontSize: px(26 * u), color: theme.muted, margin: 0, ...wrap }}>— {slide.attribution}</p>
               )}
             </div>
           );
@@ -177,20 +181,22 @@ export const CardSlideView = forwardRef<
               <div
                 style={{
                   fontFamily: cfg.fontHeading,
-                  fontSize: px(170 * u),
+                  fontSize: px(170 * u * fit(slide.stat, 6, 0.45)),
                   lineHeight: 1,
                   fontWeight: 800,
                   letterSpacing: "-0.05em",
                   color: accent,
+                  ...wrap,
                 }}
               >
                 {slide.stat}
               </div>
-              <p style={{ fontFamily: cfg.fontBody, fontSize: px(40 * u), lineHeight: 1.3, color: theme.text, margin: 0, maxWidth: "90%" }}>
+              <p style={{ fontFamily: cfg.fontBody, fontSize: px(40 * u * fit(slide.statLabel, 60)), lineHeight: 1.3, color: theme.text, margin: 0, maxWidth: "90%", ...wrap }}>
                 {slide.statLabel}
               </p>
             </div>
           );
+
 
         case "image":
           return (
