@@ -105,11 +105,20 @@ describe.each([
     });
   });
 
-  it("keeps the touch-action lock so canvas gestures do not scroll the page", async () => {
+  it("keeps touch gestures from scrolling the page while manipulating objects", async () => {
     seed();
     renderApp(<SecondBrainPage />);
-    await waitFor(() => cardEl());
-    const stage = document.querySelector('div[style*="touch-action"]') as HTMLElement | null;
-    expect(stage?.style.touchAction).toBe("none");
+
+    const card = await waitFor(() => cardEl());
+    pointer(card, "pointerdown", 150, 150, pointerType);
+    pointer(card, "pointerup", 150, 150, pointerType);
+
+    // Resize/rotate affordances must opt out of browser touch scrolling.
+    const handle = await waitFor(() => {
+      const h = card.querySelector(".cursor-se-resize");
+      if (!h) throw new Error("resize handle not visible after selection");
+      return h as HTMLElement;
+    });
+    expect(handle.className).toContain("touch-none");
   });
 });
