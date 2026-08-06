@@ -170,24 +170,50 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
 
   /* ---------------- load / persist design ---------------- */
 
+  /** Hydration gate — never let the autosave effect overwrite a stored design
+   *  with the initial (empty) state before the load effect has been applied. */
+  const hydrated = useRef(false);
+
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      hydrated.current = false;
+      return;
+    }
     const d = loadDesign(noteKey);
     setBySlide(d.bySlide);
     setGuides(d.guides);
     setGlobals(d.globals);
+    setThemeId(d.style.themeId);
+    setAccent(d.style.accent);
+    setFontId(d.style.fontId);
+    setAspect(d.style.aspect as AspectId);
+    setPattern(d.style.pattern as PatternId);
+    setShowLogo(d.style.showLogo);
+    setWatermark(d.style.watermark);
+    setCoverImage(d.style.coverImage);
     setAssets(loadAssets());
     setComponents(loadComponents());
     setCurrent(0);
     setSelectedIds([]);
     setOrder(null);
     setOverrideContent(null);
+    hydrated.current = true;
   }, [open, noteKey]);
 
+  // Debounced auto-save of the whole document (design + style).
   useEffect(() => {
-    if (!open) return;
-    saveDesign(noteKey, { bySlide, guides, globals });
-  }, [open, noteKey, bySlide, guides, globals]);
+    if (!open || !hydrated.current) return;
+    const t = window.setTimeout(() => {
+      saveDesign(noteKey, {
+        bySlide,
+        guides,
+        globals,
+        style: { themeId, accent, fontId, aspect, pattern, showLogo, watermark, coverImage },
+      });
+    }, 250);
+    return () => window.clearTimeout(t);
+  }, [open, noteKey, bySlide, guides, globals, themeId, accent, fontId, aspect, pattern, showLogo, watermark, coverImage]);
+
 
   /* ---------------- slides ---------------- */
 
