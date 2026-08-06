@@ -35,6 +35,13 @@ export const CardSlideView = forwardRef<
     const pad = 88 * (Math.min(width, height) / 1080) * (cfg.spacingScale ?? 1);
     const isDark = ["dark", "neon", "glass", "startup"].includes(theme.id) ;
 
+    /** Auto-fit: shrink type gracefully when a block runs long so it never overflows. */
+    const fit = (text: string | undefined, comfortable: number, min = 0.6) =>
+      Math.max(min, Math.min(1, Math.sqrt(comfortable / Math.max(1, (text || "").length))));
+
+    const wrap: React.CSSProperties = { overflowWrap: "anywhere", wordBreak: "break-word" };
+
+
     const surface: React.CSSProperties = {
       background: theme.cardBg,
       border: `${Math.max(1, 1.5 * u)}px solid ${theme.border}`,
