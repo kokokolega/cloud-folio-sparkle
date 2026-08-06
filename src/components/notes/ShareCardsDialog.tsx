@@ -493,10 +493,35 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
   const slugBase =
     (note?.title || "oltrid-note").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "oltrid-note";
 
+  /** Fonts + images must be settled or the export won't match the preview. */
+  const waitForPaint = async () => {
+    try {
+      await (document as any).fonts?.ready;
+    } catch {
+      /* ignore */
+    }
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null))));
+  };
+
   const renderNode = async (node: HTMLElement, format: "png" | "jpg" | "svg") => {
-    const opts = { cacheBust: true, pixelRatio: 2, width: ratio.w, height: ratio.h };
-    if (format === "png") return toPng(node, opts);
-    if (format === "jpg") return toJpeg(node, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });
+    const opts = {
+      cacheBust: true,
+      pixelRatio: 2,
+      width: ratio.w,
+      height: ratio.h,
+      style: { opacity: "1", transform: "none" },
+    };
+    // First pass warms the image cache, second pass renders it identically to the preview.
+    if (format === "png") {
+      await toPng(node, opts);
+      return toPng(node, opts);
+    }
+    if (format === "jpg") {
+      const jpgOpts = { ...opts, quality: 0.96, backgroundColor: "#ffffff" };
+      await toJpeg(node, jpgOpts);
+      return toJpeg(node, jpgOpts);
+    }
+    await toSvg(node, opts);
     return toSvg(node, opts);
   };
 
@@ -510,12 +535,13 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
   const exportOne = async (format: "png" | "jpg" | "svg") => {
     const slide = slides[current];
     const node = exportRefs.current[slide.id];
-    if (!node) return;
+    if (!node) return toast.error("Card is still rendering — try again in a moment");
     setExporting(true);
     try {
+      await waitForPaint();
       const url = await renderNode(node, format);
       downloadDataUrl(url, `${slugBase}-${current + 1}.${format}`);
-      toast.success(`Slide ${current + 1} exported as ${format.toUpperCase()}`);
+      toast.success(`Card ${current + 1} exported as ${format.toUpperCase()}`);
     } catch (e: any) {
       toast.error(e?.message || "Export failed");
     } finally {
@@ -527,6 +553,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
     async (format: "png" | "jpg" | "svg") => {
       setExporting(true);
       try {
+        await waitForPaint();
         const zip = new JSZip();
         for (let i = 0; i < slides.length; i++) {
           const node = exportRefs.current[slides[i].id];
@@ -553,6 +580,43 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [slides, ratio, slugBase]
   );
+
+  /** Pixel-perfect PDF: one page per card, page size = the card's own ratio. */
+  const exportPdf = useCallback(
+    async (onlyCurrent = false) => {
+      setExporting(true);
+      try {
+        await waitForPaint();
+        const { jsPDF } = await import("jspdf");
+        const list = onlyCurrent ? [slides[current]] : slides;
+        const pdf = new jsPDF({
+          orientation: ratio.w >= ratio.h ? "landscape" : "portrait",
+          unit: "px",
+          format: [ratio.w, ratio.h],
+          compress: true,
+        });
+        let page = 0;
+        for (const s of list) {
+          const node = exportRefs.current[s.id];
+          if (!node) continue;
+          const url = await renderNode(node, "png");
+          if (page > 0) pdf.addPage([ratio.w, ratio.h], ratio.w >= ratio.h ? "landscape" : "portrait");
+          pdf.addImage(url, "PNG", 0, 0, ratio.w, ratio.h, undefined, "FAST");
+          page++;
+        }
+        if (!page) throw new Error("Nothing to export yet");
+        pdf.save(onlyCurrent ? `${slugBase}-${current + 1}.pdf` : `${slugBase}-cards.pdf`);
+        toast.success(`PDF exported (${page} page${page > 1 ? "s" : ""})`);
+      } catch (e: any) {
+        toast.error(e?.message || "PDF export failed");
+      } finally {
+        setExporting(false);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [slides, current, ratio, slugBase]
+  );
+
 
   const printCards = async () => {
     setExporting(true);
