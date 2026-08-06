@@ -1173,6 +1173,7 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
                     <DropdownMenuItem onClick={() => exportAll("png")} className="text-[12px]">PNG (.zip)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => exportAll("jpg")} className="text-[12px]">JPG (.zip)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => exportAll("svg")} className="text-[12px]">SVG (.zip)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportPdf(false)} className="text-[12px]">PDF (all pages)</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -1180,7 +1181,19 @@ export function ShareCardsDialog({ open, onOpenChange, note }: ShareCardsDialogP
           </div>
 
           {/* Offscreen full-resolution render targets used for export */}
-          <div style={{ position: "fixed", left: -99999, top: 0, pointerEvents: "none", opacity: 0 }} aria-hidden>
+          <div
+            style={{
+              position: "fixed",
+              left: -99999,
+              top: 0,
+              pointerEvents: "none",
+              contain: "strict",
+              width: 1,
+              height: 1,
+              overflow: "hidden",
+            }}
+            aria-hidden
+          >
             {slides.map((s, i) => (
               <div key={s.id} ref={(el) => (exportRefs.current[s.id] = el)}>
                 {renderSlide(i)}
