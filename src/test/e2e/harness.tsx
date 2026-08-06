@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
@@ -58,5 +58,7 @@ export function pointer(el: Element, type: string, x: number, y: number, pointer
   Object.defineProperty(ev, "pointerId", { value: 1 });
   Object.defineProperty(ev, "pointerType", { value: pointerType });
   Object.defineProperty(ev, "isPrimary", { value: true });
-  el.dispatchEvent(ev);
+  act(() => {
+    el.dispatchEvent(ev);
+  });
 }
