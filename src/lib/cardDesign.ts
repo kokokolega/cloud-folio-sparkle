@@ -379,6 +379,7 @@ export function loadDesign(noteId: string): DesignDoc {
     bySlide: d.value.bySlide ?? {},
     guides: d.value.guides ?? [],
     globals: { ...DEFAULT_GLOBALS, ...(d.value.globals ?? {}) },
+    style: { ...DEFAULT_CARD_STYLE, ...(d.value.style ?? {}) },
   };
 }
 
