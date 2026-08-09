@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { routeAi } from "../_shared/ai-router.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -72,10 +73,6 @@ serve(async (req) => {
 
   try {
     const { messages, webSearch, notesContext, memoryContext, conversationHistory } = await req.json();
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY)
-      throw new Error("LOVABLE_API_KEY is not configured");
 
     const now = new Date();
     const kolkataTime = new Intl.DateTimeFormat("en-GB", {
@@ -165,24 +162,11 @@ serve(async (req) => {
       });
     }
 
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            ...systemMessages,
-            ...messages,
-          ],
-          stream: true,
-        }),
-      }
-    );
+    const { response } = await routeAi({
+      geminiModel: "google/gemini-3-flash-preview",
+      messages: [...systemMessages, ...messages],
+      stream: true,
+    });
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -195,6 +179,12 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings → Workspace → Usage." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 503) {
+        return new Response(
+          JSON.stringify({ error: "All AI providers are currently unavailable. Please try again shortly." }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       const t = await response.text();
