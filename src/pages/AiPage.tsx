@@ -25,6 +25,7 @@ import { MermaidDiagram } from "@/components/ai/MermaidDiagram";
 import { PresentationEditor } from "@/components/ai/PresentationEditor";
 import { ImageStudio } from "@/components/ai/ImageStudio";
 import { FlowchartEditor } from "@/components/ai/FlowchartEditor";
+import { ImageSearchResults, type ImageSearchItem } from "@/components/ai/ImageSearchResults";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -33,7 +34,15 @@ import {
 
 
 
-type Msg = { role: "user" | "assistant"; content: string; attachments?: FileAttachment[] };
+type ImageSearchData = {
+  type: "image_search";
+  query: string;
+  results: ImageSearchItem[];
+  page: number;
+  hasMore: boolean;
+};
+
+type Msg = { role: "user" | "assistant"; content: string; attachments?: FileAttachment[]; imageSearch?: ImageSearchData };
 
 interface FileAttachment {
   name: string;
@@ -189,6 +198,7 @@ export default function AiPage() {
   const [imageStudioOpen, setImageStudioOpen] = useState(false);
   const [flowchartOpen, setFlowchartOpen] = useState(false);
   const [presentationOpen, setPresentationOpen] = useState(false);
+  const [loadingMoreImages, setLoadingMoreImages] = useState(false);
 
   const isAuthenticated = !!user;
 
@@ -394,6 +404,78 @@ export default function AiPage() {
     return full;
   }, [webSearchEnabled, userNotes, userMemory, conversationHistory]);
 
+  /* ---------- Image Search Intent Detection ---------- */
+  const isImageSearchRequest = (text: string): boolean => {
+    const lower = text.toLowerCase().trim();
+    // Strong image-search signals: explicit verbs + image nouns
+    const imageNouns = /\b(images?|photos?|pictures?|pics?)\b/;
+    const searchVerbs = /\b(show|find|search|get|give|look\s+up|browse)\b/;
+    const hasImageNoun = imageNouns.test(lower);
+    const hasSearchVerb = searchVerbs.test(lower);
+    // "show me images of X" / "find photos of Y"
+    if (hasSearchVerb && hasImageNoun) return true;
+    // "images of X" / "photos of Y" (noun + of)
+    if (/\b(images?|photos?|pictures?|pics?)\s+(of|for|with)\b/.test(lower)) return true;
+    // "search X images"
+    if (/\bsearch\s+\w+\s*(images?|photos?|pictures?)\b/.test(lower)) return true;
+    // Do NOT trigger for questions / explanations
+    if (/\b(what|how|why|explain|tell|describe|who|when|where|is|are|can|do|does)\b/.test(lower)) return false;
+    return false;
+  };
+
+  const performImageSearch = async (query: string, page: number): Promise<ImageSearchData | null> => {
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/ai-image-search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ query, page }),
+      });
+      if (!resp.ok) throw new Error(`Search failed (${resp.status})`);
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error);
+      return {
+        type: "image_search",
+        query: data.query || query,
+        results: data.results || [],
+        page: data.page || page,
+        hasMore: !!data.hasMore,
+      };
+    } catch (e: any) {
+      console.error("Image search error:", e);
+      toast.error(e.message || "Image search failed");
+      return null;
+    }
+  };
+
+  const loadMoreImages = async (msgIndex: number) => {
+    const msg = messages[msgIndex];
+    if (!msg?.imageSearch || loadingMoreImages) return;
+    setLoadingMoreImages(true);
+    const nextPage = msg.imageSearch.page + 1;
+    const more = await performImageSearch(msg.imageSearch.query, nextPage);
+    if (more && more.results.length > 0) {
+      // Deduplicate against existing results
+      const existingIds = new Set(msg.imageSearch.results.map((r) => r.id));
+      const newResults = more.results.filter((r) => !existingIds.has(r.id));
+      setMessages((prev) =>
+        prev.map((m, i) =>
+          i === msgIndex
+            ? {
+                ...m,
+                imageSearch: {
+                  ...m.imageSearch!,
+                  results: [...m.imageSearch!.results, ...newResults],
+                  page: nextPage,
+                  hasMore: more.hasMore,
+                },
+              }
+            : m,
+        ),
+      );
+    }
+    setLoadingMoreImages(false);
+  };
+
   const send = async (text?: string) => {
     const msg = text || input.trim();
     if (!msg || isLoading) return;
@@ -418,6 +500,23 @@ export default function AiPage() {
     setShowMentions(false);
     setIsLoading(true);
     try {
+      // Image search intent detection
+      if (isImageSearchRequest(msg) && !webSearchEnabled && attachedFiles.length === 0) {
+        const searchQuery = msg.replace(/\[Web Search Mode\]\s*/g, "").trim();
+        const searchData = await performImageSearch(searchQuery, 1);
+        if (searchData) {
+          const assistantMsg: Msg = {
+            role: "assistant",
+            content: `<p>Here are image results for <strong>"${searchData.query}"</strong> ॥ Click any image to view full size, download, or visit the source ॥</p>`,
+            imageSearch: searchData,
+          };
+          setMessages((prev) => [...prev, assistantMsg]);
+        } else {
+          setMessages((prev) => [...prev, { role: "assistant", content: "<p>Sorry, I couldn't find images for that search ॥ Please try a different query ॥</p>" }]);
+        }
+        if (isAuthenticated) setMessages((current) => { saveConversation(current, activeConversationId); return current; });
+        return;
+      }
       const responseContent = await streamChat(newMessages);
       await processAiActions(responseContent);
       if (isAuthenticated) setMessages((current) => { saveConversation(current, activeConversationId); return current; });
@@ -627,6 +726,16 @@ export default function AiPage() {
                         </div>
                       ) : (
                         <div className="leading-relaxed prose-editor" dangerouslySetInnerHTML={{ __html: displayContent }} />
+                      )}
+
+                      {msg.imageSearch && (
+                        <ImageSearchResults
+                          query={msg.imageSearch.query}
+                          results={msg.imageSearch.results}
+                          hasMore={msg.imageSearch.hasMore}
+                          onLoadMore={() => loadMoreImages(i)}
+                          loadingMore={loadingMoreImages}
+                        />
                       )}
 
                       {(editMarker || deleteMarker || memMarkers.length > 0) && (
