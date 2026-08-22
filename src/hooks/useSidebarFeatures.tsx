@@ -5,15 +5,15 @@ export type SidebarFeatureKey = "files" | "codrix" | "groups" | "calendar" | "pd
 const STORAGE_KEY = "oltrid-sidebar-features";
 
 const DEFAULTS: Record<SidebarFeatureKey, boolean> = {
-  files: false,
-  codrix: false,
-  groups: false,
-  calendar: false,
-  pdfEditor: false,
+  files: true,
+  codrix: true,
+  groups: true,
+  calendar: true,
+  pdfEditor: true,
   notemaroyaar: false,
-  smartCapture: false,
-  scratchpad: false,
-  secondBrain: false,
+  smartCapture: true,
+  scratchpad: true,
+  secondBrain: true,
 };
 
 
