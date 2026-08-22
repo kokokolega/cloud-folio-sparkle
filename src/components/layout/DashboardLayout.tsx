@@ -32,7 +32,7 @@ export function DashboardLayout({ children, noPadding }: DashboardLayoutProps) {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center h-12 px-3 border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-30 md:hidden">
-            <SidebarTrigger className="h-8 w-8" />
+            <SidebarTrigger className="h-10 w-10" />
           </div>
           <main className={noPadding ? "flex-1 h-[calc(100vh-48px)] md:h-screen" : "flex-1 p-4 md:p-6 overflow-auto"}>
             {children}
