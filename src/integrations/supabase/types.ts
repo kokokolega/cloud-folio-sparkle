@@ -97,6 +97,69 @@ export type Database = {
           },
         ]
       }
+      alarms: {
+        Row: {
+          alarm_time: string
+          created_at: string
+          enabled: boolean
+          fullscreen: boolean
+          id: string
+          label: string
+          last_fired_at: string | null
+          notif_message: string
+          notif_title: string
+          repeat_attempts: number
+          repeat_days: number[]
+          ringtone: string
+          snooze_minutes: number
+          sound_mode: string
+          updated_at: string
+          user_id: string
+          vibration_pattern: string
+          volume: number
+        }
+        Insert: {
+          alarm_time: string
+          created_at?: string
+          enabled?: boolean
+          fullscreen?: boolean
+          id?: string
+          label?: string
+          last_fired_at?: string | null
+          notif_message?: string
+          notif_title?: string
+          repeat_attempts?: number
+          repeat_days?: number[]
+          ringtone?: string
+          snooze_minutes?: number
+          sound_mode?: string
+          updated_at?: string
+          user_id: string
+          vibration_pattern?: string
+          volume?: number
+        }
+        Update: {
+          alarm_time?: string
+          created_at?: string
+          enabled?: boolean
+          fullscreen?: boolean
+          id?: string
+          label?: string
+          last_fired_at?: string | null
+          notif_message?: string
+          notif_title?: string
+          repeat_attempts?: number
+          repeat_days?: number[]
+          ringtone?: string
+          snooze_minutes?: number
+          sound_mode?: string
+          updated_at?: string
+          user_id?: string
+          vibration_pattern?: string
+          volume?: number
+        }
+        Relationships: []
+      }
       capture_rules: {
         Row: {
           category: string
