@@ -21,7 +21,8 @@ export interface RingingState {
   snoozedUntil?: Date;
 }
 
-export function useAlarms() {
+export function useAlarms(options?: { schedule?: boolean }) {
+  const schedulingEnabled = options?.schedule !== false;
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [ringing, setRinging] = useState<RingingState | null>(null);
