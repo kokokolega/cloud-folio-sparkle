@@ -179,6 +179,7 @@ export default function AiPage() {
   const { user } = useAuth();
   const { isGuest, guestExpired, guestMinutesLeft } = useGuestMode();
   const navigate = useNavigate();
+  const { alarms, createAlarm, updateAlarm, deleteAlarm } = useAlarms({ schedule: false });
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
