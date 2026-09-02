@@ -26,6 +26,8 @@ import { PresentationEditor } from "@/components/ai/PresentationEditor";
 import { ImageStudio } from "@/components/ai/ImageStudio";
 import { FlowchartEditor } from "@/components/ai/FlowchartEditor";
 import { ImageSearchResults, type ImageSearchItem } from "@/components/ai/ImageSearchResults";
+import { useAlarms } from "@/hooks/useAlarms";
+import { parseAlarmCommand, summarizeAlarm, formatTime12, describeRepeat } from "@/lib/alarms";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -177,6 +179,7 @@ export default function AiPage() {
   const { user } = useAuth();
   const { isGuest, guestExpired, guestMinutesLeft } = useGuestMode();
   const navigate = useNavigate();
+  const { alarms, createAlarm, updateAlarm, deleteAlarm } = useAlarms({ schedule: false });
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -476,9 +479,79 @@ export default function AiPage() {
     setLoadingMoreImages(false);
   };
 
+  /** Handle alarm commands locally so Oltrid confirms instantly. Returns true if handled. */
+  const handleAlarmCommand = async (msg: string): Promise<boolean> => {
+    const intent = parseAlarmCommand(msg);
+    if (intent.kind === "none") return false;
+
+    const reply = (html: string) => {
+      setMessages((prev) => {
+        const next: Msg[] = [...prev, { role: "user", content: msg }, { role: "assistant", content: html }];
+        if (isAuthenticated) saveConversation(next, activeConversationId);
+        return next;
+      });
+      setInput("");
+    };
+
+    if (!user) {
+      reply("<p>Sign in first and I'll keep your alarms saved ॥</p>");
+      return true;
+    }
+
+    if (intent.kind === "list") {
+      if (alarms.length === 0) {
+        reply("<p>Abhi koi alarm set nahi hai ॥ Bolo — \"7 baje alarm laga do\" ॥</p>");
+      } else {
+        const items = alarms
+          .map((a) => `<li><strong>${formatTime12(a.alarm_time)}</strong> — ${a.label} · ${describeRepeat(a.repeat_days)}${a.enabled ? "" : " · off"} ॥</li>`)
+          .join("");
+        reply(`<p>Yeh rahe tumhare alarms ॥</p><ul>${items}</ul>`);
+      }
+      return true;
+    }
+
+    if (intent.kind === "delete") {
+      const target = alarms[0];
+      if (!target) {
+        reply("<p>Delete karne ke liye koi alarm hi nahi hai ॥</p>");
+        return true;
+      }
+      const ok = await deleteAlarm(target.id);
+      reply(ok
+        ? `<p>Done ॥ ${formatTime12(target.alarm_time)} ka alarm hata diya ॥</p>`
+        : "<p>Alarm delete nahi ho paaya ॥ Thoda baad try karo ॥</p>");
+      return true;
+    }
+
+    if (intent.kind === "create") {
+      const created = await createAlarm(intent.draft);
+      reply(created
+        ? `<p>Done ॥ ${summarizeAlarm(created)} — alarm set hai ॥</p>`
+        : "<p>Alarm save nahi ho paaya ॥ Ek baar phir try karo ॥</p>");
+      return true;
+    }
+
+    // update
+    const target = alarms[0];
+    if (!target) {
+      reply("<p>Update karne ke liye koi alarm nahi mila ॥ Pehle ek alarm laga do ॥</p>");
+      return true;
+    }
+    const ok = await updateAlarm(target.id, intent.patch as any);
+    reply(ok
+      ? `<p>Updated ॥ ${summarizeAlarm({ ...target, ...intent.patch })} ॥</p>`
+      : "<p>Alarm update nahi ho paaya ॥</p>");
+    return true;
+  };
+
   const send = async (text?: string) => {
     const msg = text || input.trim();
     if (!msg || isLoading) return;
+    if (attachedFiles.length === 0 && !webSearchEnabled) {
+      try {
+        if (await handleAlarmCommand(msg)) return;
+      } catch { /* fall through to normal chat */ }
+    }
     let fullContent = msg;
     if (attachedFiles.length > 0) {
       const fileContext = attachedFiles.map(f => {

@@ -21,7 +21,8 @@ export interface RingingState {
   snoozedUntil?: Date;
 }
 
-export function useAlarms() {
+export function useAlarms(options?: { schedule?: boolean }) {
+  const schedulingEnabled = options?.schedule !== false;
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [ringing, setRinging] = useState<RingingState | null>(null);
@@ -99,7 +100,7 @@ export function useAlarms() {
       if (!key.startsWith("retry-")) clearTimeout(t);
     });
     timersRef.current.clear();
-    if (!user) return;
+    if (!user || !schedulingEnabled) return;
     for (const alarm of list) {
       const next = nextFireDate(alarm);
       if (!next) continue;
@@ -116,7 +117,7 @@ export function useAlarms() {
       }, delay);
       timersRef.current.set(alarm.id, t);
     }
-  }, [user, fireAlarm, queryClient]);
+  }, [user, fireAlarm, queryClient, schedulingEnabled]);
 
   useEffect(() => {
     scheduleAll(alarms);

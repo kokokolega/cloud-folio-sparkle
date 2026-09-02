@@ -14,6 +14,7 @@ import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader as Loader2, Trash2
 import { toast } from "sonner";
 import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
 import { useSidebarStyle, SIDEBAR_STYLES } from "@/hooks/useSidebarStyle";
+import { AlarmSettings } from "@/components/alarms/AlarmSettings";
 
 
 const BG_THEMES: { id: BgTheme; name: string; description: string; preview: string }[] = [
@@ -217,6 +218,9 @@ export default function SettingsPage() {
               <Switch checked={autoLogoutEnabled} onCheckedChange={setAutoLogoutEnabled} />
             </div>
           </div>
+
+          {/* Alarms & Notifications */}
+          <AlarmSettings />
 
           {/* Sidebar Features */}
           <div className="glass-card p-5 space-y-3">
