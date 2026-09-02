@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { IdleWarningDialog } from "@/components/IdleWarningDialog";
+import { AlarmManager } from "@/components/alarms/AlarmManager";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { useAuth } from "@/hooks/useAuth";
 
