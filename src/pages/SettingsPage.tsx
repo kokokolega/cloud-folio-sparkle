@@ -219,6 +219,9 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* Alarms & Notifications */}
+          <AlarmSettings />
+
           {/* Sidebar Features */}
           <div className="glass-card p-5 space-y-3">
             <div className="flex items-center gap-3">
