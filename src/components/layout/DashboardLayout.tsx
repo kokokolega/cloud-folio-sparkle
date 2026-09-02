@@ -41,6 +41,7 @@ export function DashboardLayout({ children, noPadding }: DashboardLayoutProps) {
         </div>
       </div>
       <IdleWarningDialog open={showWarning} secondsLeft={secondsLeft} onDismiss={dismissWarning} />
+      <AlarmManager />
     </SidebarProvider>
   );
 }
