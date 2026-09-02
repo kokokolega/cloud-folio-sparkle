@@ -117,7 +117,7 @@ export function useAlarms(options?: { schedule?: boolean }) {
       }, delay);
       timersRef.current.set(alarm.id, t);
     }
-  }, [user, fireAlarm, queryClient]);
+  }, [user, fireAlarm, queryClient, schedulingEnabled]);
 
   useEffect(() => {
     scheduleAll(alarms);
