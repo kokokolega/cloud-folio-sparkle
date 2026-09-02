@@ -100,7 +100,7 @@ export function useAlarms(options?: { schedule?: boolean }) {
       if (!key.startsWith("retry-")) clearTimeout(t);
     });
     timersRef.current.clear();
-    if (!user) return;
+    if (!user || !schedulingEnabled) return;
     for (const alarm of list) {
       const next = nextFireDate(alarm);
       if (!next) continue;
