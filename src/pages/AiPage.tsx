@@ -26,6 +26,8 @@ import { PresentationEditor } from "@/components/ai/PresentationEditor";
 import { ImageStudio } from "@/components/ai/ImageStudio";
 import { FlowchartEditor } from "@/components/ai/FlowchartEditor";
 import { ImageSearchResults, type ImageSearchItem } from "@/components/ai/ImageSearchResults";
+import { useAlarms } from "@/hooks/useAlarms";
+import { parseAlarmCommand, summarizeAlarm, formatTime12, describeRepeat } from "@/lib/alarms";
 import {
   ResizablePanelGroup,
   ResizablePanel,
