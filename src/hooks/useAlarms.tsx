@@ -123,6 +123,13 @@ export function useAlarms(options?: { schedule?: boolean }) {
     scheduleAll(alarms);
   }, [alarms, scheduleAll]);
 
+  // Mirror alarms to OS-level notifications so they fire with the app closed.
+  useEffect(() => {
+    if (!schedulingEnabled) return;
+    syncOsAlarms(alarms);
+  }, [alarms, schedulingEnabled]);
+
+
   // reschedule on visibility return (timers may have drifted while tab hidden)
   useEffect(() => {
     const onVis = () => { if (document.visibilityState === "visible") scheduleAll(alarms); };

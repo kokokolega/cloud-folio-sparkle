@@ -227,8 +227,40 @@ async function processOperation(operation) {
   return response;
 }
 
+/* ---------------- Oltrid alarm scheduling (browser fallback) ---------------- */
+
+let alarmTimers = [];
+
+self.addEventListener('message', (event) => {
+  const data = event.data || {};
+  if (data.type !== 'OLTRID_SET_ALARMS') return;
+
+  alarmTimers.forEach((t) => clearTimeout(t));
+  alarmTimers = [];
+
+  const list = Array.isArray(data.alarms) ? data.alarms : [];
+  for (const alarm of list) {
+    const delay = alarm.at - Date.now();
+    // setTimeout caps around 24.8 days; alarms are scheduled a week out at most.
+    if (delay <= 0 || delay > 7 * 24 * 60 * 60 * 1000) continue;
+    const timer = setTimeout(() => {
+      self.registration.showNotification(alarm.title || 'Oltrid Alarm', {
+        body: alarm.body || 'Alarm',
+        tag: alarm.tag,
+        renotify: true,
+        requireInteraction: true,
+        silent: !!alarm.silent,
+        vibrate: alarm.silent ? undefined : [500, 250, 500, 250, 800],
+        data: { url: '/settings' }
+      });
+    }, delay);
+    alarmTimers.push(timer);
+  }
+});
+
 self.addEventListener('push', (event) => {
   console.log('Service Worker: Push received');
+
 
   const options = {
     body: event.data ? event.data.text() : 'New notification from Oltrid',
