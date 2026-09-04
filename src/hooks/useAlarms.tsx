@@ -14,6 +14,7 @@ import {
   formatTime12,
   getCapabilities,
 } from "@/lib/alarms";
+import { syncOsAlarms } from "@/lib/nativeAlarms";
 
 export interface RingingState {
   alarm: Alarm;
