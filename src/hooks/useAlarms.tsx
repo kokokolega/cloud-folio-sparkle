@@ -14,6 +14,7 @@ import {
   formatTime12,
   getCapabilities,
 } from "@/lib/alarms";
+import { syncOsAlarms } from "@/lib/nativeAlarms";
 
 export interface RingingState {
   alarm: Alarm;
@@ -122,6 +123,13 @@ export function useAlarms(options?: { schedule?: boolean }) {
   useEffect(() => {
     scheduleAll(alarms);
   }, [alarms, scheduleAll]);
+
+  // Mirror alarms to OS-level notifications so they fire with the app closed.
+  useEffect(() => {
+    if (!schedulingEnabled) return;
+    syncOsAlarms(alarms);
+  }, [alarms, schedulingEnabled]);
+
 
   // reschedule on visibility return (timers may have drifted while tab hidden)
   useEffect(() => {
