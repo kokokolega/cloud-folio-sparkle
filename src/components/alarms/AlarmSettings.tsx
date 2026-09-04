@@ -101,7 +101,13 @@ export function AlarmSettings() {
           <span>Vibration: {caps.vibration ? "supported" : "not on this device"}</span>
           <span>Audio: {caps.audio ? "ready" : "unavailable"}</span>
         </div>
+        <p className="text-[11px] text-muted-foreground">
+          {isNativeApp()
+            ? "Installed app: alarms are handed to your phone's clock, so they ring exactly on time even when Oltrid is closed."
+            : "In a browser, alarms ring on time while Oltrid is open and can still notify you in the background. For alarms that always ring with the app closed, use the installed phone app."}
+        </p>
       </div>
+
 
       {alarms.length === 0 && (
         <p className="text-xs text-muted-foreground py-2">No alarms yet. Add one, or just ask Oltrid AI — "7 baje alarm laga do".</p>
