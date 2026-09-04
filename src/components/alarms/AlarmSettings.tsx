@@ -23,6 +23,7 @@ import {
   getCapabilities,
   requestNotificationPermission,
 } from "@/lib/alarms";
+import { isNativeApp, requestOsAlarmPermission } from "@/lib/nativeAlarms";
 
 export function AlarmSettings() {
   // Scheduling is owned by the global AlarmManager; this panel only edits.
@@ -32,11 +33,20 @@ export function AlarmSettings() {
   const caps = getCapabilities();
 
   const askPermission = async () => {
+    const os = await requestOsAlarmPermission();
     const res = await requestNotificationPermission();
     setPermission(res);
-    if (res === "granted") toast.success("Notifications enabled");
-    else if (res === "denied") toast.error("Notifications blocked in browser settings");
+    if (os === "granted" || res === "granted") {
+      toast.success(
+        isNativeApp()
+          ? "Alarms will now ring even when the app is closed"
+          : "Notifications enabled — keep Oltrid installed for background alarms",
+      );
+    } else if (res === "denied" || os === "denied") {
+      toast.error("Notifications blocked — allow them in your device settings");
+    }
   };
+
 
   const addAlarm = async () => {
     const d = new Date(Date.now() + 60 * 60 * 1000);
