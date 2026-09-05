@@ -6,6 +6,19 @@ import { pruneDrafts } from "./lib/localDraft";
 // Drop local drafts that haven't been touched in a month.
 pruneDrafts();
 
+// The installed Android/iOS build ships as the standalone Oltrid Alarms app:
+// launch straight into the alarm screen instead of the web workspace.
+try {
+  const isNative = !!(window as any)?.Capacitor?.isNativePlatform?.();
+  if (isNative && (window.location.pathname === "/" || window.location.pathname === "/index.html")) {
+    window.history.replaceState(null, "", "/alarm");
+  }
+} catch {
+  /* ignore */
+}
+
+
+
 
 // Service Worker Registration for PWA
 if ('serviceWorker' in navigator) {
