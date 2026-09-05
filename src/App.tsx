@@ -29,6 +29,7 @@ import NoteFoldersPage from "./pages/NoteFoldersPage";
 import PdfEditorPage from "./pages/PdfEditorPage";
 import SmartCapturePage from "./pages/SmartCapturePage";
 import SecondBrainPage from "./pages/SecondBrainPage";
+import AlarmAppPage from "./pages/AlarmAppPage";
 import { Scratchpad } from "@/components/scratchpad/Scratchpad";
 import { HandoffManager } from "@/components/HandoffManager";
 
