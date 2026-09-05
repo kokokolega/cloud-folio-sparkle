@@ -54,6 +54,32 @@ async function loadPlugin() {
   }
 }
 
+/** Android needs explicit high-importance channels for alarm-style delivery. */
+async function ensureChannels(LN: any) {
+  try {
+    if ((window as any)?.Capacitor?.getPlatform?.() !== "android") return;
+    await LN.createChannel?.({
+      id: "oltrid-alarms",
+      name: "Oltrid Alarms",
+      description: "Alarms with sound and vibration",
+      importance: 5,
+      visibility: 1,
+      sound: "beep.wav",
+      vibration: true,
+    });
+    await LN.createChannel?.({
+      id: "oltrid-alarms-silent",
+      name: "Oltrid Alarms (silent)",
+      description: "Silent or vibration-only alarms",
+      importance: 4,
+      visibility: 1,
+      vibration: true,
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function ensureNativePermission(): Promise<"granted" | "denied" | "unavailable"> {
   const LN = await loadPlugin();
   if (!LN) return "unavailable";
@@ -61,6 +87,7 @@ export async function ensureNativePermission(): Promise<"granted" | "denied" | "
     let res = await LN.checkPermissions();
     if (res.display !== "granted") res = await LN.requestPermissions();
     if (res.display !== "granted") return "denied";
+    await ensureChannels(LN);
     // Android 12+ needs the user to allow exact alarms for second-accurate ringing.
     try {
       const exact = await (LN as any).checkExactNotificationSetting?.();
@@ -75,6 +102,7 @@ export async function ensureNativePermission(): Promise<"granted" | "denied" | "
     return "unavailable";
   }
 }
+
 
 async function syncNative(alarms: Alarm[]) {
   const LN = await loadPlugin();
