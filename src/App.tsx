@@ -66,7 +66,9 @@ const App = () => (
               <Route path="/pdf-editor" element={<ProtectedRoute><PdfEditorPage /></ProtectedRoute>} />
               <Route path="/desktop" element={<ProtectedRoute><SecondBrainPage /></ProtectedRoute>} />
               <Route path="/capture" element={<ProtectedRoute><SmartCapturePage /></ProtectedRoute>} />
+              <Route path="/alarm" element={<ProtectedRoute><AlarmAppPage /></ProtectedRoute>} />
               <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
+
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
