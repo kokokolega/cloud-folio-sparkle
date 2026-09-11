@@ -76,18 +76,46 @@ export interface AlarmCapabilities {
   serviceWorker: boolean;
 }
 
+/** Capacitor / native shell (Android & iOS app) — OS notifications handled natively. */
+function isNativeShell(): boolean {
+  try {
+    return !!(window as any)?.Capacitor?.isNativePlatform?.();
+  } catch {
+    return false;
+  }
+}
+
+function hasWebNotifications(): boolean {
+  return typeof window !== "undefined" && "Notification" in window && typeof Notification?.requestPermission === "function";
+}
+
 export function getCapabilities(): AlarmCapabilities {
+  const native = isNativeShell();
+  const web = hasWebNotifications();
+  // Android WebView / in-app browsers hide window.Notification but can still deliver
+  // alarms through the service worker or the native layer — never report "unsupported"
+  // when one of those routes exists.
+  const sw = typeof navigator !== "undefined" && "serviceWorker" in navigator;
   return {
-    notifications: typeof window !== "undefined" && "Notification" in window,
-    notificationPermission: typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
+    notifications: native || web || sw,
+    notificationPermission: web
+      ? Notification.permission
+      : native || sw
+        ? "default"
+        : "unsupported",
     vibration: typeof navigator !== "undefined" && "vibrate" in navigator,
     audio: typeof window !== "undefined" && ("AudioContext" in window || "webkitAudioContext" in window),
-    serviceWorker: typeof navigator !== "undefined" && "serviceWorker" in navigator,
+    serviceWorker: sw,
   };
 }
 
 export async function requestNotificationPermission(): Promise<NotificationPermission | "unsupported"> {
-  if (!("Notification" in window)) return "unsupported";
+  if (!hasWebNotifications()) {
+    // Native shell asks through Capacitor; SW-only devices simply keep in-app ringing.
+    return isNativeShell() || (typeof navigator !== "undefined" && "serviceWorker" in navigator)
+      ? "default"
+      : "unsupported";
+  }
   if (Notification.permission === "granted") return "granted";
   try {
     return await Notification.requestPermission();
