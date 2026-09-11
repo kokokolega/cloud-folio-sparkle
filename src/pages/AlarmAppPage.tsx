@@ -96,7 +96,15 @@ export default function AlarmAppPage() {
     if (res === "granted") {
       toast.success("Alarms will now ring with notifications");
       const push = await registerForPush();
-      if (push.status === "registered") toast.success("This device is registered for alarm pushes");
+      if (push.status === "registered") {
+        toast.success("This device will be alerted even when the app is closed");
+      } else if (push.status === "open-in-new-tab") {
+        toast.message("Open Oltrid in its own tab to finish enabling alerts");
+      } else if (push.status === "denied") {
+        toast.error("Alerts blocked — allow notifications in your browser settings");
+      } else if (push.status === "not-signed-in") {
+        toast.error("Sign in to receive alarm alerts on this device");
+      }
     } else if (res === "denied") {
       toast.error("Notifications blocked — allow them in your device settings");
     } else {
