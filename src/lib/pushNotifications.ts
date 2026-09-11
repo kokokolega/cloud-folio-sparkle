@@ -11,6 +11,8 @@ export type PushStatus =
   | "denied"
   | "unsupported"
   | "not-signed-in"
+  | "not-configured"
+  | "open-in-new-tab"
   | "error";
 
 export interface PushState {
