@@ -1,0 +1,1 @@
+ALTER TABLE public.alarms ADD COLUMN IF NOT EXISTS last_pushed_at timestamp with time zone;

@@ -106,6 +106,7 @@ export type Database = {
           id: string
           label: string
           last_fired_at: string | null
+          last_pushed_at: string | null
           notif_message: string
           notif_title: string
           repeat_attempts: number
@@ -126,6 +127,7 @@ export type Database = {
           id?: string
           label?: string
           last_fired_at?: string | null
+          last_pushed_at?: string | null
           notif_message?: string
           notif_title?: string
           repeat_attempts?: number
@@ -146,6 +148,7 @@ export type Database = {
           id?: string
           label?: string
           last_fired_at?: string | null
+          last_pushed_at?: string | null
           notif_message?: string
           notif_title?: string
           repeat_attempts?: number

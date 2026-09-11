@@ -11,6 +11,8 @@ export type PushStatus =
   | "denied"
   | "unsupported"
   | "not-signed-in"
+  | "not-configured"
+  | "open-in-new-tab"
   | "error";
 
 export interface PushState {
@@ -56,13 +58,53 @@ async function saveToken(token: string): Promise<PushStatus> {
   return "registered";
 }
 
+/** Browser (Firebase Cloud Messaging) registration — used when not in the native app. */
+async function registerWeb(): Promise<PushState> {
+  const appId = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_APP_ID as string | undefined;
+  const vapidKey = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_VAPID_KEY as string | undefined;
+  const firebaseConfig = {
+    apiKey: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY as string | undefined,
+    projectId: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID as string | undefined,
+    appId,
+    messagingSenderId: appId?.split(":")[1] ?? "",
+  };
+
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !appId || !vapidKey || !firebaseConfig.messagingSenderId) {
+    return { status: "not-configured" };
+  }
+  if (typeof Notification === "undefined" || !("serviceWorker" in navigator)) return { status: "unsupported" };
+
+  try {
+    const { initializeApp } = await import("firebase/app");
+    const { getMessaging, getToken, isSupported } = await import("firebase/messaging");
+    if (!(await isSupported())) return { status: "unsupported" };
+    if (window.top !== window.self) return { status: "open-in-new-tab" };
+
+    const permission =
+      Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+    if (permission !== "granted") return { status: "denied" };
+
+    const query = new URLSearchParams(firebaseConfig as Record<string, string>).toString();
+    const serviceWorkerRegistration = await navigator.serviceWorker.register(
+      `/firebase-messaging-sw.js?${query}`,
+    );
+    const messaging = getMessaging(initializeApp(firebaseConfig, "oltrid-push"));
+    const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration });
+    if (!token) return { status: "denied" };
+    return { status: await saveToken(token), token };
+  } catch (e) {
+    console.warn("Web push registration failed", e);
+    return { status: "error" };
+  }
+}
+
 /**
- * Ask the OS for notification permission and register this device for push.
- * Returns "unsupported" in the browser — real background push needs the
- * installed Android/iOS build.
+ * Ask the OS (or browser) for notification permission and register this device
+ * for push so alarms alert even when the app is closed.
  */
 export async function registerForPush(): Promise<PushState> {
-  if (!isNativeApp()) return { status: "unsupported" };
+  if (!isNativeApp()) return registerWeb();
+
 
   try {
     const { PushNotifications } = await import("@capacitor/push-notifications");
