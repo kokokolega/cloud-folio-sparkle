@@ -90,7 +90,7 @@ export function AlarmSettings() {
           {permission === "granted" ? (
             <span className="text-[11px] text-muted-foreground flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Allowed</span>
           ) : permission === "unsupported" ? (
-            <span className="text-[11px] text-muted-foreground">Unsupported</span>
+            <span className="text-[11px] text-muted-foreground">Rings inside the app</span>
           ) : (
             <Button size="sm" variant="outline" className="h-7 rounded-lg text-[11px]" onClick={askPermission}>
               {permission === "denied" ? "Blocked — retry" : "Enable"}
