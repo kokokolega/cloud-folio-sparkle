@@ -5,6 +5,7 @@ import { IdleWarningDialog } from "@/components/IdleWarningDialog";
 import { AlarmManager } from "@/components/alarms/AlarmManager";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { useAuth } from "@/hooks/useAuth";
+import { useCloudSync } from "@/hooks/useCloudSync";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,9 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, noPadding }: DashboardLayoutProps) {
   const { session, signOut } = useAuth();
+
+  // Keep notes, folders, files, tasks, groups and cards in sync across devices.
+  useCloudSync();
 
   const autoLogoutEnabled = typeof window !== "undefined" ? localStorage.getItem("oltrid-auto-logout") !== "false" : true;
 

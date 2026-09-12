@@ -9,10 +9,21 @@ const config: CapacitorConfig = {
     url: 'https://829f6c02-4761-44e0-9f03-fdd601c4d308.lovableproject.com?forceHideBadge=true',
     cleartext: true,
   },
+  ios: {
+    // Full-bleed layout under the notch; the web layer handles safe areas.
+    contentInset: 'never',
+    backgroundColor: '#ffffff',
+    limitsNavigationsToAppBoundDomains: false,
+    scrollEnabled: true,
+  },
+  android: {
+    backgroundColor: '#ffffff',
+  },
   plugins: {
     LocalNotifications: {
       smallIcon: 'ic_stat_icon_config_sample',
       iconColor: '#007AFF',
+      // iOS plays this from the app bundle; Android from res/raw.
       sound: 'beep.wav',
     },
     PushNotifications: {
