@@ -25,6 +25,7 @@ import {
   describeRepeat,
   formatTime12,
   nextFireDate,
+  getCapabilities,
   type SoundMode,
   type RingtoneId,
 } from "@/lib/alarms";
