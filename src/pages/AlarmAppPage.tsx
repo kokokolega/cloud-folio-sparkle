@@ -68,9 +68,7 @@ export default function AlarmAppPage() {
   const [snooze, setSnooze] = useState(5);
   const [saving, setSaving] = useState(false);
 
-  const [permission, setPermission] = useState<string>(
-    typeof Notification !== "undefined" ? Notification.permission : "unsupported",
-  );
+  const [permission, setPermission] = useState<string>(() => getCapabilities().notificationPermission);
   const native = isNativeApp();
 
   const sorted = useMemo(
