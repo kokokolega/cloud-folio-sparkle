@@ -80,6 +80,25 @@ async function ensureChannels(LN: any) {
   }
 }
 
+/** iOS/Android notification buttons so the alarm can be snoozed from the lock screen. */
+async function ensureActionTypes(LN: any) {
+  try {
+    await LN.registerActionTypes?.({
+      types: [
+        {
+          id: "OLTRID_ALARM",
+          actions: [
+            { id: "snooze", title: "Snooze" },
+            { id: "dismiss", title: "Dismiss", destructive: true },
+          ],
+        },
+      ],
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function ensureNativePermission(): Promise<"granted" | "denied" | "unavailable"> {
   const LN = await loadPlugin();
   if (!LN) return "unavailable";
@@ -88,6 +107,7 @@ export async function ensureNativePermission(): Promise<"granted" | "denied" | "
     if (res.display !== "granted") res = await LN.requestPermissions();
     if (res.display !== "granted") return "denied";
     await ensureChannels(LN);
+    await ensureActionTypes(LN);
     // Android 12+ needs the user to allow exact alarms for second-accurate ringing.
     try {
       const exact = await (LN as any).checkExactNotificationSetting?.();
@@ -130,6 +150,7 @@ async function syncNative(alarms: Alarm[]) {
       channelId: silent ? "oltrid-alarms-silent" : "oltrid-alarms",
       extra: { alarmId: alarm.id },
       smallIcon: "ic_stat_icon_config_sample",
+      actionTypeId: "OLTRID_ALARM",
     };
 
     if (alarm.repeat_days && alarm.repeat_days.length > 0) {
