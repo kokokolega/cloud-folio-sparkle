@@ -80,6 +80,25 @@ async function ensureChannels(LN: any) {
   }
 }
 
+/** iOS/Android notification buttons so the alarm can be snoozed from the lock screen. */
+async function ensureActionTypes(LN: any) {
+  try {
+    await LN.registerActionTypes?.({
+      types: [
+        {
+          id: "OLTRID_ALARM",
+          actions: [
+            { id: "snooze", title: "Snooze" },
+            { id: "dismiss", title: "Dismiss", destructive: true },
+          ],
+        },
+      ],
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function ensureNativePermission(): Promise<"granted" | "denied" | "unavailable"> {
   const LN = await loadPlugin();
   if (!LN) return "unavailable";
