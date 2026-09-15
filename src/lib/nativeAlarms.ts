@@ -150,6 +150,7 @@ async function syncNative(alarms: Alarm[]) {
       channelId: silent ? "oltrid-alarms-silent" : "oltrid-alarms",
       extra: { alarmId: alarm.id },
       smallIcon: "ic_stat_icon_config_sample",
+      actionTypeId: "OLTRID_ALARM",
     };
 
     if (alarm.repeat_days && alarm.repeat_days.length > 0) {
