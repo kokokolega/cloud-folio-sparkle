@@ -88,6 +88,7 @@ export async function ensureNativePermission(): Promise<"granted" | "denied" | "
     if (res.display !== "granted") res = await LN.requestPermissions();
     if (res.display !== "granted") return "denied";
     await ensureChannels(LN);
+    await ensureActionTypes(LN);
     // Android 12+ needs the user to allow exact alarms for second-accurate ringing.
     try {
       const exact = await (LN as any).checkExactNotificationSetting?.();
