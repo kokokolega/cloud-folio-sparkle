@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, Sparkles, FileText, Brain, Code2, Eye, EyeOff, Zap, Shield } from "lucide-react";
 import { OltridLogo } from "@/components/OltridLogo";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 const features = [
   { icon: Brain, label: "AI Assistant", desc: "Chat with powerful AI models" },
