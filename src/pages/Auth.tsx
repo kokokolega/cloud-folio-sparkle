@@ -352,6 +352,15 @@ export default function Auth() {
             </motion.div>
           </form>
 
+          <div className="flex items-center gap-3 my-5">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <GoogleSignInButton />
+
+
           <div className="mt-8 text-center text-sm text-muted-foreground">
             {mode === "login" ? (
               <>
