@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, Sparkles, FileText, Brain, Code2, Eye, EyeOff, Zap, Shield } from "lucide-react";
 import { OltridLogo } from "@/components/OltridLogo";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 const features = [
   { icon: Brain, label: "AI Assistant", desc: "Chat with powerful AI models" },
@@ -350,6 +351,15 @@ export default function Auth() {
               </Button>
             </motion.div>
           </form>
+
+          <div className="flex items-center gap-3 my-5">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <GoogleSignInButton />
+
 
           <div className="mt-8 text-center text-sm text-muted-foreground">
             {mode === "login" ? (
