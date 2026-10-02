@@ -8,7 +8,13 @@
   "theme_color": "#000000",
   "orientation": "portrait-primary",
   "scope": "/",
-  "icons": [],
+  "icons": [
+    {
+      "src": "/favicon-dark.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ],
   "categories": ["productivity", "business", "utilities"],
   "lang": "en-US",
   "dir": "ltr"

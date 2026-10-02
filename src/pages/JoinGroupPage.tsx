@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { OltridLogo } from "@/components/OltridLogo";
 
 export default function JoinGroupPage() {
   const { inviteCode } = useParams<{ inviteCode: string }>();
@@ -41,19 +42,25 @@ export default function JoinGroupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      {status === "loading" ? (
-        <div className="text-center">
+      <div className="text-center">
+        <div className="mb-6 flex items-center justify-center gap-2" aria-label="Oltrid">
+          <OltridLogo className="h-8 w-8" />
+          <span className="text-lg font-semibold text-foreground">Oltrid</span>
+        </div>
+        {status === "loading" ? (
+          <>
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Joining group...</p>
-        </div>
-      ) : (
-        <div className="text-center">
+          </>
+        ) : (
+          <>
           <p className="text-sm text-muted-foreground">Invalid invite link</p>
           <button onClick={() => navigate("/groups")} className="text-primary text-sm mt-2 underline">
             Go to Groups
           </button>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
