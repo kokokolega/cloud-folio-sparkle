@@ -17,6 +17,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { AlarmManager } from "@/components/alarms/AlarmManager";
+import { OltridLogo } from "@/components/OltridLogo";
 import { useAlarms } from "@/hooks/useAlarms";
 import {
   REPEAT_DAY_LABELS,
@@ -152,8 +153,11 @@ export default function AlarmAppPage() {
       >
         <div className="mx-auto w-full max-w-lg">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <OltridLogo className="h-6 w-6" />
+            <span className="font-medium text-foreground">Oltrid</span>
+            <span aria-hidden="true">·</span>
             <AlarmClock className="h-4 w-4" />
-            <span>Oltrid Alarms</span>
+            <span>Alarms</span>
           </div>
           <h1 className="mt-2 text-5xl font-semibold tracking-tight tabular-nums">
             {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

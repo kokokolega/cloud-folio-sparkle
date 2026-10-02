@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Loader2, Lock } from "lucide-react";
+import { OltridLogo } from "@/components/OltridLogo";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -42,6 +43,10 @@ export default function ResetPassword() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md glass-card p-8"
       >
+        <div className="mb-6 flex items-center justify-center gap-2" aria-label="Oltrid">
+          <OltridLogo className="h-8 w-8" />
+          <span className="text-lg font-semibold text-foreground">Oltrid</span>
+        </div>
         <h1 className="text-2xl font-semibold text-center mb-6 text-foreground">Set new password</h1>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">

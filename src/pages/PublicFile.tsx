@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Copy, Code, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { OltridLogo } from "@/components/OltridLogo";
 
 export default function PublicFile() {
   const { publicId } = useParams<{ publicId: string }>();
@@ -49,6 +50,10 @@ export default function PublicFile() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-4xl mx-auto"
       >
+        <div className="mb-5 flex items-center gap-2" aria-label="Shared with Oltrid">
+          <OltridLogo className="h-7 w-7" />
+          <span className="text-sm font-semibold text-foreground">Oltrid</span>
+        </div>
         {/* Preview */}
         <div className="glass-card overflow-hidden mb-6">
           {file.type === "image" ? (

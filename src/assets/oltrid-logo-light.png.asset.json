@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "b29cd30e-afc9-4b48-a785-d91cfd31b111",
+  "asset_id": "16bb9c84-f23d-4989-af9a-6a516b37c933",
   "project_id": "829f6c02-4761-44e0-9f03-fdd601c4d308",
-  "url": "https://owpuwzkcnhkcgpwvlsgb.supabase.co/storage/v1/object/public/user-files/b4f83921-545f-4652-b6b5-5a1272a4427a/262e7478-5413-4ed6-8a16-8269e2a3520c.png",
-  "r2_key": "a/v1/829f6c02-4761-44e0-9f03-fdd601c4d308/b29cd30e-afc9-4b48-a785-d91cfd31b111/oltrid-logo-light.png",
+  "url": "/__l5e/assets-v1/16bb9c84-f23d-4989-af9a-6a516b37c933/oltrid-logo-light.png",
+  "r2_key": "a/v1/829f6c02-4761-44e0-9f03-fdd601c4d308/16bb9c84-f23d-4989-af9a-6a516b37c933/oltrid-logo-light.png",
   "original_filename": "oltrid-logo-light.png",
   "size": 588,
   "content_type": "image/png",
-  "created_at": "2026-07-25T07:59:31Z"
+  "created_at": "2026-10-02T16:06:59Z"
 }
