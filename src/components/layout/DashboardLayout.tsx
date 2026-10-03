@@ -39,10 +39,6 @@ export function DashboardLayout({ children, noPadding }: DashboardLayoutProps) {
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center h-12 px-3 border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-30 md:hidden">
             <SidebarTrigger className="h-10 w-10" />
-            <div className="pointer-events-none absolute left-1/2 flex -translate-x-1/2 items-center gap-2" aria-label="Oltrid">
-              <OltridLogo className="h-6 w-6" />
-              <span className="text-sm font-semibold text-foreground">Oltrid</span>
-            </div>
           </div>
           <main className={noPadding ? "flex-1 h-[calc(100vh-48px)] md:h-screen" : "flex-1 p-4 md:p-6 overflow-auto"}>
             {children}
