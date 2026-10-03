@@ -6,7 +6,6 @@ import { AlarmManager } from "@/components/alarms/AlarmManager";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { useAuth } from "@/hooks/useAuth";
 import { useCloudSync } from "@/hooks/useCloudSync";
-import { OltridLogo } from "@/components/OltridLogo";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
