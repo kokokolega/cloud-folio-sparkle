@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader as Loader2, Trash2, ShieldAlert, User, Camera, Pencil, ScanLine, Files, Users, Code as Code2, CalendarDays, Layers, File as FileEdit, NotebookPen, Boxes } from "lucide-react";
+import { Moon, Sun, LogOut, Palette, Check, ImagePlus, Loader as Loader2, Trash2, ShieldAlert, User, Camera, Pencil, ScanLine, Files, Users, Code as Code2, CalendarDays, Layers, File as FileEdit, NotebookPen, Boxes, BarChart3, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useSidebarFeatures } from "@/hooks/useSidebarFeatures";
 import { useSidebarStyle, SIDEBAR_STYLES } from "@/hooks/useSidebarStyle";
@@ -34,6 +35,7 @@ const BG_THEMES: { id: BgTheme; name: string; description: string; preview: stri
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const { bgTheme, setBgTheme, customImageUrl, setCustomImageUrl } = useBackgroundTheme();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
@@ -190,6 +192,20 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+
+          {/* Dashboard */}
+          <button onClick={() => navigate("/dashboard")} className="w-full text-left glass-card p-5 hover:bg-secondary/40 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <Label className="text-sm font-medium">Dashboard</Label>
+                  <p className="text-[11px] text-muted-foreground">View your project statistics</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </button>
 
           {/* Appearance */}
           <div className="glass-card p-5">
