@@ -128,8 +128,6 @@ export default function NotesPage() {
           </>
         )}
       </div>
-
-      <ShareCardsDialog open={!!cardNote} onOpenChange={(o) => !o && setCardNote(null)} note={cardNote} />
     </DashboardLayout>
   );
 }
