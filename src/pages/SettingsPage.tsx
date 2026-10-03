@@ -191,6 +191,20 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* Dashboard */}
+          <button onClick={() => navigate("/dashboard")} className="w-full text-left glass-card p-5 hover:bg-secondary/40 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <Label className="text-sm font-medium">Dashboard</Label>
+                  <p className="text-[11px] text-muted-foreground">View your project statistics</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </button>
+
           {/* Appearance */}
           <div className="glass-card p-5">
             <div className="flex items-center justify-between">

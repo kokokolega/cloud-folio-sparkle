@@ -25,7 +25,6 @@ import { useSidebarStyle } from "@/hooks/useSidebarStyle";
 
 const baseNav = [
   { title: "Oltrid AI", url: "/", icon: Bot },
-  { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
   { title: "Notes", url: "/notes", icon: StickyNote },
 ];
 const optionalNav = {
