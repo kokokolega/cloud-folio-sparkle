@@ -5,7 +5,6 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { NotesFloatingSidebar } from "@/components/notes/NotesFloatingSidebar";
-import { ShareCardsDialog } from "@/components/notes/ShareCardsDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, StickyNote, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -28,7 +27,6 @@ export default function NotesPage() {
   const [editingNote, setEditingNote] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<string | null | "all">("all");
-  const [cardNote, setCardNote] = useState<any | null>(null);
 
   const { notes, isLoading, isOfflineMode, createMutation, updateMutation, deleteMutation, autoSave } = useOfflineNotes({ limit: 200, enableOffline: true });
 

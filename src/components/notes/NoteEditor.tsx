@@ -13,7 +13,7 @@ import { NOTE_COLORS } from "@/pages/NotesPage";
 import {
   X, Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
   List, ListOrdered, ListChecks, Heading2, Quote, Code, Minus, Undo, Redo, Check, Loader2,
-  ImagePlus, Maximize2, Minimize2, History, LayoutGrid,
+  ImagePlus, Maximize2, Minimize2, History,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ShareCardsDialog } from "@/components/notes/ShareCardsDialog";
 import { NoteCardsWorkspace } from "@/components/notes/NoteCardsWorkspace";
 import { embedCards, parseCards, stripCards, type CardsDoc } from "@/lib/noteCards";
 import { useLocalDraft } from "@/hooks/useLocalDraft";
@@ -69,7 +68,6 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
   const [versions, setVersions] = useState<VersionEntry[]>([]);
   const [showVersions, setShowVersions] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [showCards, setShowCards] = useState(false);
   const [mode, setMode] = useState<"write" | "canvas">("write");
   const draftKey = `note:${note?.id ?? "new"}`;
   const [cardsDoc, setCardsDoc] = useLocalDraft<CardsDoc>(
@@ -217,7 +215,6 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
               {autoSaveStatus === "saved" && <><Check className="h-3 w-3 text-primary" /> Saved ✓</>}
             </span>
           )}
-          <ToolbarButton onClick={() => setShowCards(true)} icon={LayoutGrid} label="Share as Cards" />
           {isExistingNote && versions.length > 0 && (
             <ToolbarButton onClick={() => setShowVersions(true)} icon={History} label="Version History" />
           )}
@@ -329,12 +326,6 @@ export function NoteEditor({ note, onSave, onCancel, isSaving, onAutoSave }: Not
           </Button>
         </div>
       </div>
-
-      <ShareCardsDialog
-        open={showCards}
-        onOpenChange={setShowCards}
-        note={{ id: note?.id, title, content: editor.getHTML(), }}
-      />
 
       {/* Version History Dialog */}
       <Dialog open={showVersions} onOpenChange={setShowVersions}>

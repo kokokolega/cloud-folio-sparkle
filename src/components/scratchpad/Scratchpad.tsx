@@ -201,7 +201,7 @@ export function Scratchpad() {
         content: itemToHtml(item),
       });
       if (error) throw error;
-      toast.success(target === "card" ? "Note created — open Show as Cards to design it" : "Note created", {
+      toast.success("Note created", {
         action: { label: "Open notes", onClick: () => navigate("/notes") },
       });
     } catch (e: any) {
